@@ -4,6 +4,7 @@
     <title>Health Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --sidebar-bg-dark: #1e2630;
@@ -187,6 +188,11 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+        }
+        
+        #chatbox {
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-input-area {
@@ -591,7 +597,13 @@
             function appendMessage(sender, message) {
                 const messageDiv = document.createElement("div");
                 messageDiv.classList.add("msg", sender);
-                messageDiv.textContent = message;
+                
+                if (sender === "bot") {
+                    messageDiv.innerHTML = marked.parse(message);
+                } else {
+                    messageDiv.textContent = message;
+                }
+
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
