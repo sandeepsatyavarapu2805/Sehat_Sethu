@@ -340,20 +340,80 @@
             </div>
     </div>
 
-    <script>
-        document.body.classList.add('dark');
+<script>
+    document.body.classList.add('dark');
 
-        const tabs = document.querySelectorAll(".tab");
-        const pages = document.querySelectorAll(".tab-page");
+    const tabs = document.querySelectorAll(".tab");
+    const pages = document.querySelectorAll(".tab-page");
 
-        tabs.forEach(tab => {
-            tab.addEventListener("click", () => {
-                tabs.forEach(t => t.classList.remove("active"));
-                tab.classList.add("active");
-                pages.forEach(p => p.classList.remove("active"));
-                document.getElementById(tab.dataset.tab).classList.add("active");
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+            
+            pages.forEach(p => p.classList.remove("active"));
+            const targetPage = document.getElementById(tab.dataset.tab);
+            if (targetPage) {
+                targetPage.classList.add("active");
+            }
+        });
+    });
+
+    const chatbox = document.getElementById("chatbox");
+    const userInput = document.getElementById("user-input");
+    const sendButton = document.getElementById("send-button");
+
+    if (sendButton && userInput) {
+        sendButton.addEventListener("click", sendMessage);
+        userInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                sendMessage();
+            }
+        });
+    }
+
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+            appendMessage("user", message);
+            userInput.value = "";
+            
+            setTimeout(() => {
+                appendMessage("bot", "Hello! I am Health Assistant. How can I help you?");
+            }, 1000);
+        }
+    }
+
+    function appendMessage(sender, message) {
+        const messageDiv = document.createElement("div");
+        messageDiv.classList.add("msg", sender);
+        messageDiv.textContent = message;
+        chatbox.appendChild(messageDiv);
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    const followUpButtons = document.querySelectorAll(".follow-up-questions button");
+    if (followUpButtons) {
+        followUpButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                userInput.value = button.textContent;
+                sendMessage();
             });
-        });        
+        });
+    }
+
+    pages.forEach(p => p.classList.remove("active"));
+    document.getElementById('health').classList.add("active");
+
+    function saveProfile() {
+        alert("Profile saved!");
+    }
+    function saveAppointment() {
+        alert("Appointment saved!");
+    }
+    function saveEmergency() {
+        alert("Emergency numbers saved!");
+    }
     </script>
 </body>
 </html>
