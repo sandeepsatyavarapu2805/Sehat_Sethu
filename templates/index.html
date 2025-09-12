@@ -2,20 +2,26 @@
 <html>
 <head>
     <title>HealthBot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
             --accent: #16a085;
-            --bg-light: #f5f5f5;
-            --bg-dark: #1e1e1e;
+            --bg-light: #f5f6fa;
+            --bg-dark: #1e1e2f;
             --text-light: #ffffff;
-            --text-dark: #222222;
+            --text-dark: #2c3e50;
+            --input-bg: #ffffff;
+            --input-border: #ccc;
+            --bot-msg: #ecf0f1;
+            --bot-msg-dark: #444;
         }
 
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
+            font-family: 'Roboto', sans-serif;
             display: flex;
             height: 100vh;
             transition: background 0.3s, color 0.3s;
@@ -26,36 +32,50 @@
 
         /* Sidebar */
         #sidebar {
-            width: 300px;
+            width: 320px;
             background: var(--primary);
             color: white;
-            padding: 20px;
+            padding: 25px 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            box-shadow: 2px 0 12px rgba(0,0,0,0.3);
         }
-        #sidebar h2 { margin-top: 0; text-align: center; }
-        #sidebar h3 { margin-top: 20px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        #sidebar h2 { margin-top: 0; text-align: center; font-weight: 700; }
+        #sidebar h3 {
+            margin-top: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 8px;
+            font-weight: 500;
+        }
 
         input, textarea, button {
             margin: 8px 0;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--input-border);
             font-size: 14px;
             width: 100%;
-            box-sizing: border-box;
+            outline: none;
+            transition: border 0.2s, background 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(22,160,133,0.3);
         }
 
         button {
             background: var(--secondary);
             color: white;
             border: none;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
-        button:hover { background: #2980b9; }
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
         #theme-toggle { background: var(--accent); margin-top: auto; }
 
         /* Chat area */
@@ -63,55 +83,58 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 25px;
+            background: var(--bg-light);
+            transition: background 0.3s;
         }
+        body.dark #content { background: #2c2c3c; }
 
         #chatbox {
             flex: 1;
-            border-radius: 12px;
-            padding: 15px;
-            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            background: #fff;
             overflow-y: auto;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        body.dark #chatbox { background: #2c2c2c; border: 1px solid #555; }
+        body.dark #chatbox { background: #2c2c3c; }
 
         .chat-input {
             display: flex;
-            gap: 10px;
-            align-items: center;
+            gap: 12px;
         }
         .chat-input input {
             flex: 1;
-            padding: 12px;
+            padding: 14px 16px;
             font-size: 15px;
-            border-radius: 8px;
-            border: 1px solid #aaa;
+            border-radius: 12px;
+            border: 1px solid var(--input-border);
         }
         .chat-input button {
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 14px 22px;
+            border-radius: 12px;
         }
 
         /* Messages */
         .msg {
-            margin: 8px 0;
-            padding: 10px 14px;
-            border-radius: 12px;
-            max-width: 75%;
-            line-height: 1.4;
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 70%;
+            line-height: 1.5;
+            word-wrap: break-word;
         }
-        .msg.you { background: #3498db; color: white; align-self: flex-end; }
-        .msg.bot { background: #ecf0f1; color: black; align-self: flex-start; }
-        body.dark .msg.bot { background: #444; color: white; }
+        .msg.you { background: var(--secondary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg.bot { background: var(--bot-msg); color: black; align-self: flex-start; border-bottom-left-radius: 4px; }
+        body.dark .msg.bot { background: var(--bot-msg-dark); color: white; }
     </style>
 </head>
 <body class="light">
-    <!-- Sidebar -->
     <div id="sidebar">
         <h2>🩺 Health Assistant</h2>
-
         <h3>👤 Profile</h3>
         <input id="name" placeholder="Name" />
         <input id="age" placeholder="Age" type="number" />
@@ -131,7 +154,6 @@
         <button id="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</button>
     </div>
 
-    <!-- Chat Area -->
     <div id="content">
         <h2>💬 HealthBot</h2>
         <div id="chatbox"></div>
