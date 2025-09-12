@@ -1,214 +1,348 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>HealthBot</title>
+    <title>Health Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --primary: #2c3e50;
-            --secondary: #3498db;
-            --accent: #2ecc71;
-            --bg-light: #f4f7f9;
-            --bg-dark: #1f2a38;
-            --text-light: #ecf0f1;
+            --sidebar-bg: #222d3e;
+            --sidebar-item-bg: #2d3e50;
+            --sidebar-active-bg: #4a688b;
+            --sidebar-text: #ecf0f1;
+            --main-bg: #f5f6fa;
+            --main-bg-dark: #1e2630;
+            --chat-bg: #ffffff;
+            --chat-bg-dark: #2d3e50;
+            --bot-msg-bg: #f0f2f5;
+            --bot-msg-bg-dark: #34495e;
+            --user-msg-bg: #4a688b;
             --text-dark: #34495e;
-            --input-bg: #ffffff;
-            --input-border: #bdc3c7;
-            --bot-msg: #ecf0f1;
-            --you-msg: #3498db;
+            --text-light: #ecf0f1;
+            --tip-bg: #c9d7df;
+            --tip-icon: #34495e;
+            --divider: #e0e0e0;
         }
 
-        .theme-forest-green {
-            --primary: #1a531a;
-            --secondary: #4caf50;
-            --accent: #8bc34a;
-            --bg-light: #e8f5e9;
-            --bg-dark: #2e7d32;
-            --text-light: #ffffff;
-            --text-dark: #333;
-            --input-bg: #f9fbe7;
-            --bot-msg: #e0f2f1;
-            --you-msg: #4caf50;
+        body.dark {
+            --sidebar-bg: #1e2630;
+            --sidebar-item-bg: #283445;
+            --sidebar-active-bg: #3c5471;
+            --main-bg: #131b25;
+            --chat-bg: #1e2630;
+            --bot-msg-bg: #283445;
+            --user-msg-bg: #3c5471;
+            --text-dark: #ecf0f1;
+            --text-light: #f1f1f1;
+            --tip-bg: #34495e;
+            --tip-icon: #f1f1f1;
+            --divider: #444;
         }
 
-        * { box-sizing: border-box; }
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
+            padding: 0;
+        }
+
+        body {
             font-family: 'Roboto', sans-serif;
             display: flex;
             height: 100vh;
-            transition: background 0.3s, color 0.3s;
-            background: var(--bg-dark); /* Defaulting to dark theme for a sleek look */
-            color: var(--text-light);
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+            transition: background-color 0.3s;
         }
 
-        /* Rest of your CSS here */
         #sidebar {
             width: 250px;
-            background: var(--primary);
-            padding: 20px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 20px 15px;
             display: flex;
             flex-direction: column;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
+            gap: 10px;
+            transition: background-color 0.3s;
         }
-        #sidebar h2 { text-align: center; margin-top: 0; font-weight: 700; color: white; }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
         .tab {
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 15px 20px;
-            margin: 8px 0;
+            padding: 12px 15px;
             cursor: pointer;
             border-radius: 10px;
-            transition: background 0.2s, transform 0.2s;
-            font-weight: 500;
-        }
-        .tab i { font-size: 18px; }
-        .tab:hover, .tab.active { background: var(--secondary); transform: translateX(5px); }
-        .tab.active i { color: var(--accent); }
-
-        #content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 30px;
-            background: var(--bg-dark);
-            transition: background 0.3s;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 1rem;
         }
 
-        .tab-page { display: none; flex-direction: column; gap: 20px; height: 100%; }
-        .tab-page.active { display: flex; }
+        .tab.active {
+            background-color: var(--sidebar-active-bg);
+            border-radius: 25px;
+            color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-        input, textarea, select {
-            padding: 14px 18px;
-            border-radius: 10px;
-            border: 1px solid var(--input-border);
-            font-size: 16px;
-            width: 100%;
-            outline: none;
-            background: var(--input-bg);
+        .tab:hover {
+            background-color: var(--sidebar-item-bg);
+        }
+
+        .health-tip {
+            background-color: var(--tip-bg);
             color: var(--text-dark);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        body.dark input, body.dark textarea, body.dark select { background: #2c3e50; color: white; border-color: #555; }
 
-        button {
-            padding: 14px 25px;
-            border-radius: 10px;
-            background: var(--secondary);
-            color: white;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.2s;
+        .health-tip-header {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--tip-icon);
         }
-        button:hover { background: var(--accent); transform: translateY(-2px); }
+
+        #content {
+            flex-grow: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: var(--main-bg);
+            transition: background-color 0.3s;
+        }
+
+        #profile, #appointment, #emergency {
+            display: none;
+        }
+
+        #health {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            gap: 15px;
+        }
 
         #chatbox {
-            flex: 1;
-            background: #2c3e50;
+            flex-grow: 1;
+            background-color: var(--chat-bg);
             border-radius: 15px;
             padding: 25px;
             overflow-y: auto;
-            margin-bottom: 15px;
-            box-shadow: inset 0 4px 10px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             gap: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .chat-input {
+
+        .chat-input-area {
             display: flex;
-            gap: 10px;
             align-items: center;
+            gap: 10px;
+            background-color: var(--chat-bg);
+            padding: 10px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
-        .chat-input input { flex: 1; border-radius: 25px; background: #34495e; color: white; border: none; }
-        .chat-input button { padding: 15px 25px; border-radius: 25px; background: var(--accent); }
 
-        .msg {
-            padding: 15px 20px;
+        #user-input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            color: var(--text-dark);
+        }
+
+        #send-button {
+            background-color: var(--user-msg-bg);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .msg-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 80%;
+        }
+
+        .msg.bot {
+            background-color: var(--bot-msg-bg);
+            padding: 20px;
             border-radius: 20px;
-            max-width: 75%;
             line-height: 1.6;
-            word-wrap: break-word;
-            animation: fadeIn 0.5s ease-in-out;
+            color: var(--text-dark);
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .msg.user {
+            background-color: var(--user-msg-bg);
+            padding: 15px;
+            border-radius: 20px;
+            color: white;
+            align-self: flex-end;
+        }
+        
+        .bot-response-content {
+            padding-bottom: 10px;
+        }
 
-        .msg.you { background: var(--you-msg); color: white; align-self: flex-end; border-bottom-right-radius: 5px; }
-        .msg.bot { background: var(--bot-msg); color: var(--text-dark); align-self: flex-start; border-bottom-left-radius: 5px; }
-        body.dark .msg.bot { background: #44566c; color: white; }
+        .bot-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .bot-list-item {
+            margin-left: 20px;
+            margin-bottom: 5px;
+        }
+
+        .bot-disclaimer {
+            font-size: 0.85rem;
+            color: #666;
+            border-top: 1px solid var(--divider);
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .bot-disclaimer.dark-mode {
+            color: #bbb;
+        }
+
+        .follow-up-questions {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .follow-up-questions button {
+            background-color: var(--bot-msg-bg);
+            color: var(--text-dark);
+            border: 1px solid var(--divider);
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        
+        .follow-up-questions button:hover {
+            background-color: #e9ecef;
+        }
+        
+        body.dark .follow-up-questions button {
+            background-color: #34495e;
+            color: var(--text-light);
+            border-color: #444;
+        }
+        
+        body.dark .follow-up-questions button:hover {
+            background-color: #3c5471;
+        }
+
+        .bot-response-card {
+            background-color: var(--bot-msg-bg);
+            padding: 20px;
+            border-radius: 20px;
+            line-height: 1.6;
+            color: var(--text-dark);
+            max-width: 70%;
+            align-self: flex-start;
+        }
 
     </style>
 </head>
 <body class="dark">
     <div id="sidebar">
-        <h2>🩺 Health Assistant</h2>
-        <div class="tab active" data-tab="profile">
-            <i class="fas fa-user"></i> <span>Profile</span>
+        <div class="sidebar-header">
+            <i class="fas fa-heartbeat"></i> <span>HealthCare.AI</span>
         </div>
-        <div class="tab" data-tab="appointment">
-            <i class="fas fa-calendar-alt"></i> <span>Appointment</span>
+        <div class="tab active" data-tab="health">
+            <i class="fas fa-notes-medical"></i> Health Assistant
+        </div>
+        <div class="tab" data-tab="profile">
+            <i class="fas fa-user-circle"></i> Health Profile
+        </div>
+        <div class="tab" data-tab="medications">
+            <i class="fas fa-pills"></i> Medications
         </div>
         <div class="tab" data-tab="emergency">
-            <i class="fas fa-ambulance"></i> <span>Emergency</span>
+            <i class="fas fa-ambulance"></i> Emergency
         </div>
-        <div class="tab" data-tab="health">
-            <i class="fas fa-dumbbell"></i> <span>Health/Workout</span>
-        </div>
-        <div style="margin-top:auto;">
-            <div id="theme-options">
-                <button onclick="setTheme('dark')">Dark</button>
-                <button onclick="setTheme('light')">Light</button>
+        <div class="health-tip">
+            <div class="health-tip-header">
+                <i class="fas fa-lightbulb"></i> Wellness Tip
             </div>
+            <p>Drinking green tea can boost metabolism and is rich in antioxidants.</p>
         </div>
     </div>
 
     <div id="content">
-        <div id="profile" class="tab-page active">
-            <input id="name" placeholder="Full Name" />
-            <input id="birth_date" type="date" placeholder="Date of Birth" />
-            <select id="sex">
-                <option value="">Select Sex</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-            </select>
-            <input id="weight" type="number" placeholder="Weight (kg)" />
-            <input id="height" type="number" placeholder="Height (cm)" />
-            <textarea id="conditions" placeholder="Known health conditions or allergies"></textarea>
-            <button onclick="saveProfile()">
-                <i class="fas fa-save"></i> Save Profile
-            </button>
-        </div>
-
-        <div id="appointment" class="tab-page">
-            <input id="appt_date" type="date" />
-            <input id="appt_time" type="time" />
-            <textarea id="appt_reason" placeholder="Reason for appointment"></textarea>
-            <button onclick="saveAppointment()">Save Appointment</button>
-        </div>
-
-        <div id="emergency" class="tab-page">
-            <textarea id="emergency_numbers" placeholder="Enter emergency numbers separated by commas"></textarea>
-            <button onclick="saveEmergency()">Save Emergency Numbers</button>
-        </div>
-
-        <div id="health" class="tab-page">
-            <div id="chatbox"></div>
-            <div class="chat-input">
-                <input type="text" id="user-input" placeholder="Ask me anything about health or workouts..." />
-                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+        <div id="health" class="tab-page active">
+            <div id="chatbox">
+                <div class="bot-response-card">
+                    <div class="bot-response-content">
+                        <div class="bot-title">Managing Stress: Simple Tips</div>
+                        <ul>
+                            <li>**Stay Active:** Regular exercise is a great way to reduce stress.</li>
+                            <li>**Eat Well:** A balanced diet can help manage your mood.</li>
+                            <li>**Practice Deep Breathing:** Try inhaling deeply, holding, and exhaling slowly.</li>
+                        </ul>
+                    </div>
+                    <div class="bot-disclaimer">
+                        Remember, I'm an AI assistant and not a medical professional. It's always best to consult with a doctor or healthcare provider for personal medical advice.
+                    </div>
+                </div>
+                
+                <div class="follow-up-questions">
+                    <button>How can I improve my sleep quality?</button>
+                    <button>What are symptoms of dehydration?</button>
+                    <button>How to manage stress naturally?</button>
+                    <button>When should I see a doctor for a headache?</button>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="Ask a health question..." />
+                <button id="send-button"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
+
+        <div id="profile" class="tab-page">
+            </div>
+        <div id="medications" class="tab-page">
+            </div>
+        <div id="emergency" class="tab-page">
+            </div>
     </div>
 
     <script>
-        // Updated JavaScript to handle new inputs and theme
+        document.body.classList.add('dark');
+
         const tabs = document.querySelectorAll(".tab");
         const pages = document.querySelectorAll(".tab-page");
 
@@ -219,68 +353,7 @@
                 pages.forEach(p => p.classList.remove("active"));
                 document.getElementById(tab.dataset.tab).classList.add("active");
             });
-        });
-
-        function appendMessage(sender, text) {
-            const chatbox = document.getElementById("chatbox");
-            const msg = document.createElement("div");
-            msg.className = "msg " + (sender === "You" ? "you" : "bot");
-            msg.textContent = text;
-            chatbox.appendChild(msg);
-            chatbox.scrollTop = chatbox.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById("user-input");
-            const message = input.value.trim();
-            if (!message) return;
-            appendMessage("You", message);
-            input.value = "";
-
-            try {
-                // Simulate an API call
-                const response = await new Promise(resolve => setTimeout(() => {
-                    resolve({ reply: "I can provide general health information, but please consult a professional for medical advice." });
-                }, 1000));
-                appendMessage("HealthBot", response.reply);
-            } catch (error) {
-                appendMessage("HealthBot", "Sorry, something went wrong. Please try again.");
-            }
-        }
-
-        async function saveProfile() {
-            const profile = {
-                name: document.getElementById("name").value,
-                birthDate: document.getElementById("birth_date").value,
-                sex: document.getElementById("sex").value,
-                weight: document.getElementById("weight").value,
-                height: document.getElementById("height").value,
-                conditions: document.getElementById("conditions").value
-            };
-            // Here you would send a POST request to your backend to save the data
-            console.log("Saving profile:", profile);
-            alert("Profile saved successfully!");
-        }
-
-        async function saveAppointment() {
-            const appointment = {
-                date: document.getElementById("appt_date").value,
-                time: document.getElementById("appt_time").value,
-                reason: document.getElementById("appt_reason").value
-            };
-            console.log("Saving appointment:", appointment);
-            alert("Appointment saved successfully!");
-        }
-
-        async function saveEmergency() {
-            const contacts = document.getElementById("emergency_numbers").value.split(",").map(c => c.trim()).filter(c => c);
-            console.log("Saving emergency contacts:", contacts);
-            alert("Emergency contacts saved successfully!");
-        }
-
-        function setTheme(theme) {
-            document.body.className = theme;
-        }
+        });        
     </script>
 </body>
 </html>
