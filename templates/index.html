@@ -45,10 +45,13 @@
             padding: 0;
         }
 
+        html, body {
+            height: 100%;
+        }
+
         body {
             font-family: 'Roboto', sans-serif;
             display: flex;
-            height: 100vh;
             background-color: var(--main-bg);
             color: var(--text-dark);
             transition: background-color 0.3s;
@@ -124,6 +127,7 @@
             background-color: var(--main-bg);
             color: var(--text-dark);
             transition: background-color 0.3s;
+            overflow: hidden; /* This is key to prevent the main body from scrolling */
         }
         
         body.dark #content {
@@ -141,16 +145,23 @@
             display: flex;
         }
 
-        #chatbox {
+        #chatbox, #profile-content, #medications-content, #emergency-content {
             flex-grow: 1;
             background-color: var(--chat-bg);
             border-radius: 15px;
             padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto; /* This makes each content area independently scrollable */
+        }
+        
+        #chat-messages {
+            flex-grow: 1;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
         .chat-input-area {
@@ -162,6 +173,7 @@
             border-radius: 25px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             position: relative;
+            margin-top: 10px;
         }
         
         body.dark .chat-input-area {
@@ -265,27 +277,18 @@
             border-color: #444;
         }
 
-        #profile-content {
-            flex-grow: 1;
-            padding: 20px;
-            background-color: var(--chat-bg);
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .profile-input-group {
+        .profile-input-group, .medications-input-group, .emergency-input-group {
             margin-bottom: 15px;
         }
-
-        .profile-input-group label {
+        
+        .profile-input-group label, .medications-input-group label, .emergency-input-group label {
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
         }
 
-        .profile-input-group input,
-        .profile-input-group select,
-        .profile-input-group textarea {
+        .profile-input-group input, .profile-input-group select, .profile-input-group textarea,
+        .medications-input-group input, .emergency-input-group input {
             width: 100%;
             padding: 12px;
             border-radius: 8px;
@@ -295,9 +298,8 @@
             color: var(--text-dark);
         }
 
-        body.dark .profile-input-group input,
-        body.dark .profile-input-group select,
-        body.dark .profile-input-group textarea {
+        body.dark .profile-input-group input, body.dark .profile-input-group select, body.dark .profile-input-group textarea,
+        body.dark .medications-input-group input, body.dark .emergency-input-group input {
             background-color: #283445;
             border-color: #444;
             color: var(--text-dark);
@@ -314,6 +316,30 @@
             cursor: pointer;
         }
 
+        .section-header {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .list-item {
+            border: 1px solid var(--divider);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .list-item .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #ff5555;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body class="dark">
@@ -344,25 +370,21 @@
     <div id="content">
         <div id="health" class="tab-page active">
             <div id="chatbox">
-                <div class="msg bot">
-                    Hello! I'm Health Assistant, an AI health companion. I can provide general health information and wellness tips. How can I help you today?
+                <div id="chat-messages">
+                    <div class="msg bot">
+                        Hello! I'm Health Assistant, an AI health companion. I can provide general health information and wellness tips. How can I help you today?
+                    </div>
                 </div>
-                
-                <div class="follow-up-questions">
-                    <button>How can I improve my sleep quality?</button>
-                    <button>What are symptoms of dehydration?</button>
-                    <button>How to manage stress naturally?</button>
-                    <button>When should I see a doctor for a headache?</button>
+                <div class="chat-input-area">
+                    <input type="text" id="user-input" placeholder="Ask a health question..." />
+                    <button id="send-button"><i class="fas fa-paper-plane"></i></button>
                 </div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="user-input" placeholder="Ask a health question..." />
-                <button id="send-button"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
 
         <div id="profile" class="tab-page">
             <div id="profile-content">
+                <h3 class="section-header">Health Profile</h3>
                 <div class="profile-input-group">
                     <label for="name">Name</label>
                     <input type="text" id="name" placeholder="Your full name" />
@@ -372,8 +394,16 @@
                     <input type="number" id="age" placeholder="Your age" />
                 </div>
                 <div class="profile-input-group">
-                    <label for="conditions">Health Conditions</label>
-                    <textarea id="conditions" placeholder="Any existing health conditions"></textarea>
+                    <label for="gender">Gender</label>
+                    <input type="text" id="gender" placeholder="Your gender" />
+                </div>
+                <div class="profile-input-group">
+                    <label for="blood_group">Blood Group</label>
+                    <input type="text" id="blood_group" placeholder="e.g., O+, A-" />
+                </div>
+                <div class="profile-input-group">
+                    <label for="conditions">Known Health Conditions</label>
+                    <textarea id="conditions" rows="3" placeholder="List any existing health conditions, allergies, or past surgeries."></textarea>
                 </div>
                 <button class="save-button" onclick="saveProfile()">Save Profile</button>
             </div>
@@ -381,15 +411,49 @@
 
         <div id="medications" class="tab-page">
             <div id="medications-content">
-                <h3>Medications</h3>
-                <p>This page will allow you to track your medication schedule and dosages.</p>
+                <h3 class="section-header">Medications</h3>
+                <div class="medications-input-group">
+                    <label for="medication-name">Medication Name</label>
+                    <input type="text" id="medication-name" placeholder="e.g., Ibuprofen, Vitamin D" />
+                </div>
+                <div class="medications-input-group">
+                    <label for="dosage">Dosage</label>
+                    <input type="text" id="dosage" placeholder="e.g., 200mg, one pill a day" />
+                </div>
+                <div class="medications-input-group">
+                    <label for="schedule">Schedule</label>
+                    <input type="text" id="schedule" placeholder="e.g., Morning, Every 8 hours" />
+                </div>
+                <button class="save-button" onclick="saveMedication()">Add Medication</button>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--divider);">
+                <h4>My Medications</h4>
+                <div id="medication-list">
+                    <p>No medications added yet.</p>
+                </div>
             </div>
         </div>
 
         <div id="emergency" class="tab-page">
             <div id="emergency-content">
-                <h3>Emergency Contacts</h3>
-                <p>This page will allow you to store and access your emergency contact numbers quickly.</p>
+                <h3 class="section-header">Emergency Contacts</h3>
+                <div class="emergency-input-group">
+                    <label for="contact-name">Contact Name</label>
+                    <input type="text" id="contact-name" placeholder="e.g., John Doe" />
+                </div>
+                <div class="emergency-input-group">
+                    <label for="contact-number">Contact Number</label>
+                    <input type="tel" id="contact-number" placeholder="e.g., +123-456-7890" />
+                </div>
+                <div class="emergency-input-group">
+                    <label for="relationship">Relationship</label>
+                    <input type="text" id="relationship" placeholder="e.g., Family, Friend, Doctor" />
+                </div>
+                <button class="save-button" onclick="saveEmergencyContact()">Add Contact</button>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--divider);">
+                <h4>My Contacts</h4>
+                <div id="emergency-list">
+                    <p>No emergency contacts added yet.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -398,9 +462,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelectorAll(".tab");
             const pages = document.querySelectorAll(".tab-page");
-            const chatbox = document.getElementById("chatbox");
+            const chatMessages = document.getElementById("chat-messages");
             const userInput = document.getElementById("user-input");
             const sendButton = document.getElementById("send-button");
+
+            // Load saved data on page load
+            loadData();
 
             // --- Sidebar and Tab Logic ---
             tabs.forEach(tab => {
@@ -458,8 +525,8 @@
                 // For now, we'll just set the text content
                 messageDiv.textContent = message;
 
-                chatbox.appendChild(messageDiv);
-                chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the bottom
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to the bottom
             }
 
             // --- Follow-up Questions Functionality ---
@@ -472,37 +539,156 @@
                     });
                 });
             }
-        });
 
-        // --- Placeholder Functions for Saving Data ---
-        // These will be connected to your Flask backend.
-        async function saveProfile() {
-            const profileData = {
-                name: document.getElementById('name').value,
-                age: document.getElementById('age').value,
-                conditions: document.getElementById('conditions').value
+            // --- Save Functions ---
+            window.saveProfile = async () => {
+                const profileData = {
+                    name: document.getElementById('name').value,
+                    age: document.getElementById('age').value,
+                    gender: document.getElementById('gender').value,
+                    blood_group: document.getElementById('blood_group').value,
+                    conditions: document.getElementById('conditions').value
+                };
+
+                try {
+                    const response = await fetch("/save_profile", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(profileData)
+                    });
+                    const data = await response.json();
+                    alert(data.message);
+                } catch (error) {
+                    alert("Failed to save profile. Please try again.");
+                }
             };
 
-            try {
-                const response = await fetch("/save_profile", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(profileData)
-                });
-                const data = await response.json();
-                alert(data.message);
-            } catch (error) {
-                alert("Failed to save profile. Please try again.");
+            window.saveMedication = async () => {
+                const medicationData = {
+                    name: document.getElementById('medication-name').value,
+                    dosage: document.getElementById('dosage').value,
+                    schedule: document.getElementById('schedule').value,
+                };
+                
+                if (!medicationData.name) {
+                    alert("Please enter a medication name.");
+                    return;
+                }
+
+                try {
+                    const response = await fetch("/save_appointment", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(medicationData)
+                    });
+                    const data = await response.json();
+                    alert(data.message);
+                    renderMedications(medicationData);
+                } catch (error) {
+                    alert("Failed to add medication. Please try again.");
+                }
+            };
+            
+            window.saveEmergencyContact = async () => {
+                const emergencyData = {
+                    name: document.getElementById('contact-name').value,
+                    number: document.getElementById('contact-number').value,
+                    relationship: document.getElementById('relationship').value,
+                };
+
+                if (!emergencyData.name || !emergencyData.number) {
+                    alert("Please enter both a name and a number.");
+                    return;
+                }
+
+                try {
+                    const response = await fetch("/save_emergency", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(emergencyData)
+                    });
+                    const data = await response.json();
+                    alert(data.message);
+                    renderEmergencyContacts(emergencyData);
+                } catch (error) {
+                    alert("Failed to save emergency contact. Please try again.");
+                }
+            };
+
+            async function loadData() {
+                try {
+                    const response = await fetch("/get_user_data");
+                    const data = await response.json();
+                    
+                    // Populate profile data
+                    if (data.profile) {
+                        document.getElementById('name').value = data.profile.name || '';
+                        document.getElementById('age').value = data.profile.age || '';
+                        document.getElementById('gender').value = data.profile.gender || '';
+                        document.getElementById('blood_group').value = data.profile.blood_group || '';
+                        document.getElementById('conditions').value = data.profile.conditions || '';
+                    }
+
+                    // Render medications and emergency contacts
+                    renderMedications(data.appointments);
+                    renderEmergencyContacts(data.emergency);
+                    
+                } catch (error) {
+                    console.error("Failed to load user data:", error);
+                }
             }
-        }
+            
+            function renderMedications(medications) {
+                const medicationList = document.getElementById('medication-list');
+                medicationList.innerHTML = '';
+                if (medications.length === 0) {
+                    medicationList.innerHTML = '<p>No medications added yet.</p>';
+                    return;
+                }
+                medications.forEach((med, index) => {
+                    const div = document.createElement('div');
+                    div.classList.add('list-item');
+                    div.innerHTML = `
+                        <b>${med.name}</b><br>
+                        Dosage: ${med.dosage}<br>
+                        Schedule: ${med.schedule}
+                        <button class="delete-btn" onclick="deleteMedication(${index})"><i class="fas fa-times-circle"></i></button>
+                    `;
+                    medicationList.appendChild(div);
+                });
+            }
 
-        async function saveAppointment() {
-            // Your saving logic here
-        }
+            function renderEmergencyContacts(contacts) {
+                const emergencyList = document.getElementById('emergency-list');
+                emergencyList.innerHTML = '';
+                if (contacts.length === 0) {
+                    emergencyList.innerHTML = '<p>No emergency contacts added yet.</p>';
+                    return;
+                }
+                contacts.forEach((contact, index) => {
+                    const div = document.createElement('div');
+                    div.classList.add('list-item');
+                    div.innerHTML = `
+                        <b>${contact.name}</b><br>
+                        Number: ${contact.number}<br>
+                        Relationship: ${contact.relationship}
+                        <button class="delete-btn" onclick="deleteEmergencyContact(${index})"><i class="fas fa-times-circle"></i></button>
+                    `;
+                    emergencyList.appendChild(div);
+                });
+            }
 
-        async function saveEmergency() {
-            // Your saving logic here
-        }
+            // These functions will require backend support
+            window.deleteMedication = async (index) => {
+                // Implement backend logic to delete medication by index
+                alert("Medication deletion not yet implemented in backend.");
+            };
+
+            window.deleteEmergencyContact = async (index) => {
+                // Implement backend logic to delete emergency contact by index
+                alert("Emergency contact deletion not yet implemented in backend.");
+            };
+        });
     </script>
 </body>
 </html>
