@@ -6,37 +6,65 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
-            --sidebar-bg: #222d3e;
-            --sidebar-item-bg: #2d3e50;
-            --sidebar-active-bg: #4a688b;
-            --sidebar-text: #ecf0f1;
-            --main-bg: #f5f6fa;
-            --main-bg-dark: #1e2630;
-            --chat-bg: #ffffff;
-            --chat-bg-dark: #2d3e50;
-            --bot-msg-bg: #f0f2f5;
-            --bot-msg-bg-dark: #34495e;
-            --user-msg-bg: #4a688b;
-            --text-dark: #34495e;
-            --text-light: #ecf0f1;
-            --tip-bg: #c9d7df;
-            --tip-icon: #34495e;
-            --divider: #e0e0e0;
+            --sidebar-bg-dark: #1e2630;
+            --sidebar-item-bg-dark: #283445;
+            --sidebar-active-bg-dark: #3c5471;
+            --sidebar-text-dark: #ecf0f1;
+            --main-bg-dark: #131b25;
+            --chat-bg-dark: #1e2630;
+            --bot-msg-bg-dark: #283445;
+            --user-msg-bg-dark: #3c5471;
+            --text-dark-dark: #ecf0f1;
+            --text-light-dark: #f1f1f1;
+            --tip-bg-dark: #34495e;
+            --tip-icon-dark: #f1f1f1;
+            --divider-dark: #444;
+
+            --sidebar-bg-light: #2c3e50;
+            --sidebar-item-bg-light: #34495e;
+            --sidebar-active-bg-light: #5d7a9b;
+            --sidebar-text-light: #ffffff;
+            --main-bg-light: #ecf0f1;
+            --chat-bg-light: #ffffff;
+            --bot-msg-bg-light: #f5f5f5;
+            --user-msg-bg-light: #3498db;
+            --text-dark-light: #34495e;
+            --text-light-light: #ffffff;
+            --tip-bg-light: #c9d7df;
+            --tip-icon-light: #34495e;
+            --divider-light: #e0e0e0;
         }
 
         body.dark {
-            --sidebar-bg: #1e2630;
-            --sidebar-item-bg: #283445;
-            --sidebar-active-bg: #3c5471;
-            --main-bg: #131b25;
-            --chat-bg: #1e2630;
-            --bot-msg-bg: #283445;
-            --user-msg-bg: #3c5471;
-            --text-dark: #ecf0f1;
-            --text-light: #f1f1f1;
-            --tip-bg: #34495e;
-            --tip-icon: #f1f1f1;
-            --divider: #444;
+            --sidebar-bg: var(--sidebar-bg-dark);
+            --sidebar-item-bg: var(--sidebar-item-bg-dark);
+            --sidebar-active-bg: var(--sidebar-active-bg-dark);
+            --sidebar-text: var(--sidebar-text-dark);
+            --main-bg: var(--main-bg-dark);
+            --chat-bg: var(--chat-bg-dark);
+            --bot-msg-bg: var(--bot-msg-bg-dark);
+            --user-msg-bg: var(--user-msg-bg-dark);
+            --text-dark: var(--text-dark-dark);
+            --text-light: var(--text-light-dark);
+            --tip-bg: var(--tip-bg-dark);
+            --tip-icon: var(--tip-icon-dark);
+            --divider: var(--divider-dark);
+        }
+
+        body.light {
+            --sidebar-bg: var(--sidebar-bg-light);
+            --sidebar-item-bg: var(--sidebar-item-bg-light);
+            --sidebar-active-bg: var(--sidebar-active-bg-light);
+            --sidebar-text: var(--sidebar-text-light);
+            --main-bg: var(--main-bg-light);
+            --chat-bg: var(--chat-bg-light);
+            --bot-msg-bg: var(--bot-msg-bg-light);
+            --user-msg-bg: var(--user-msg-bg-light);
+            --text-dark: var(--text-dark-light);
+            --text-light: var(--text-light-light);
+            --tip-bg: var(--tip-bg-light);
+            --tip-icon: var(--tip-icon-light);
+            --divider: var(--divider-light);
         }
 
         * {
@@ -107,8 +135,9 @@
             border-radius: 15px;
             margin-top: auto;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
         }
-
+        
         .health-tip-header {
             display: flex;
             align-items: center;
@@ -127,13 +156,9 @@
             background-color: var(--main-bg);
             color: var(--text-dark);
             transition: background-color 0.3s;
-            overflow: hidden; /* This is key to prevent the main body from scrolling */
+            overflow: hidden;
         }
         
-        body.dark #content {
-            color: var(--text-dark);
-        }
-
         .tab-page {
             display: none;
             flex-grow: 1;
@@ -153,7 +178,7 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            overflow-y: auto; /* This makes each content area independently scrollable */
+            overflow-y: auto;
         }
         
         #chat-messages {
@@ -176,10 +201,6 @@
             margin-top: 10px;
         }
         
-        body.dark .chat-input-area {
-            background-color: var(--chat-bg-dark);
-        }
-
         #user-input {
             flex-grow: 1;
             border: none;
@@ -189,10 +210,6 @@
             color: var(--text-dark);
         }
         
-        body.dark #user-input {
-            color: var(--text-dark);
-        }
-
         #send-button {
             background-color: var(--user-msg-bg);
             color: white;
@@ -217,16 +234,11 @@
             max-width: 70%;
         }
         
-        body.dark .msg.bot {
-            background-color: var(--bot-msg-bg-dark);
-            color: var(--text-dark);
-        }
-        
         .msg.user {
             background-color: var(--user-msg-bg);
             padding: 15px;
             border-radius: 20px;
-            color: white;
+            color: var(--text-light);
             align-self: flex-end;
             max-width: 70%;
         }
@@ -270,15 +282,10 @@
             font-size: 0.9rem;
             transition: background-color 0.2s;
         }
-        
-        body.dark .follow-up-questions button {
-            background-color: #34495e;
-            color: var(--text-light);
-            border-color: #444;
-        }
 
         .profile-input-group, .medications-input-group, .emergency-input-group {
             margin-bottom: 15px;
+            position: relative;
         }
         
         .profile-input-group label, .medications-input-group label, .emergency-input-group label {
@@ -288,7 +295,8 @@
         }
 
         .profile-input-group input, .profile-input-group select, .profile-input-group textarea,
-        .medications-input-group input, .emergency-input-group input {
+        .medications-input-group input, .emergency-input-group input,
+        .custom-input {
             width: 100%;
             padding: 12px;
             border-radius: 8px;
@@ -298,22 +306,15 @@
             color: var(--text-dark);
         }
 
-        body.dark .profile-input-group input, body.dark .profile-input-group select, body.dark .profile-input-group textarea,
-        body.dark .medications-input-group input, body.dark .emergency-input-group input {
-            background-color: #283445;
-            border-color: #444;
-            color: var(--text-dark);
-        }
-
-        .save-button {
-            width: 100%;
+        .save-button, #add-medication-btn, #add-contact-btn {
             padding: 15px;
             background-color: var(--user-msg-bg);
-            color: white;
+            color: var(--text-light);
             border: none;
             border-radius: 8px;
             font-size: 1.1rem;
             cursor: pointer;
+            margin-top: 10px;
         }
 
         .section-header {
@@ -340,6 +341,43 @@
             cursor: pointer;
             font-size: 1.2rem;
         }
+
+        .add-custom-field-btn {
+            background: none;
+            border: 1px solid var(--divider);
+            color: var(--text-dark);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        .custom-field-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .custom-field-group .profile-input-group {
+            flex-grow: 1;
+        }
+
+        #theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-top: 10px;
+            transition: background-color 0.2s;
+        }
+        
+        #theme-switcher:hover {
+            background-color: var(--sidebar-item-bg);
+        }
     </style>
 </head>
 <body class="dark">
@@ -359,6 +397,9 @@
         <div class="tab" data-tab="emergency">
             <i class="fas fa-ambulance"></i> Emergency
         </div>
+        <div class="tab" id="theme-switcher">
+            <i class="fas fa-sun"></i> Toggle Theme
+        </div>
         <div class="health-tip">
             <div class="health-tip-header">
                 <i class="fas fa-lightbulb"></i> Wellness Tip
@@ -372,7 +413,7 @@
             <div id="chatbox">
                 <div id="chat-messages">
                     <div class="msg bot">
-                        Hello! I'm Health Assistant, an AI health companion. I can provide general health information and wellness tips. How can I help you today?
+                        Hello! I'm Health Assistant, your AI health companion. I can provide general health information and wellness tips. How can I help you today?
                     </div>
                 </div>
                 <div class="chat-input-area">
@@ -385,33 +426,37 @@
         <div id="profile" class="tab-page">
             <div id="profile-content">
                 <h3 class="section-header">Health Profile</h3>
-                <div class="profile-input-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" placeholder="Your full name" />
+                <div id="profile-form">
+                    <div class="profile-input-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" placeholder="Your full name" />
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" placeholder="Your age" />
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="gender">Gender</label>
+                        <input type="text" id="gender" placeholder="Your gender" />
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="blood_group">Blood Group</label>
+                        <input type="text" id="blood_group" placeholder="e.g., O+, A-" />
+                    </div>
+                    <div class="profile-input-group">
+                        <label for="conditions">Known Health Conditions</label>
+                        <textarea id="conditions" rows="3" placeholder="List any existing health conditions, allergies, or past surgeries."></textarea>
+                    </div>
+                    <div id="custom-fields"></div>
                 </div>
-                <div class="profile-input-group">
-                    <label for="age">Age</label>
-                    <input type="number" id="age" placeholder="Your age" />
-                </div>
-                <div class="profile-input-group">
-                    <label for="gender">Gender</label>
-                    <input type="text" id="gender" placeholder="Your gender" />
-                </div>
-                <div class="profile-input-group">
-                    <label for="blood_group">Blood Group</label>
-                    <input type="text" id="blood_group" placeholder="e.g., O+, A-" />
-                </div>
-                <div class="profile-input-group">
-                    <label for="conditions">Known Health Conditions</label>
-                    <textarea id="conditions" rows="3" placeholder="List any existing health conditions, allergies, or past surgeries."></textarea>
-                </div>
+                <button class="add-custom-field-btn" onclick="addCustomField()"><i class="fas fa-plus"></i> Add Custom Field</button>
                 <button class="save-button" onclick="saveProfile()">Save Profile</button>
             </div>
         </div>
 
         <div id="medications" class="tab-page">
             <div id="medications-content">
-                <h3 class="section-header">Medications</h3>
+                <h3 class="section-header">Add New Medication</h3>
                 <div class="medications-input-group">
                     <label for="medication-name">Medication Name</label>
                     <input type="text" id="medication-name" placeholder="e.g., Ibuprofen, Vitamin D" />
@@ -424,9 +469,9 @@
                     <label for="schedule">Schedule</label>
                     <input type="text" id="schedule" placeholder="e.g., Morning, Every 8 hours" />
                 </div>
-                <button class="save-button" onclick="saveMedication()">Add Medication</button>
+                <button class="save-button" id="add-medication-btn">Add Medication</button>
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--divider);">
-                <h4>My Medications</h4>
+                <h4 style="margin-bottom: 10px;">My Medications</h4>
                 <div id="medication-list">
                     <p>No medications added yet.</p>
                 </div>
@@ -435,7 +480,7 @@
 
         <div id="emergency" class="tab-page">
             <div id="emergency-content">
-                <h3 class="section-header">Emergency Contacts</h3>
+                <h3 class="section-header">Add Emergency Contact</h3>
                 <div class="emergency-input-group">
                     <label for="contact-name">Contact Name</label>
                     <input type="text" id="contact-name" placeholder="e.g., John Doe" />
@@ -448,9 +493,9 @@
                     <label for="relationship">Relationship</label>
                     <input type="text" id="relationship" placeholder="e.g., Family, Friend, Doctor" />
                 </div>
-                <button class="save-button" onclick="saveEmergencyContact()">Add Contact</button>
+                <button class="save-button" id="add-contact-btn">Add Contact</button>
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--divider);">
-                <h4>My Contacts</h4>
+                <h4 style="margin-bottom: 10px;">My Contacts</h4>
                 <div id="emergency-list">
                     <p>No emergency contacts added yet.</p>
                 </div>
@@ -465,26 +510,50 @@
             const chatMessages = document.getElementById("chat-messages");
             const userInput = document.getElementById("user-input");
             const sendButton = document.getElementById("send-button");
+            const addMedBtn = document.getElementById("add-medication-btn");
+            const addContactBtn = document.getElementById("add-contact-btn");
+            const themeSwitcher = document.getElementById("theme-switcher");
+            const themeIcon = themeSwitcher.querySelector('i');
 
-            // Load saved data on page load
+            // Load saved theme preference
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.className = savedTheme;
+            if (savedTheme === 'light') {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+
+            // Load saved user data
             loadData();
 
             // --- Sidebar and Tab Logic ---
             tabs.forEach(tab => {
                 tab.addEventListener("click", () => {
-                    // Remove 'active' class from all tabs
                     tabs.forEach(t => t.classList.remove("active"));
-                    // Add 'active' class to the clicked tab
                     tab.classList.add("active");
-
-                    // Hide all pages
                     pages.forEach(p => p.classList.remove("active"));
-                    // Show the corresponding page
                     const targetPage = document.getElementById(tab.dataset.tab);
                     if (targetPage) {
                         targetPage.classList.add("active");
                     }
                 });
+            });
+
+            // --- Theme Switcher Logic ---
+            themeSwitcher.addEventListener("click", () => {
+                const isDark = document.body.classList.toggle('dark');
+                document.body.classList.toggle('light', !isDark);
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                if (isDark) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                }
             });
 
             // --- Chat Functionality ---
@@ -499,16 +568,18 @@
 
             async function sendMessage() {
                 const message = userInput.value.trim();
-                if (!message) return; // Don't send empty messages
+                if (!message) return;
 
                 appendMessage("user", message);
                 userInput.value = "";
                 
+                const userData = await getUserDataForChat();
+
                 try {
                     const response = await fetch("/ask", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message })
+                        body: JSON.stringify({ message, userData })
                     });
                     const data = await response.json();
                     appendMessage("bot", data.reply);
@@ -520,35 +591,55 @@
             function appendMessage(sender, message) {
                 const messageDiv = document.createElement("div");
                 messageDiv.classList.add("msg", sender);
-                
-                // For a more structured response, you can parse markdown
-                // For now, we'll just set the text content
                 messageDiv.textContent = message;
-
                 chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to the bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
 
-            // --- Follow-up Questions Functionality ---
-            const followUpButtons = document.querySelectorAll(".follow-up-questions button");
-            if (followUpButtons) {
-                followUpButtons.forEach(button => {
-                    button.addEventListener("click", () => {
-                        userInput.value = button.textContent;
-                        sendMessage();
-                    });
-                });
+            // --- Dynamic Forms ---
+            if (addMedBtn) {
+                addMedBtn.addEventListener("click", saveMedication);
+            }
+            if (addContactBtn) {
+                addContactBtn.addEventListener("click", saveEmergencyContact);
             }
 
-            // --- Save Functions ---
+            window.addCustomField = () => {
+                const customFieldsContainer = document.getElementById('custom-fields');
+                const fieldGroup = document.createElement('div');
+                fieldGroup.classList.add('custom-field-group');
+                fieldGroup.innerHTML = `
+                    <div class="profile-input-group">
+                        <label>Field Name</label>
+                        <input type="text" class="custom-field-name" placeholder="e.g., Allergies" />
+                    </div>
+                    <div class="profile-input-group">
+                        <label>Field Value</label>
+                        <input type="text" class="custom-field-value" placeholder="e.g., Penicillin" />
+                    </div>
+                `;
+                customFieldsContainer.appendChild(fieldGroup);
+            };
+
             window.saveProfile = async () => {
                 const profileData = {
                     name: document.getElementById('name').value,
                     age: document.getElementById('age').value,
                     gender: document.getElementById('gender').value,
                     blood_group: document.getElementById('blood_group').value,
-                    conditions: document.getElementById('conditions').value
+                    conditions: document.getElementById('conditions').value,
+                    custom_fields: []
                 };
+
+                const customFieldNames = document.querySelectorAll('.custom-field-name');
+                const customFieldValues = document.querySelectorAll('.custom-field-value');
+                for (let i = 0; i < customFieldNames.length; i++) {
+                    const name = customFieldNames[i].value;
+                    const value = customFieldValues[i].value;
+                    if (name && value) {
+                        profileData.custom_fields.push({ name: name, value: value });
+                    }
+                }
 
                 try {
                     const response = await fetch("/save_profile", {
@@ -576,14 +667,14 @@
                 }
 
                 try {
-                    const response = await fetch("/save_appointment", {
+                    const response = await fetch("/save_medication", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(medicationData)
                     });
                     const data = await response.json();
                     alert(data.message);
-                    renderMedications(medicationData);
+                    await loadData();
                 } catch (error) {
                     alert("Failed to add medication. Please try again.");
                 }
@@ -602,14 +693,14 @@
                 }
 
                 try {
-                    const response = await fetch("/save_emergency", {
+                    const response = await fetch("/save_emergency_contact", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(emergencyData)
                     });
                     const data = await response.json();
                     alert(data.message);
-                    renderEmergencyContacts(emergencyData);
+                    await loadData();
                 } catch (error) {
                     alert("Failed to save emergency contact. Please try again.");
                 }
@@ -620,28 +711,57 @@
                     const response = await fetch("/get_user_data");
                     const data = await response.json();
                     
-                    // Populate profile data
                     if (data.profile) {
                         document.getElementById('name').value = data.profile.name || '';
                         document.getElementById('age').value = data.profile.age || '';
                         document.getElementById('gender').value = data.profile.gender || '';
                         document.getElementById('blood_group').value = data.profile.blood_group || '';
                         document.getElementById('conditions').value = data.profile.conditions || '';
+                        
+                        const customFieldsContainer = document.getElementById('custom-fields');
+                        customFieldsContainer.innerHTML = '';
+                        if (data.profile.custom_fields) {
+                            data.profile.custom_fields.forEach(field => {
+                                const fieldGroup = document.createElement('div');
+                                fieldGroup.classList.add('custom-field-group');
+                                fieldGroup.innerHTML = `
+                                    <div class="profile-input-group">
+                                        <label>Field Name</label>
+                                        <input type="text" class="custom-field-name" value="${field.name || ''}" placeholder="e.g., Allergies" />
+                                    </div>
+                                    <div class="profile-input-group">
+                                        <label>Field Value</label>
+                                        <input type="text" class="custom-field-value" value="${field.value || ''}" placeholder="e.g., Penicillin" />
+                                    </div>
+                                `;
+                                customFieldsContainer.appendChild(fieldGroup);
+                            });
+                        }
                     }
 
-                    // Render medications and emergency contacts
-                    renderMedications(data.appointments);
-                    renderEmergencyContacts(data.emergency);
+                    renderMedications(data.medications);
+                    renderEmergencyContacts(data.emergency_contacts);
                     
                 } catch (error) {
                     console.error("Failed to load user data:", error);
                 }
             }
             
+            async function getUserDataForChat() {
+                try {
+                    const response = await fetch("/get_user_data");
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    console.error("Failed to fetch user data for chat:", error);
+                    return {};
+                }
+            }
+            
             function renderMedications(medications) {
                 const medicationList = document.getElementById('medication-list');
                 medicationList.innerHTML = '';
-                if (medications.length === 0) {
+                if (!medications || medications.length === 0) {
                     medicationList.innerHTML = '<p>No medications added yet.</p>';
                     return;
                 }
@@ -661,7 +781,7 @@
             function renderEmergencyContacts(contacts) {
                 const emergencyList = document.getElementById('emergency-list');
                 emergencyList.innerHTML = '';
-                if (contacts.length === 0) {
+                if (!contacts || contacts.length === 0) {
                     emergencyList.innerHTML = '<p>No emergency contacts added yet.</p>';
                     return;
                 }
@@ -678,15 +798,28 @@
                 });
             }
 
-            // These functions will require backend support
             window.deleteMedication = async (index) => {
-                // Implement backend logic to delete medication by index
-                alert("Medication deletion not yet implemented in backend.");
+                if (confirm("Are you sure you want to delete this medication?")) {
+                    try {
+                        await fetch(`/delete_medication/${index}`, { method: 'DELETE' });
+                        alert("Medication deleted.");
+                        await loadData();
+                    } catch (error) {
+                        alert("Failed to delete medication.");
+                    }
+                }
             };
 
             window.deleteEmergencyContact = async (index) => {
-                // Implement backend logic to delete emergency contact by index
-                alert("Emergency contact deletion not yet implemented in backend.");
+                if (confirm("Are you sure you want to delete this emergency contact?")) {
+                    try {
+                        await fetch(`/delete_emergency_contact/${index}`, { method: 'DELETE' });
+                        alert("Emergency contact deleted.");
+                        await loadData();
+                    } catch (error) {
+                        alert("Failed to delete contact.");
+                    }
+                }
             };
         });
     </script>
