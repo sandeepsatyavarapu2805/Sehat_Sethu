@@ -122,18 +122,23 @@
             flex-direction: column;
             gap: 20px;
             background-color: var(--main-bg);
+            color: var(--text-dark);
             transition: background-color 0.3s;
         }
-
-        #profile, #appointment, #emergency {
-            display: none;
+        
+        body.dark #content {
+            color: var(--text-dark);
         }
 
-        #health {
-            display: flex;
-            flex-direction: column;
+        .tab-page {
+            display: none;
             flex-grow: 1;
-            gap: 15px;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .tab-page.active {
+            display: flex;
         }
 
         #chatbox {
@@ -158,6 +163,10 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             position: relative;
         }
+        
+        body.dark .chat-input-area {
+            background-color: var(--chat-bg-dark);
+        }
 
         #user-input {
             flex-grow: 1;
@@ -165,6 +174,10 @@
             outline: none;
             font-size: 1rem;
             background: transparent;
+            color: var(--text-dark);
+        }
+        
+        body.dark #user-input {
             color: var(--text-dark);
         }
 
@@ -183,18 +196,17 @@
             transition: background-color 0.2s;
         }
 
-        .msg-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 80%;
-        }
-
         .msg.bot {
             background-color: var(--bot-msg-bg);
             padding: 20px;
             border-radius: 20px;
             line-height: 1.6;
+            color: var(--text-dark);
+            max-width: 70%;
+        }
+        
+        body.dark .msg.bot {
+            background-color: var(--bot-msg-bg-dark);
             color: var(--text-dark);
         }
         
@@ -204,8 +216,9 @@
             border-radius: 20px;
             color: white;
             align-self: flex-end;
+            max-width: 70%;
         }
-        
+
         .bot-response-content {
             padding-bottom: 10px;
         }
@@ -216,11 +229,6 @@
             margin-bottom: 10px;
         }
 
-        .bot-list-item {
-            margin-left: 20px;
-            margin-bottom: 5px;
-        }
-
         .bot-disclaimer {
             font-size: 0.85rem;
             color: #666;
@@ -228,8 +236,8 @@
             padding-top: 10px;
             margin-top: 10px;
         }
-
-        .bot-disclaimer.dark-mode {
+        
+        body.dark .bot-disclaimer {
             color: #bbb;
         }
 
@@ -251,28 +259,59 @@
             transition: background-color 0.2s;
         }
         
-        .follow-up-questions button:hover {
-            background-color: #e9ecef;
-        }
-        
         body.dark .follow-up-questions button {
             background-color: #34495e;
             color: var(--text-light);
             border-color: #444;
         }
-        
-        body.dark .follow-up-questions button:hover {
-            background-color: #3c5471;
+
+        #profile-content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: var(--chat-bg);
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .bot-response-card {
-            background-color: var(--bot-msg-bg);
-            padding: 20px;
-            border-radius: 20px;
-            line-height: 1.6;
+        .profile-input-group {
+            margin-bottom: 15px;
+        }
+
+        .profile-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .profile-input-group input,
+        .profile-input-group select,
+        .profile-input-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--divider);
+            font-size: 1rem;
+            background-color: var(--main-bg);
             color: var(--text-dark);
-            max-width: 70%;
-            align-self: flex-start;
+        }
+
+        body.dark .profile-input-group input,
+        body.dark .profile-input-group select,
+        body.dark .profile-input-group textarea {
+            background-color: #283445;
+            border-color: #444;
+            color: var(--text-dark);
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--user-msg-bg);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
         }
 
     </style>
@@ -305,18 +344,8 @@
     <div id="content">
         <div id="health" class="tab-page active">
             <div id="chatbox">
-                <div class="bot-response-card">
-                    <div class="bot-response-content">
-                        <div class="bot-title">Managing Stress: Simple Tips</div>
-                        <ul>
-                            <li>**Stay Active:** Regular exercise is a great way to reduce stress.</li>
-                            <li>**Eat Well:** A balanced diet can help manage your mood.</li>
-                            <li>**Practice Deep Breathing:** Try inhaling deeply, holding, and exhaling slowly.</li>
-                        </ul>
-                    </div>
-                    <div class="bot-disclaimer">
-                        Remember, I'm an AI assistant and not a medical professional. It's always best to consult with a doctor or healthcare provider for personal medical advice.
-                    </div>
+                <div class="msg bot">
+                    Hello! I'm Health Assistant, an AI health companion. I can provide general health information and wellness tips. How can I help you today?
                 </div>
                 
                 <div class="follow-up-questions">
@@ -333,87 +362,147 @@
         </div>
 
         <div id="profile" class="tab-page">
+            <div id="profile-content">
+                <div class="profile-input-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" placeholder="Your full name" />
+                </div>
+                <div class="profile-input-group">
+                    <label for="age">Age</label>
+                    <input type="number" id="age" placeholder="Your age" />
+                </div>
+                <div class="profile-input-group">
+                    <label for="conditions">Health Conditions</label>
+                    <textarea id="conditions" placeholder="Any existing health conditions"></textarea>
+                </div>
+                <button class="save-button" onclick="saveProfile()">Save Profile</button>
             </div>
+        </div>
+
         <div id="medications" class="tab-page">
+            <div id="medications-content">
+                <h3>Medications</h3>
+                <p>This page will allow you to track your medication schedule and dosages.</p>
             </div>
+        </div>
+
         <div id="emergency" class="tab-page">
+            <div id="emergency-content">
+                <h3>Emergency Contacts</h3>
+                <p>This page will allow you to store and access your emergency contact numbers quickly.</p>
             </div>
+        </div>
     </div>
 
-<script>
-    document.body.classList.add('dark');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll(".tab");
+            const pages = document.querySelectorAll(".tab-page");
+            const chatbox = document.getElementById("chatbox");
+            const userInput = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-button");
 
-    const tabs = document.querySelectorAll(".tab");
-    const pages = document.querySelectorAll(".tab-page");
+            // --- Sidebar and Tab Logic ---
+            tabs.forEach(tab => {
+                tab.addEventListener("click", () => {
+                    // Remove 'active' class from all tabs
+                    tabs.forEach(t => t.classList.remove("active"));
+                    // Add 'active' class to the clicked tab
+                    tab.classList.add("active");
 
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            tabs.forEach(t => t.classList.remove("active"));
-            tab.classList.add("active");
-            
-            pages.forEach(p => p.classList.remove("active"));
-            const targetPage = document.getElementById(tab.dataset.tab);
-            if (targetPage) {
-                targetPage.classList.add("active");
-            }
-        });
-    });
-
-    const chatbox = document.getElementById("chatbox");
-    const userInput = document.getElementById("user-input");
-    const sendButton = document.getElementById("send-button");
-
-    if (sendButton && userInput) {
-        sendButton.addEventListener("click", sendMessage);
-        userInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                sendMessage();
-            }
-        });
-    }
-
-    function sendMessage() {
-        const message = userInput.value.trim();
-        if (message) {
-            appendMessage("user", message);
-            userInput.value = "";
-            
-            setTimeout(() => {
-                appendMessage("bot", "Hello! I am Health Assistant. How can I help you?");
-            }, 1000);
-        }
-    }
-
-    function appendMessage(sender, message) {
-        const messageDiv = document.createElement("div");
-        messageDiv.classList.add("msg", sender);
-        messageDiv.textContent = message;
-        chatbox.appendChild(messageDiv);
-        chatbox.scrollTop = chatbox.scrollHeight;
-    }
-
-    const followUpButtons = document.querySelectorAll(".follow-up-questions button");
-    if (followUpButtons) {
-        followUpButtons.forEach(button => {
-            button.addEventListener("click", () => {
-                userInput.value = button.textContent;
-                sendMessage();
+                    // Hide all pages
+                    pages.forEach(p => p.classList.remove("active"));
+                    // Show the corresponding page
+                    const targetPage = document.getElementById(tab.dataset.tab);
+                    if (targetPage) {
+                        targetPage.classList.add("active");
+                    }
+                });
             });
+
+            // --- Chat Functionality ---
+            if (sendButton && userInput) {
+                sendButton.addEventListener("click", sendMessage);
+                userInput.addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") {
+                        sendMessage();
+                    }
+                });
+            }
+
+            async function sendMessage() {
+                const message = userInput.value.trim();
+                if (!message) return; // Don't send empty messages
+
+                appendMessage("user", message);
+                userInput.value = "";
+                
+                try {
+                    const response = await fetch("/ask", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ message })
+                    });
+                    const data = await response.json();
+                    appendMessage("bot", data.reply);
+                } catch (error) {
+                    appendMessage("bot", "Sorry, something went wrong. Please check your network connection or the server.");
+                }
+            }
+
+            function appendMessage(sender, message) {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("msg", sender);
+                
+                // For a more structured response, you can parse markdown
+                // For now, we'll just set the text content
+                messageDiv.textContent = message;
+
+                chatbox.appendChild(messageDiv);
+                chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the bottom
+            }
+
+            // --- Follow-up Questions Functionality ---
+            const followUpButtons = document.querySelectorAll(".follow-up-questions button");
+            if (followUpButtons) {
+                followUpButtons.forEach(button => {
+                    button.addEventListener("click", () => {
+                        userInput.value = button.textContent;
+                        sendMessage();
+                    });
+                });
+            }
         });
-    }
 
-    pages.forEach(p => p.classList.remove("active"));
-    document.getElementById('health').classList.add("active");
+        // --- Placeholder Functions for Saving Data ---
+        // These will be connected to your Flask backend.
+        async function saveProfile() {
+            const profileData = {
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                conditions: document.getElementById('conditions').value
+            };
 
-    function saveProfile() {
-        alert("Profile saved!");
-    }
-    function saveAppointment() {
-        alert("Appointment saved!");
-    }
-    function saveEmergency() {
-        alert("Emergency numbers saved!");
-    }
+            try {
+                const response = await fetch("/save_profile", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(profileData)
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                alert("Failed to save profile. Please try again.");
+            }
+        }
+
+        async function saveAppointment() {
+            // Your saving logic here
+        }
+
+        async function saveEmergency() {
+            // Your saving logic here
+        }
     </script>
 </body>
 </html>
