@@ -4,7 +4,7 @@ import os, json, datetime
 
 app = Flask(__name__)
 
-API_KEY = os.getenv("AIzaSyApGfglwT0LOAOBLN4CQOaDqmtgDlLKn-k", None)
+API_KEY = os.getenv("AIzaSyApGfglwT0LOAOBLN4CQOaDqmtgDlLKn-k")
 if not API_KEY:
     raise ValueError("⚠️ GOOGLE_API_KEY is not set.")
 
@@ -35,10 +35,13 @@ def ask():
     try:
         response = chat.send_message(user_input)
         bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+
         with open(LOG_FILE, "a", encoding="utf-8") as log:
             log.write(f"[{datetime.datetime.now()}]\nYou: {user_input}\nHealthBot: {bot_text}\n\n")
+
     except Exception:
         bot_text = "Sorry, something went wrong."
+    
     return jsonify({"reply": bot_text})
 
 @app.route("/save_profile", methods=["POST"])
