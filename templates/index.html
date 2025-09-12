@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HealthBot</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #16a085;
+            --bg-light: #f5f5f5;
+            --bg-dark: #1e1e1e;
+            --text-light: #ffffff;
+            --text-dark: #222222;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.light { background: var(--bg-light); color: var(--text-dark); }
+        body.dark { background: var(--bg-dark); color: var(--text-light); }
+
+        /* Sidebar */
+        #sidebar {
+            width: 300px;
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        #sidebar h2 { margin-top: 0; text-align: center; }
+        #sidebar h3 { margin-top: 20px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+
+        input, textarea, button {
+            margin: 8px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2980b9; }
+        #theme-toggle { background: var(--accent); margin-top: auto; }
+
+        /* Chat area */
+        #content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #chatbox {
+            flex: 1;
+            border-radius: 12px;
+            padding: 15px;
+            background: white;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        body.dark #chatbox { background: #2c2c2c; border: 1px solid #555; }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #aaa;
+        }
+        .chat-input button {
+            padding: 12px 20px;
+            border-radius: 8px;
+        }
+
+        /* Messages */
+        .msg {
+            margin: 8px 0;
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 75%;
+            line-height: 1.4;
+        }
+        .msg.you { background: #3498db; color: white; align-self: flex-end; }
+        .msg.bot { background: #ecf0f1; color: black; align-self: flex-start; }
+        body.dark .msg.bot { background: #444; color: white; }
+    </style>
+</head>
+<body class="light">
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <h2>🩺 Health Assistant</h2>
+
+        <h3>👤 Profile</h3>
+        <input id="name" placeholder="Name" />
+        <input id="age" placeholder="Age" type="number" />
+        <input id="conditions" placeholder="Health conditions" />
+        <button onclick="saveProfile()">Save Profile</button>
+
+        <h3>📅 Appointment</h3>
+        <input id="appt_date" type="date" />
+        <input id="appt_time" type="time" />
+        <input id="appt_reason" placeholder="Reason" />
+        <button onclick="saveAppointment()">Save Appointment</button>
+
+        <h3>🚨 Emergency</h3>
+        <textarea id="emergency" placeholder="Enter numbers separated by commas"></textarea>
+        <button onclick="saveEmergency()">Save Emergency Numbers</button>
+
+        <button id="theme-toggle" onclick="toggleTheme()">🌙 Toggle Theme</button>
+    </div>
+
+    <!-- Chat Area -->
+    <div id="content">
+        <h2>💬 HealthBot</h2>
+        <div id="chatbox"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function appendMessage(sender, text) {
+            const chatbox = document.getElementById("chatbox");
+            const msg = document.createElement("div");
+            msg.className = "msg " + (sender === "You" ? "you" : "bot");
+            msg.textContent = text;
+            chatbox.appendChild(msg);
+            chatbox.scrollTop = chatbox.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("user-input");
+            const message = input.value.trim();
+            if (!message) return;
+            appendMessage("You", message);
+            input.value = "";
+
+            const response = await fetch("/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            appendMessage("HealthBot", data.reply);
+        }
+
+        async function saveProfile() {
+            const profile = {
+                name: document.getElementById("name").value,
+                age: document.getElementById("age").value,
+                conditions: document.getElementById("conditions").value
+            };
+            await fetch("/save_profile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(profile)
+            });
+            alert("Profile saved!");
+        }
+
+        async function saveAppointment() {
+            const appointment = {
+                date: document.getElementById("appt_date").value,
+                time: document.getElementById("appt_time").value,
+                reason: document.getElementById("appt_reason").value
+            };
+            await fetch("/save_appointment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(appointment)
+            });
+            alert("Appointment saved!");
+        }
+
+        async function saveEmergency() {
+            const contacts = document.getElementById("emergency").value.split(",");
+            await fetch("/save_emergency", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contacts })
+            });
+            alert("Emergency contacts saved!");
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("dark");
+            document.body.classList.toggle("light");
+        }
+    </script>
+</body>
+</html>
