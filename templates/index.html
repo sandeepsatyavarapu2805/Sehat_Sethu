@@ -1446,70 +1446,82 @@
                 `;
             }
 
-            async init() {
-                const chatForm = document.getElementById('chatForm');
-                const chatInput = document.getElementById('chatInput');
-                const chatMessages = document.getElementById('chatMessages');
+async init() {
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
 
-                // Auto-resize textarea
-                chatInput.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-                });
+    // Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
 
-                // Send message
-                chatForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const message = chatInput.value.trim();
-                    if (!message) return;
+    // Send message
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
 
-                    this.addMessage(message, 'user');
-                    chatInput.value = '';
-                    chatInput.style.height = 'auto';
+        // Add user message
+        this.addMessage(message, 'user');
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
 
- // Show thinking indicator
-                    const thinkingDiv = this.addThinkingIndicator();
+        // Show thinking indicator
+        const thinkingDiv = this.addThinkingIndicator();
 
-                    try {
-                        // Send message to backend
-                        const response = await app.apiCall('/ask', 'POST', { message });
-                        const botResponse = response.reply;
-                        
-                        // Remove thinking indicator
-                        thinkingDiv.remove();
-                        
-                        // Add bot response
-                        this.addMessage(botResponse, 'bot');
-                    } catch (error) {
-                        // Remove thinking indicator
-                        thinkingDiv.remove();
-                        
-                        // Add error message
-                        this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
-                    }
-                });
-            }
+        try {
+            // Send message to backend
+            const response = await app.apiCall('/ask', 'POST', { message });
+            const botResponse = response.reply;
 
-            addMessage(text, sender) {
-                const chatMessages = document.getElementById('chatMessages');
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${sender} fade-in`;
-                
-                const avatar = sender === 'user' ? 
-                    '<i class="fas fa-user"></i>' : 
-                    '<i class="fas fa-robot"></i>';
+            // Remove thinking indicator
+            thinkingDiv.remove();
 
-                messageDiv.innerHTML = `
-                    <div class="message-avatar">${avatar}</div>
-                    <div class="message-content">
-                        <p class="message-text">${marked.parse(text)}</p>
-                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                    </div>
-                `;
+            // Add bot response
+            this.addMessage(botResponse, 'bot');
+        } catch (error) {
+            thinkingDiv.remove();
+            this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+        }
+    });
 
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+    // Edit listener for user messages
+    chatMessages.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+            const messageDiv = e.target.closest('.message');
+            const messageText = messageDiv.querySelector('.message-text');
+            const oldText = messageText.innerText;
+            const editId = messageDiv.dataset.id;
+
+            const newText = prompt('Edit your message:', oldText);
+            if (!newText) return;
+
+            // Update UI immediately
+            messageText.innerText = newText;
+
+            // Send edited message to backend
+            fetch("/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: newText,
+                    edit_id: editId
+                }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                // Update bot reply (assumes bot message div follows user div)
+                const botReplyDiv = messageDiv.nextElementSibling;
+                if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
+                    botReplyDiv.querySelector('.message-text').innerText = data.reply;
+                }
+            });
+        }
+    });
+}
+
 
             addThinkingIndicator() {
                 const chatMessages = document.getElementById('chatMessages');
@@ -2243,7 +2255,7 @@
                             </div>
                         </div>
                         <div class="p-8">
-                            <div id="wellnessTipDisplay" class="text-lg italic mb-6 text-gray-800 dark:text-gray-200">
+                            <div id="wellnessTipDisplay" class="text-lg font-bold font-sans mb-6 text-blue-900 dark:text-blue-300">
                                 Loading your personalized tip...
                             </div>
                             <button class="btn btn-primary" id="refreshTip">

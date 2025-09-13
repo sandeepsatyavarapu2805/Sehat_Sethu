@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, jsonify , session
 import google.generativeai as genai
 import os, json, datetime
+from google_trans_new import google_translator
+
+translator = google_translator()
 
 app = Flask(__name__)
 
@@ -17,6 +20,41 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 LOG_FILE = "chat_log.txt"
 USER_DATA_FILE = "user_data.json"
+
+def update_log(edit_id: str, user_input: str, bot_text: str):
+    """
+    Updates a previously sent message in the chat log.
+    Replaces both the user message and the bot reply.
+    """
+    # Load existing log
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            try:
+                chat_history = json.load(f)
+            except json.JSONDecodeError:
+                chat_history = []
+    else:
+        chat_history = []
+
+    # Find the message by edit_id and update it
+    for entry in chat_history:
+        if entry.get("id") == edit_id:
+            entry["user"] = user_input
+            entry["bot"] = bot_text
+            entry["timestamp"] = datetime.datetime.now().isoformat()
+            break
+    else:
+        # If not found, append as new
+        chat_history.append({
+            "id": edit_id,
+            "user": user_input,
+            "bot": bot_text,
+            "timestamp": datetime.datetime.now().isoformat()
+        })
+
+    # Save the updated log
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump(chat_history, f, ensure_ascii=False, indent=2)
 
 def load_user_data():
     """Loads user data from the JSON file."""
@@ -87,44 +125,127 @@ def home():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    """Handles chat messages and returns an AI response."""
     user_input = request.json.get("message", "").strip()
+    edit_id = request.json.get("edit_id")
+    if edit_id is not None:
+        edit_id = str(edit_id)  # ensure it’s always a string    
     current_user_data = load_user_data()
     system_instruction = create_system_instruction(current_user_data)
 
-    # 🔸 NEW: handle language switching
-    if "telugu" in user_input.lower():
-        session["lang"] = "te"
-        return jsonify({"reply": "సరే, ఇప్పుడు నేను తెలుగులో సమాధానం ఇస్తాను."})
-
-    if "english" in user_input.lower():
-        session["lang"] = "en"
-        return jsonify({"reply": "Okay, I will reply in English now."})
-
     lang = session.get("lang", "en")  # default English
 
-    # 🔸 NEW: wrap input depending on language
+    # Translate input to English if needed
     if lang == "te":
-        formatted_input = (
-            f"Please reply in Telugu.\n\nUser: {user_input}\n\n"
-            f"HealthBot instructions: {system_instruction}"
-        )
+        user_input_en = translator.translate(user_input, lang_tgt='en')
     else:
-        formatted_input = (
-            f"User: {user_input}\n\n"
-            f"HealthBot instructions: {system_instruction}"
-        )
+        user_input_en = user_input 
 
-    try:
+    # --- 1️⃣ EMERGENCY CHECK ---
+    emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
+    if any(word.lower() in user_input_en.lower() for word in emergency_keywords):
+        emergency_message = (
+            "⚠️ Emergency detected!\n"
+            "Please call 108 immediately for an ambulance.\n"
+            "If possible, go to the nearest hospital right away.\n"
+            "Do not wait — seek help immediately!"
+        )
+        if lang == "te":
+            emergency_message = translator.translate(emergency_message, lang_tgt='te')
+        return jsonify({"reply": emergency_message})
+    
+    if any(word.lower() in user_input_en.lower() for word in ["stress", "anxious", "depressed", "sad", "low mood"]):
+        prompt = (
+        "You are HealthBot, a friendly AI assistant. "
+        "The user is feeling stressed or anxious. "
+        "Provide **3 practical mental health tips**, each 1-2 sentences. "
+        "Do not repeat previous tips. "
+        "Add a friendly tone and include a disclaimer: "
+        "'This is general advice, not a substitute for professional help.'"
+        f"\nUser input: {user_input_en}"
+    )
+    response = chat.send_message(prompt)
+    bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+    if lang == "te":
+        bot_text = translator.translate(bot_text, lang_tgt='te')
+        return jsonify({"reply": bot_text})
+    
+    if any(word.lower() in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
+        prompt = (
+        "You are HealthBot, a friendly AI assistant. "
+        "The user asked about nutrition or healthy lifestyle. "
+        "Provide **3 practical tips** based on the input. "
+        "Include simple advice suitable for everyday life. "
+        "Add a friendly disclaimer: 'This is general advice, not a substitute for professional help.'"
+        f"\nUser input: {user_input_en}"
+    )
+    response = chat.send_message(prompt)
+    bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+    if lang == "te":
+        bot_text = translator.translate(bot_text, lang_tgt='te')
+        return jsonify({"reply": bot_text})
+
+    if "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
+        prompt = (
+        "You are HealthBot. Provide a **new health quiz question or tip** for the user. "
+        "Keep it engaging, educational, and safe. "
+        "Do not repeat previous questions. "
+        "Add a short disclaimer if necessary."
+        f"\nUser input: {user_input_en}"
+    )
+    response = chat.send_message(prompt)
+    bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+    if lang == "te":
+        bot_text = translator.translate(bot_text, lang_tgt='te')
+        return jsonify({"reply": bot_text})
+    
+    # --- 2️⃣ MEDICINE INFO CHECK ---
+    medicine_keywords = ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]  # expand as needed
+    if any(word.lower() in user_input_en.lower() for word in medicine_keywords):
+        disclaimer = (
+            "⚠️ I can provide **general information about medicines only**. "
+            "I cannot give personalized dosage, treatment plans, or recommend medicines for your condition. "
+            "Always consult a doctor or pharmacist before taking any medicine."
+        )
+        formatted_input = (
+            f"{disclaimer}\n\n"
+            f"User question: {user_input_en}\n"
+            "Instructions: Provide general info about the medicine, including uses, common dosage ranges, side effects, and precautions."
+        )
         response = chat.send_message(formatted_input)
         bot_text = getattr(response, "text", "") or getattr(response, "last", "")
 
+    # --- 3️⃣ SYMPTOM CHECKER ---
+    elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
+        disclaimer = (
+            "⚠️ I can provide general information only. "
+            "This is not a substitute for medical advice. Consult a doctor if symptoms persist."
+        )
+        formatted_input = (
+            f"{disclaimer}\n\n"
+            f"User symptoms: {user_input_en}\n"
+            "Instructions: Suggest possible general causes and safe home remedies."
+        )
+        response = chat.send_message(formatted_input)
+        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+
+    # --- 4️⃣ DEFAULT CHAT / WELLNESS / MENTAL HEALTH / NUTRITION ETC. ---
+    else:
+        formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
+        response = chat.send_message(formatted_input)
+        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+
+    # Translate back to Telugu if needed
+    if lang == "te":
+        bot_text = translator.translate(bot_text, lang_tgt='te')
+
+    if edit_id:
+    # Replace old message & bot reply in your log or database
+        update_log(edit_id, user_input, bot_text)
+    else:
         with open(LOG_FILE, "a", encoding="utf-8") as log:
             log.write(f"[{datetime.datetime.now()}]\nUser: {user_input}\nHealthBot: {bot_text}\n\n")
 
-    except Exception as e:
-        bot_text = f"Sorry, something went wrong: {e}"
-    
+    # Return bot response
     return jsonify({"reply": bot_text})
 
 @app.route("/get_user_data", methods=["GET"])
