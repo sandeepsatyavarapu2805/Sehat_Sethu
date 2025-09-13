@@ -2309,13 +2309,14 @@
         });
 
         });
-        document.addEventListener("DOMContentLoaded", async () => {
+    document.addEventListener("DOMContentLoaded", async () => {
+    // Create app state
+    window.app = new AppState();
 
-        // Create app + page manager
-    const pageManager = new PageManager();
-    window.pageManager = pageManager; // expose globally if needed
+    // Create page manager
+    window.pageManager = new PageManager();
 
-    // Load default page (chat)
+    // Load the default page (chat)
     await pageManager.loadPage("chat");
 
     // Sidebar navigation
@@ -2339,10 +2340,14 @@
         app.setTheme(e.target.checked);
     });
 
-    // Apply saved theme on reload
+    // Apply saved theme
     const savedTheme = localStorage.getItem("theme");
     app.setTheme(savedTheme === "dark");
     themeToggle.checked = savedTheme === "dark";
+
+    // Load daily wellness tip
+    const tip = await app.getWeatherTip();
+    document.getElementById("wellnessTipText").textContent = tip;
 });
     </script>
 </body>
