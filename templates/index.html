@@ -3,1357 +3,2267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sehat Sethu</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Sehat Sethu - Ultimate Health Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* --- Root Variables for Theming --- */
+        /* --- Root Variables for Advanced Theming --- */
         :root {
+            /* Light Theme Colors */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --sidebar-bg: #ffffff;
+            --sidebar-hover: #f1f5f9;
+            --sidebar-active: #3b82f6;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        .dark-theme {
             /* Dark Theme Colors */
-            --sidebar-bg-dark: #1e2630;
-            --sidebar-item-bg-dark: #283445;
-            --sidebar-active-bg-dark: #3c5471;
-            --sidebar-text-dark: #ecf0f1;
-            --main-bg-dark: #131b25;
-            --chat-bg-dark: #1e2630;
-            --bot-msg-bg-dark: #283445;
-            --user-msg-bg-dark: #3c5471;
-            --text-dark-dark: #ecf0f1;
-            --text-light-dark: #f1f1f1;
-            --tip-bg-dark: #34495e;
-            --tip-icon-dark: #f1f1f1;
-            --divider-dark: #445566;
-            --button-bg-dark: #3c5471;
-            --button-hover-dark: #557291;
-            --input-bg-dark: #283445;
-
-            /* Light Theme Colors (Dynamically adjusted) */
-            --sidebar-bg-light: #f1f1f1;
-            --sidebar-item-bg-light: #e0e0e0;
-            --sidebar-active-bg-light: #c5c5c5;
-            --sidebar-text-light: #333;
-            --main-bg-light: #e5e5e5;
-            --chat-bg-light: #f1f1f1;
-            --bot-msg-bg-light: #e0e0e0;
-            --user-msg-bg-light: #c5c5c5;
-            --text-dark-light: #333;
-            --text-light-light: #333;
-            --tip-bg-light: #d6d6d6;
-            --tip-icon-light: #333;
-            --divider-light: #b0b0b0;
-            --button-bg-light: #c5c5c5;
-            --button-hover-light: #a0a0a0;
-            --input-bg-light: #e0e0e0;
-
-            /* Common Colors */
-            --primary-color: #4CAF50;
-            --delete-color: #f44336;
-            --add-color: #2196F3;
-            --modify-color: #ff9800;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-active: #3b82f6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-light: #334155;
+            --border-medium: #475569;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
         }
 
         /* --- Global Styles --- */
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             margin: 0;
             padding: 0;
-            display: flex;
-            background-color: var(--main-bg-dark);
-            color: var(--text-dark-dark);
-            height: 100vh;
-            overflow: hidden;
-            transition: all 0.5s ease-in-out;
-            user-select: none;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
         }
 
-        /* Light Theme Application */
-        body.light-theme {
-            background-color: var(--main-bg-light);
-            color: var(--text-dark-light);
-        }
-        body.light-theme .sidebar { background-color: var(--sidebar-bg-light); border-right-color: var(--divider-light); }
-        body.light-theme .sidebar-header h1 { color: var(--primary-color); }
-        body.light-theme .sidebar-toggle-btn, body.light-theme .theme-toggle-btn { color: var(--sidebar-text-light); }
-        body.light-theme .sidebar-item { background-color: var(--sidebar-item-bg-light); }
-        body.light-theme .sidebar-item:hover { background-color: var(--sidebar-active-bg-light); }
-        body.light-theme .sidebar-item.active { background-color: var(--sidebar-active-bg-light); }
-        body.light-theme .sidebar-item i, body.light-theme .sidebar-item span { color: var(--sidebar-text-light); }
-        body.light-theme .health-tip-card { background-color: var(--bot-msg-bg-light); }
-        body.light-theme .health-tip-card h3 { color: var(--primary-color); }
-        body.light-theme .chat-container { background-color: var(--chat-bg-light); }
-        body.light-theme .chat-log::-webkit-scrollbar-thumb { background-color: var(--sidebar-active-bg-light); }
-        body.light-theme .message.bot { background-color: var(--bot-msg-bg-light); color: var(--text-dark-light); }
-        body.light-theme .message.user { background-color: var(--user-msg-bg-light); color: var(--text-light-light); }
-        body.light-theme #thinking-indicator { color: var(--text-light-light); }
-        body.light-theme .input-area input { background-color: var(--input-bg-light); color: var(--text-dark-light); }
-        body.light-theme .input-area button { background-color: var(--button-bg-light); color: var(--sidebar-text-light); }
-        body.light-theme .input-area button:hover { background-color: var(--button-hover-light); }
-        body.light-theme .profile-form, body.light-theme .medication-form, body.light-theme .emergency-form, body.light-theme .appointment-form { background-color: var(--chat-bg-light); }
-        body.light-theme .profile-input-group label, body.light-theme .medication-input-group label, body.light-theme .emergency-input-group label, body.light-theme .appointment-input-group label { color: var(--text-dark-light); }
-        body.light-theme .profile-input-group input, body.light-theme .medication-input-group input, body.light-theme .emergency-input-group input, body.light-theme .appointment-input-group input { background-color: var(--input-bg-light); color: var(--text-dark-light); }
-        body.light-theme .add-field-btn { background-color: var(--button-bg-light); color: var(--sidebar-text-light); }
-        body.light-theme .add-field-btn:hover { background-color: var(--button-hover-light); }
-        body.light-theme .appointment-item, body.light-theme .medication-item, body.light-theme .emergency-item { background-color: var(--bot-msg-bg-light); }
-        body.light-theme .item-details p { color: #555; }
-        body.light-theme .notification-info { background-color: var(--tip-bg-light); color: var(--text-dark-light); }
-        body.light-theme .modal-content { background-color: var(--chat-bg-light); }
-        body.light-theme .modal-content p { color: var(--text-dark-light); }
-        body.light-theme .modal-cancel-btn { background-color: var(--button-bg-light); color: var(--sidebar-text-light); }
-        body.light-theme .modal-cancel-btn:hover { background-color: var(--button-hover-light); }
-
-        /* --- Sidebar and Main Layout --- */
+        /* --- Advanced Sidebar --- */
         .sidebar {
             width: 280px;
-            background-color: var(--sidebar-bg-dark);
-            padding: 20px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--divider-dark);
-            transition: width 0.5s ease-in-out;
-            flex-shrink: 0;
-            overflow-y: auto; /* Fix: Enable vertical scrolling for the sidebar */
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-light);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
         }
 
         .sidebar::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background-color: var(--sidebar-active-bg-dark);
-            border-radius: 4px;
+            background-color: var(--border-medium);
+            border-radius: 3px;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
         }
 
         .sidebar-header {
-            text-align: center;
-            margin-bottom: 20px;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            white-space: nowrap;
         }
+
+        .sidebar-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-header .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
         .sidebar-header h1 {
-            color: var(--primary-color);
+            font-size: 1.5rem;
+            font-weight: 700;
             margin: 0;
-            font-size: 1.5em;
-            transition: all 0.5s ease-in-out;
+            color: var(--text-primary);
+            transition: opacity 0.3s ease;
         }
-        .sidebar-toggle-btn {
+
+        .sidebar.collapsed .sidebar-header h1 {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar-toggle {
             background: none;
             border: none;
-            color: var(--sidebar-text-dark);
-            font-size: 1.2em;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
             cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
         }
-        .theme-toggle-btn {
-            background: none;
-            border: none;
-            color: var(--sidebar-text-dark);
-            font-size: 1.2em;
-            cursor: pointer;
-            margin-top: auto;
-            align-self: center;
-            transition: transform 0.3s ease;
+
+        .sidebar-toggle:hover {
+            background-color: var(--sidebar-hover);
+            color: var(--text-primary);
         }
-        .theme-toggle-btn:hover {
-            transform: scale(1.1);
+
+        .sidebar-menu {
+            padding: 1rem 0;
+            list-style: none;
+            margin: 0;
         }
-        .sidebar-item {
+
+        .sidebar-menu li {
+            margin: 0.25rem 0;
+        }
+
+        .sidebar-menu a {
             display: flex;
             align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            background-color: var(--sidebar-item-bg-dark);
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .sidebar-item:hover {
-            background-color: var(--sidebar-active-bg-dark);
-        }
-        .sidebar-item.active {
-            background-color: var(--sidebar-active-bg-dark);
-            border-left: 4px solid var(--primary-color);
-            padding-left: 11px;
-        }
-        .sidebar-item i {
-            margin-right: 15px;
-            font-size: 1.2em;
-            color: var(--sidebar-text-dark);
-            transition: margin-right 0.5s ease-in-out;
-        }
-        .sidebar-item span {
-            color: var(--sidebar-text-dark);
-            font-weight: 500;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .health-tip-card {
-            background-color: var(--bot-msg-bg-dark);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.5s ease-in-out;
-        }
-        .health-tip-card h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-        .main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow-y: hidden;
-        }
-
-        /* --- Responsive Sidebar --- */
-        body.sidebar-hidden .sidebar { width: 70px; }
-        body.sidebar-hidden .sidebar-header h1,
-        body.sidebar-hidden .sidebar-item span,
-        body.sidebar-hidden .health-tip-card { display: none; }
-        body.sidebar-hidden .sidebar-item { justify-content: center; }
-        body.sidebar-hidden .sidebar-item i { margin-right: 0; }
-
-        /* --- Chat Container --- */
-        .chat-container {
-            flex-grow: 1;
-            background-color: var(--chat-bg-dark);
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .chat-log {
-            flex-grow: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            padding-right: 10px;
-        }
-        .chat-log::-webkit-scrollbar { width: 8px; }
-        .chat-log::-webkit-scrollbar-thumb {
-            background-color: var(--sidebar-active-bg-dark);
-            border-radius: 4px;
-        }
-        .message-row {
-            display: flex;
-            margin-bottom: 15px;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .message-row.bot { justify-content: flex-start; }
-        .message-row.user { justify-content: flex-end; }
-        .message {
-            max-width: 70%;
-            padding: 15px;
-            border-radius: 20px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            font-size: 1em;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 0;
             position: relative;
         }
-        .message.user:hover {
-            cursor: pointer;
-            filter: brightness(1.1);
-        }
-        .message.bot {
-            background-color: var(--bot-msg-bg-dark);
-            color: var(--text-dark-dark);
-            border-bottom-left-radius: 5px;
-        }
-        .message.user {
-            background-color: var(--user-msg-bg-dark);
-            color: var(--text-light-dark);
-            border-bottom-right-radius: 5px;
-        }
-        #thinking-indicator {
-            display: none;
-            padding: 15px;
-            margin-top: 15px;
-            font-style: italic;
-            color: var(--text-light-dark);
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
-        .input-area {
-            display: flex;
-            margin-top: 20px;
-        }
-        .input-area input {
-            flex-grow: 1;
-            padding: 15px;
-            border-radius: 25px;
-            border: none;
-            background-color: var(--input-bg-dark);
-            color: var(--text-dark-dark);
-            font-size: 1em;
-            outline: none;
-            padding-left: 20px;
-        }
-        .input-area button {
-            background-color: var(--button-bg-dark);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin-left: 10px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .input-area button:hover {
-            background-color: var(--button-hover-dark);
+
+        .sidebar-menu a i {
+            width: 20px;
+            text-align: center;
+            margin-right: 0.75rem;
+            font-size: 1.1rem;
         }
 
-        /* --- Tab Containers and Forms --- */
-        .profile-container, .medication-container, .emergency-container, .appointments-container {
-            display: none;
-            flex-grow: 1;
-            flex-direction: column;
-            overflow-y: auto;
-            padding-right: 10px;
+        .sidebar-menu a:hover {
+            background-color: var(--sidebar-hover);
+            color: var(--text-primary);
         }
-        .profile-container.active, .medication-container.active, .emergency-container.active, .appointments-container.active {
-            display: flex;
-        }
-        .profile-form, .medication-form, .emergency-form, .appointment-form {
-            background-color: var(--chat-bg-dark);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .profile-input-group, .medication-input-group, .emergency-input-group, .appointment-input-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .profile-input-group label, .medication-input-group label, .emergency-input-group label, .appointment-input-group label {
+
+        .sidebar-menu a.active {
+            background-color: var(--sidebar-active);
+            color: white;
             font-weight: 500;
-            margin-bottom: 5px;
-            color: var(--text-dark-dark);
-        }
-        .profile-input-group input, .medication-input-group input, .emergency-input-group input, .appointment-input-group input {
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--divider-dark);
-            background-color: var(--input-bg-dark);
-            color: var(--text-dark-dark);
         }
 
-        /* --- Action Buttons --- */
-        .action-buttons {
+        .sidebar-menu a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: var(--accent-secondary);
+        }
+
+        .sidebar.collapsed .sidebar-menu a span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .sidebar-menu a i {
+            margin-right: 0;
+        }
+
+        /* --- Wellness Tips Card --- */
+        .wellness-tips {
+            margin: 1rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 1rem;
+            color: white;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .wellness-tips h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .wellness-tips p {
+            margin: 0;
+            font-size: 0.875rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .sidebar.collapsed .wellness-tips {
+            display: none;
+        }
+
+        /* --- Main Content Area --- */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            background-color: var(--bg-primary);
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+        }
+
+        .content-header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
             display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
         }
-        .action-buttons button, .add-field-btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .action-buttons button:hover, .add-field-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        .save-btn {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        .delete-btn {
-            background-color: var(--delete-color);
-            color: white;
-        }
-        .add-btn {
-            background-color: var(--add-color);
-            color: white;
-        }
-        .modify-btn {
-            background-color: var(--modify-color);
-            color: white;
-        }
-        .add-field-btn {
-            background-color: var(--button-bg-dark);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        .add-field-btn:hover { background-color: var(--button-hover-dark); }
-        .add-field-btn-emergency { margin-bottom: 10px; }
 
-        /* --- Item Lists --- */
-        .appointments-list, .medications-list, .emergency-list {
+        .content-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .theme-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-toggle {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-medium);
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .theme-toggle input:checked + .theme-slider {
+            background-color: var(--accent-primary);
+        }
+
+        .theme-toggle input:checked + .theme-slider:before {
+            transform: translateX(26px);
+        }
+
+        .content-body {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- Advanced Card Components --- */
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        /* --- Form Components --- */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-medium);
+            border-radius: 0.5rem;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        /* --- Button Components --- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background-color: var(--accent-secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-medium);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* --- Chat Interface --- */
+        .chat-container {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-        }
-        .appointment-item, .medication-item, .emergency-item {
-            background-color: var(--bot-msg-bg-dark);
-            padding: 15px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 0.5s ease-in-out;
-        }
-        .item-actions {
-            display: flex;
-            gap: 10px;
-        }
-        .item-actions button {
-            transition: transform 0.2s;
-        }
-        .item-actions button:hover {
-            transform: scale(1.1);
-        }
-        .item-details { flex-grow: 1; }
-        .item-details h4 { margin: 0; }
-        .item-details p {
-            margin: 5px 0 0;
-            color: #ccc;
+            height: calc(100vh - 200px);
+            background-color: var(--bg-secondary);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
         }
 
-        /* --- Notification Bar and Button --- */
-        .notification-info {
-            background-color: var(--tip-bg-dark);
-            color: var(--text-dark-dark);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--border-medium);
+            border-radius: 3px;
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            max-width: 80%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: pulse-border 1.5s infinite;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
         }
-        .notification-info button {
-            background: linear-gradient(45deg, #1abc9c, #16a085);
-            border: none;
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
-            white-space: nowrap;
-        }
-        .notification-info button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-        }
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(26, 188, 156, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(26, 188, 156, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(26, 188, 156, 0); }
         }
 
-        /* --- Custom Modal --- */
+        .message.bot .message-avatar {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .message-content {
+            background-color: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 1rem;
+            border-bottom-right-radius: 0.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border-bottom-right-radius: 1rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .message-text {
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .message.user .message-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-light);
+            background-color: var(--bg-secondary);
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-medium);
+            border-radius: 1.5rem;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            resize: none;
+            min-height: 44px;
+            max-height: 120px;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .chat-send-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* --- Loading States --- */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .thinking-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .thinking-dots {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .thinking-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            animation: pulse 1.4s ease-in-out infinite both;
+        }
+
+        .thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+        .thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes pulse {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* --- Notification System --- */
+        .notification {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-xl);
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--accent-secondary);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--accent-danger);
+        }
+
+        .notification.warning {
+            border-left: 4px solid var(--accent-warning);
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0;
+        }
+
+        .notification-message {
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* --- Modal System --- */
         .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background-color: var(--chat-bg-dark);
-            padding: 30px;
-            border-radius: 12px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            animation: modal-fade-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        @keyframes modal-fade-in {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .modal-content p {
-            margin: 0 0 20px 0;
-            font-size: 1.1em;
-            color: var(--text-dark-dark);
-        }
-        .modal-buttons {
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
+            align-items: center;
             justify-content: center;
-            gap: 15px;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
-        .modal-buttons button {
-            padding: 10px 25px;
-            border-radius: 8px;
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background-color: var(--bg-secondary);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
             border: none;
+            color: var(--text-muted);
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.2s;
+            font-size: 1.5rem;
+            padding: 0;
         }
-        .modal-buttons button:hover {
-            transform: translateY(-2px);
+
+        .modal-body {
+            margin-bottom: 1.5rem;
         }
-        .modal-confirm-btn {
-            background-color: var(--delete-color);
+
+        .modal-footer {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        /* --- Data Lists --- */
+        .data-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .data-item {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-light);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .data-item:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .data-item-content {
+            flex: 1;
+        }
+
+        .data-item-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .data-item-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .data-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* --- BMI Calculator --- */
+        .bmi-calculator {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
         }
-        .modal-cancel-btn {
-            background-color: var(--button-bg-dark);
-            color: white;
+
+        .bmi-result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
         }
-        
+
+        .bmi-category {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
         /* --- Mobile Responsiveness --- */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
             .sidebar {
-                width: 100%;
-                height: 60px;
-                padding: 10px 20px;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                border-right: none;
-                border-bottom: 1px solid var(--divider-dark);
+                transform: translateX(-100%);
+                width: 280px;
             }
-            .sidebar-header {
-                flex-grow: 1;
-                margin-bottom: 0;
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
             }
-            .sidebar-item { display: none; }
-            .sidebar-toggle-btn { display: none; } /* Hide toggle on mobile */
-            .theme-toggle-btn {
-                margin-top: 0;
-                margin-left: 20px;
-            }
+
             .main-content {
-                flex-grow: 1;
-                overflow-y: auto;
+                margin-left: 0;
             }
-            .sidebar-header h1 { font-size: 1.2em; }
+
+            .content-header {
+                padding: 1rem;
+            }
+
+            .content-body {
+                padding: 1rem;
+            }
+
+            .chat-container {
+                height: calc(100vh - 120px);
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal {
+                margin: 1rem;
+                width: calc(100% - 2rem);
+            }
         }
+
+        /* --- Animations --- */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* --- Utility Classes --- */
+        .hidden { display: none !important; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-1 { margin-bottom: 0.25rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-0 { margin-top: 0; }
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        .p-0 { padding: 0; }
+        .p-1 { padding: 0.25rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .shadow-sm { box-shadow: var(--shadow-sm); }
+        .shadow-md { box-shadow: var(--shadow-md); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        .shadow-xl { box-shadow: var(--shadow-xl); }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
     </style>
 </head>
-<body class="sidebar-visible">
-    <!-- Custom Modal Overlay -->
-    <div class="modal-overlay" id="confirm-modal">
-        <div class="modal-content">
-            <p id="modal-message"></p>
-            <div class="modal-buttons">
-                <button class="modal-confirm-btn" id="modal-confirm-btn">Confirm</button>
-                <button class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
-    
+<body class="dark-theme">
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h1>Sehat Sethu</h1>
-            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+            <div class="logo">
+                <div class="sidebar-header .logo img">SS</div>
+                <h1>Sehat Sethu</h1>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
-        <div class="sidebar-item active" id="chat-tab">
-            <i class="fas fa-comments"></i>
-            <span>Chat</span>
+        
+        <ul class="sidebar-menu">
+            <li><a href="#" class="sidebar-item active" data-page="chat">
+                <i class="fas fa-comments"></i>
+                <span>Chat Assistant</span>
+            </a></li>
+            <li><a href="#" class="sidebar-item" data-page="profile">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a></li>
+            <li><a href="#" class="sidebar-item" data-page="medications">
+                <i class="fas fa-pills"></i>
+                <span>Medications</span>
+            </a></li>
+            <li><a href="#" class="sidebar-item" data-page="emergency">
+                <i class="fas fa-first-aid"></i>
+                <span>Emergency Contacts</span>
+            </a></li>
+            <li><a href="#" class="sidebar-item" data-page="appointments">
+                <i class="fas fa-calendar-check"></i>
+                <span>Appointments</span>
+            </a></li>
+            <li><a href="#" class="sidebar-item" data-page="wellness">
+                <i class="fas fa-heartbeat"></i>
+                <span>Wellness Tips</span>
+            </a></li>
+        </ul>
+        
+        <div class="wellness-tips">
+            <h4>Daily Wellness Tip</h4>
+            <p id="wellnessTipText">Loading your personalized tip...</p>
         </div>
-        <div class="sidebar-item" id="profile-tab">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </div>
-        <div class="sidebar-item" id="medication-tab">
-            <i class="fas fa-pills"></i>
-            <span>Medications</span>
-        </div>
-        <div class="sidebar-item" id="emergency-tab">
-            <i class="fas fa-phone-alt"></i>
-            <span>Emergency Contacts</span>
-        </div>
-        <div class="sidebar-item" id="appointments-tab">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Appointments</span>
-        </div>
-        <div class="sidebar-item" id="health-tips-sidebar">
-            <i class="fas fa-heartbeat"></i>
-            <span>Health Tips</span>
-        </div>
-        <div class="health-tip-card">
-            <h3>Weather-Based Tip</h3>
-            <p id="dynamic-health-tip">Loading tip...</p>
-        </div>
-        <button class="theme-toggle-btn" onclick="toggleTheme()">
-            <i class="fas fa-sun" id="theme-icon"></i>
-        </button>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <div class="main-content">
-        <!-- Chat Container -->
-        <div id="chat-container" class="chat-container active">
-            <div class="chat-log" id="chat-log">
-                <!-- Chat messages will be appended here -->
-            </div>
-            <div id="thinking-indicator">HealthBot is thinking...</div>
-            <div class="input-area">
-                <input type="text" id="user-input" placeholder="Type your message...">
-                <button onclick="sendMessage()">Send</button>
+        <div class="content-header">
+            <h1 class="content-title" id="pageTitle">Chat Assistant</h1>
+            <div class="theme-toggle-container">
+                <i class="fas fa-sun"></i>
+                <label class="theme-toggle">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="theme-slider"></span>
+                </label>
+                <i class="fas fa-moon"></i>
             </div>
         </div>
         
-        <!-- Profile Container -->
-        <div id="profile-container" class="profile-container">
-            <h2>User Profile</h2>
-            <div class="profile-form">
-                <div class="profile-input-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" name="name">
-                </div>
-                <div class="profile-input-group">
-                    <label for="dob">Date of Birth</label>
-                    <input type="date" id="dob" name="dob">
-                </div>
-                <div class="profile-input-group">
-                    <label for="gender">Gender</label>
-                    <input type="text" id="gender" name="gender">
-                </div>
-                <div class="profile-input-group">
-                    <label for="blood_group">Blood Group</label>
-                    <input type="text" id="blood_group" name="blood_group">
-                </div>
-                <div class="profile-input-group">
-                    <label for="conditions">Known Conditions</label>
-                    <input type="text" id="conditions" name="conditions">
-                </div>
-                <div id="custom-fields">
-                    <!-- Custom fields will be added here -->
-                </div>
-                <button type="button" class="add-btn add-field-btn" onclick="addCustomField()">Add Custom Field</button>
-                <div class="action-buttons">
-                    <button type="button" class="save-btn" onclick="saveProfile()">Save Profile</button>
-                </div>
-            </div>
+        <div class="content-body" id="contentBody">
+            <!-- Dynamic content will be loaded here -->
         </div>
+    </div>
 
-        <!-- Medication Container -->
-        <div id="medication-container" class="medication-container">
-            <h2>Medications</h2>
-            <div class="notification-info">
-                <i class="fas fa-bell"></i>
-                <p>Enable browser notifications to get reminders for your medications.</p>
-                <button class="add-btn" onclick="requestNotificationPermission()">Enable Notifications</button>
-            </div>
-            <div class="medication-form">
-                <div class="medication-input-group">
-                    <label for="med_name">Medication Name</label>
-                    <input type="text" id="med_name">
-                </div>
-                <div class="medication-input-group">
-                    <label for="med_dosage">Dosage</label>
-                    <input type="text" id="med_dosage">
-                </div>
-                <div class="medication-input-group">
-                    <label for="med_schedule">Schedule (e.g., 9:00 AM, 5:30 PM)</label>
-                    <input type="text" id="med_schedule">
-                </div>
-                <div class="action-buttons">
-                    <button type="button" class="save-btn" id="save-med-btn" onclick="saveMedication()">Add Medication</button>
-                </div>
-            </div>
-            <div class="medications-list" id="medications-list">
-                <!-- Medications will be displayed here -->
-            </div>
-        </div>
+    <!-- Notification Container -->
+    <div id="notificationContainer"></div>
 
-        <!-- Emergency Contacts Container -->
-        <div id="emergency-container" class="emergency-container">
-            <h2>Emergency Contacts</h2>
-            <div class="emergency-form">
-                <div class="emergency-input-group">
-                    <label for="contact_name">Name</label>
-                    <input type="text" id="contact_name">
-                </div>
-                <div class="emergency-input-group">
-                    <label for="contact_number">Number</label>
-                    <input type="tel" id="contact_number">
-                </div>
-                <div id="emergency-custom-fields">
-                    <!-- Custom fields will be added here -->
-                </div>
-                <button type="button" class="add-field-btn add-field-btn-emergency" onclick="addEmergencyCustomField()">Add Custom Field</button>
-                <div class="action-buttons">
-                    <button type="button" class="save-btn" id="save-emergency-btn" onclick="saveEmergencyContact()">Add Contact</button>
-                </div>
+    <!-- Modal Container -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Confirm Action</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="emergency-list" id="emergency-list">
-                <!-- Emergency contacts will be displayed here -->
+            <div class="modal-body" id="modalBody">
+                <p id="modalMessage">Are you sure you want to perform this action?</p>
             </div>
-        </div>
-
-        <!-- Appointments Container -->
-        <div id="appointments-container" class="appointments-container">
-            <h2>Appointments</h2>
-            <div class="appointment-form">
-                <div class="appointment-input-group">
-                    <label for="appt_name">Appointment Title</label>
-                    <input type="text" id="appt_name">
-                </div>
-                <div class="appointment-input-group">
-                    <label for="appt_date">Date</label>
-                    <input type="date" id="appt_date">
-                </div>
-                <div class="appointment-input-group">
-                    <label for="appt_time">Time</label>
-                    <input type="time" id="appt_time">
-                </div>
-                <div class="action-buttons">
-                    <button type="button" class="save-btn" id="save-appt-btn" onclick="saveAppointment()">Add Appointment</button>
-                </div>
-            </div>
-            <div class="appointments-list" id="appointments-list">
-                <!-- Appointments will be displayed here -->
+            <div class="modal-footer" id="modalFooter">
+                <button class="btn btn-outline" id="modalCancel">Cancel</button>
+                <button class="btn btn-danger" id="modalConfirm">Confirm</button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript for Dynamic Functionality -->
     <script>
-        // --- Global Variables and DOM Elements ---
-        const chatLog = document.getElementById('chat-log');
-        const userInput = document.getElementById('user-input');
-        const tabs = document.querySelectorAll('.sidebar-item');
-        const containers = document.querySelectorAll('.main-content > div');
-        const thinkingIndicator = document.getElementById('thinking-indicator');
-        
-        // State variables for editing functionality
-        let isEditingMedication = false;
-        let editingMedicationIndex = -1;
-        let isEditingEmergency = false;
-        let editingEmergencyIndex = -1;
-        let isEditingAppointment = false;
-        let editingAppointmentIndex = -1;
-        
-        // Callback for the custom modal
-        let customModalCallback = null;
-
-        // --- Custom Modal Functions (Replacing alert/confirm) ---
-        function showCustomModal(message, isConfirm, callback) {
-            const modal = document.getElementById('confirm-modal');
-            const modalMessage = document.getElementById('modal-message');
-            const confirmBtn = document.getElementById('modal-confirm-btn');
-            const cancelBtn = document.getElementById('modal-cancel-btn');
-
-            modalMessage.textContent = message;
-            customModalCallback = callback;
-            
-            if (isConfirm) {
-                confirmBtn.style.display = 'inline-block';
-                cancelBtn.style.display = 'inline-block';
-                cancelBtn.textContent = "Cancel";
-            } else {
-                confirmBtn.style.display = 'none';
-                cancelBtn.textContent = "OK";
-            }
-            
-            modal.style.display = 'flex';
-        }
-
-        // Event listeners for modal buttons
-        document.getElementById('modal-confirm-btn').addEventListener('click', () => {
-            document.getElementById('confirm-modal').style.display = 'none';
-            if (customModalCallback) {
-                customModalCallback(true);
-            }
-        });
-
-        document.getElementById('modal-cancel-btn').addEventListener('click', () => {
-            document.getElementById('confirm-modal').style.display = 'none';
-            if (customModalCallback) {
-                customModalCallback(false);
-            }
-        });
-
-        // --- Chat Functionality ---
-        function showMessage(text, isUser) {
-            const messageRow = document.createElement('div');
-            messageRow.classList.add('message-row', isUser ? 'user' : 'bot');
-            const message = document.createElement('div');
-            message.classList.add('message');
-            if (isUser) {
-                message.textContent = text;
-                // Click to edit
-                message.addEventListener('click', () => {
-                    userInput.value = text;
-                    userInput.focus();
-                });
-            } else {
-                message.innerHTML = marked.parse(text);
-            }
-            messageRow.appendChild(message);
-            chatLog.appendChild(messageRow);
-            chatLog.scrollTop = chatLog.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (message === '') return;
-
-            showMessage(message, true);
-            userInput.value = '';
-            thinkingIndicator.style.display = 'block';
-
-            try {
-                const response = await fetch(window.location.origin + '/ask', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
-                });
-                const data = await response.json();
-                thinkingIndicator.style.display = 'none';
-                showMessage(data.reply, false);
-            } catch (error) {
-                thinkingIndicator.style.display = 'none';
-                showMessage('Sorry, I am having trouble connecting. Please try again later.', false);
-            }
-        }
-
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        // --- Sidebar and UI State Management ---
-        function setActiveTab(tabId) {
-            tabs.forEach(item => item.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            
-            containers.forEach(container => container.classList.remove('active'));
-            const targetContainerId = tabId.replace('-tab', '-container');
-            const targetContainer = document.getElementById(targetContainerId);
-            if (targetContainer) {
-                targetContainer.classList.add('active');
-            }
-        }
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                setActiveTab(tab.id);
-            });
-        });
-        
-        function toggleSidebar() {
-            document.body.classList.toggle('sidebar-hidden');
-            const toggleIcon = document.querySelector('.sidebar-toggle-btn i');
-            if (document.body.classList.contains('sidebar-hidden')) {
-                toggleIcon.classList.remove('fa-bars');
-                toggleIcon.classList.add('fa-chevron-right');
-            } else {
-                toggleIcon.classList.remove('fa-chevron-right');
-                toggleIcon.classList.add('fa-bars');
-            }
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle('light-theme');
-            const themeIcon = document.getElementById('theme-icon');
-            if (document.body.classList.contains('light-theme')) {
-                themeIcon.classList.remove('fa-sun');
-                themeIcon.classList.add('fa-moon');
-            } else {
-                themeIcon.classList.remove('fa-moon');
-                themeIcon.classList.add('fa-sun');
-            }
-        }
-
-        // --- Health Tip & Notifications ---
-        async function getHealthTipForWeather() {
-            const tipElement = document.getElementById('dynamic-health-tip');
-            tipElement.textContent = "Loading tip..."; // Set initial text
-            try {
-                const response = await fetch(window.location.origin + '/get_weather_tip');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                const data = await response.json();
-                tipElement.textContent = data.tip;
-            } catch (error) {
-                console.error("Failed to fetch weather tip:", error);
-                tipElement.textContent = "Could not fetch a weather tip. Remember to drink plenty of water today!";
-            }
-        }
-
-        let notificationInterval;
-
-        async function requestNotificationPermission() {
-            if (!("Notification" in window)) {
-                showCustomModal("This browser does not support desktop notifications.", false, null);
-                return;
+        // --- Global State Management ---
+        class AppState {
+            constructor() {
+                this.data = {
+                    profile: {},
+                    medications: [],
+                    emergency_contacts: [],
+                    appointments: []
+                };
+                this.currentPage = 'chat';
+                this.isSidebarCollapsed = false;
+                this.isDarkTheme = true;
+                this.notificationId = 0;
             }
 
-            const permission = await Notification.requestPermission();
-            if (permission === "granted") {
-                showCustomModal("Notifications enabled! You will receive reminders for your medications.", false, null);
-                startMedicationChecker();
-            } else {
-                showCustomModal("Notification permission denied. Please enable it in your browser settings to get reminders.", false, null);
-            }
-        }
-
-        async function startMedicationChecker() {
-            if (notificationInterval) {
-                clearInterval(notificationInterval);
-            }
-
-            const medications = await getMedications();
-            if (medications.length === 0) return;
-
-            notificationInterval = setInterval(() => {
-                const now = new Date();
-                const currentTime = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-                
-                medications.forEach(med => {
-                    const schedules = med.schedule.split(',').map(s => s.trim());
-                    if (schedules.includes(currentTime)) {
-                        new Notification("Medication Reminder", {
-                            body: `It's time to take your ${med.name}. Dosage: ${med.dosage}.`,
-                            icon: 'https://placehold.co/60x60/4CAF50/ffffff?text=Pill'
-                        });
+            // API Communication
+            async apiCall(endpoint, method = 'GET', data = null) {
+                try {
+                    const options = {
+                        method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    };
+                    
+                    if (data) {
+                        options.body = JSON.stringify(data);
                     }
-                });
-            }, 60000); // Check every minute
-        }
 
-        async function getMedications() {
-            try {
-                const response = await fetch(window.location.origin + '/get_user_data');
-                const data = await response.json();
-                return data.medications || [];
-            } catch (error) {
-                console.error("Failed to fetch medications:", error);
-                return [];
+                    const response = await fetch(endpoint, options);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('API call failed:', error);
+                    this.showNotification('Network error. Please try again.', 'error');
+                    throw error;
+                }
+            }
+
+            // Load user data from backend
+            async loadData() {
+                try {
+                    const data = await this.apiCall('/get_user_data');
+                    this.data = data;
+                    console.log('Data loaded successfully');
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
+            }
+
+            // Save profile data
+            async saveProfile(profileData) {
+                try {
+                    await this.apiCall('/save_profile', 'POST', profileData);
+                    this.data.profile = profileData;
+                    this.showNotification('Profile saved successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving profile:', error);
+                }
+            }
+
+            // Save medication
+            async saveMedication(medicationData) {
+                try {
+                    await this.apiCall('/save_medication', 'POST', medicationData);
+                    this.data.medications.push(medicationData);
+                    this.showNotification('Medication added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving medication:', error);
+                }
+            }
+
+            // Update medication
+            async updateMedication(index, medicationData) {
+                try {
+                    await this.apiCall(`/update_medication/${index}`, 'PUT', medicationData);
+                    this.data.medications[index] = medicationData;
+                    this.showNotification('Medication updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating medication:', error);
+                }
+            }
+
+            // Delete medication
+            async deleteMedication(index) {
+                try {
+                    await this.apiCall(`/delete_medication/${index}`, 'DELETE');
+                    this.data.medications.splice(index, 1);
+                    this.showNotification('Medication deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting medication:', error);
+                }
+            }
+
+            // Save emergency contact
+            async saveEmergencyContact(contactData) {
+                try {
+                    await this.apiCall('/save_emergency_contact', 'POST', contactData);
+                    this.data.emergency_contacts.push(contactData);
+                    this.showNotification('Emergency contact added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving emergency contact:', error);
+                }
+            }
+
+            // Update emergency contact
+            async updateEmergencyContact(index, contactData) {
+                try {
+                    await this.apiCall(`/update_emergency_contact/${index}`, 'PUT', contactData);
+                    this.data.emergency_contacts[index] = contactData;
+                    this.showNotification('Emergency contact updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating emergency contact:', error);
+                }
+            }
+
+            // Delete emergency contact
+            async deleteEmergencyContact(index) {
+                try {
+                    await this.apiCall(`/delete_emergency_contact/${index}`, 'DELETE');
+                    this.data.emergency_contacts.splice(index, 1);
+                    this.showNotification('Emergency contact deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting emergency contact:', error);
+                }
+            }
+
+            // Save appointment
+            async saveAppointment(appointmentData) {
+                try {
+                    await this.apiCall('/save_appointment', 'POST', appointmentData);
+                    this.data.appointments.push(appointmentData);
+                    this.showNotification('Appointment added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving appointment:', error);
+                }
+            }
+
+            // Update appointment
+            async updateAppointment(index, appointmentData) {
+                try {
+                    await this.apiCall(`/update_appointment/${index}`, 'PUT', appointmentData);
+                    this.data.appointments[index] = appointmentData;
+                    this.showNotification('Appointment updated successfully!', 'success');
+                } catch (error) {
+                    console.error('Error updating appointment:', error);
+                }
+            }
+
+            // Delete appointment
+            async deleteAppointment(index) {
+                try {
+                    await this.apiCall(`/delete_appointment/${index}`, 'DELETE');
+                    this.data.appointments.splice(index, 1);
+                    this.showNotification('Appointment deleted successfully!', 'success');
+                } catch (error) {
+                    console.error('Error deleting appointment:', error);
+                }
+            }
+
+            // Get weather tip
+            async getWeatherTip() {
+                try {
+                    const response = await this.apiCall('/get_weather_tip');
+                    return response.tip;
+                } catch (error) {
+                    console.error('Error getting weather tip:', error);
+                    return "Remember to stay hydrated and maintain a balanced diet for optimal health!";
+                }
+            }
+
+            // Theme management
+            setTheme(isDark) {
+                this.isDarkTheme = isDark;
+                document.body.classList.toggle('dark-theme', isDark);
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            }
+
+            // Notification system
+            showNotification(message, type = 'success', duration = 5000) {
+                const container = document.getElementById('notificationContainer');
+                const notification = document.createElement('div');
+                const id = ++this.notificationId;
+                
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+                    <div class="notification-header">
+                        <h4 class="notification-title">${type.charAt(0).toUpperCase() + type.slice(1)}</h4>
+                        <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <p class="notification-message">${message}</p>
+                `;
+                
+                container.appendChild(notification);
+                
+                // Trigger animation
+                setTimeout(() => notification.classList.add('show'), 100);
+                
+                // Auto remove
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.classList.remove('show');
+                        setTimeout(() => notification.remove(), 300);
+                    }
+                }, duration);
+            }
+
+            // Modal system
+            showModal(title, message, onConfirm = null, confirmText = 'Confirm', cancelText = 'Cancel') {
+                const modal = document.getElementById('modalOverlay');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalMessage = document.getElementById('modalMessage');
+                const modalConfirm = document.getElementById('modalConfirm');
+                const modalCancel = document.getElementById('modalCancel');
+                
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalConfirm.textContent = confirmText;
+                modalCancel.textContent = cancelText;
+                
+                modal.classList.add('show');
+                
+                // Remove existing listeners
+                const newConfirm = modalConfirm.cloneNode(true);
+                const newCancel = modalCancel.cloneNode(true);
+                modalConfirm.parentNode.replaceChild(newConfirm, modalConfirm);
+                modalCancel.parentNode.replaceChild(newCancel, modalCancel);
+                
+                // Add new listeners
+                newConfirm.addEventListener('click', () => {
+                    modal.classList.remove('show');
+                    if (onConfirm) onConfirm(true);
+                });
+                
+                newCancel.addEventListener('click', () => {
+                    modal.classList.remove('show');
+                    if (onConfirm) onConfirm(false);
+                });
             }
         }
 
-        // --- User Data Management Functions ---
-        async function loadData() {
-            try {
-                const response = await fetch(window.location.origin + '/get_user_data');
-                const data = await response.json();
-                
-                // Load Profile Data
-                const profile = data.profile || {};
-                document.getElementById('name').value = profile.name || '';
-                document.getElementById('dob').value = profile.dob || '';
-                document.getElementById('gender').value = profile.gender || '';
-                document.getElementById('blood_group').value = profile.blood_group || '';
-                document.getElementById('conditions').value = profile.conditions || '';
-                const customFieldsContainer = document.getElementById('custom-fields');
-                customFieldsContainer.innerHTML = '';
-                for (const key in profile) {
-                    if (!['name', 'dob', 'gender', 'blood_group', 'conditions'].includes(key)) {
-                        addCustomField(key, profile[key]);
-                    }
-                }
+        // Initialize app state
+        const app = new AppState();
 
-                // Load Medications
-                const medicationsList = document.getElementById('medications-list');
-                medicationsList.innerHTML = '';
-                (data.medications || []).forEach((med, index) => {
-                    const medItem = document.createElement('div');
-                    medItem.classList.add('medication-item');
-                    medItem.innerHTML = `
-                        <div class="item-details">
-                            <h4>${med.name}</h4>
-                            <p>Dosage: ${med.dosage}</p>
-                            <p>Schedule: ${med.schedule}</p>
+        // --- Page Management ---
+        class PageManager {
+            constructor() {
+                this.pages = {
+                    chat: new ChatPage(),
+                    profile: new ProfilePage(),
+                    medications: new MedicationsPage(),
+                    emergency: new EmergencyPage(),
+                    appointments: new AppointmentsPage(),
+                    wellness: new WellnessPage()
+                };
+            }
+
+            async loadPage(pageId) {
+                // Update active sidebar item
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+
+                // Update page title
+                const titles = {
+                    chat: 'Chat Assistant',
+                    profile: 'Profile Management',
+                    medications: 'Medication Tracker',
+                    emergency: 'Emergency Contacts',
+                    appointments: 'Appointments',
+                    wellness: 'Wellness Tips'
+                };
+                document.getElementById('pageTitle').textContent = titles[pageId] || 'Sehat Sethu';
+
+                // Load page content
+                const contentBody = document.getElementById('contentBody');
+                contentBody.innerHTML = this.pages[pageId].render();
+                
+                // Initialize page
+                await this.pages[pageId].init();
+                
+                app.currentPage = pageId;
+            }
+        }
+
+        // --- Chat Page ---
+        class ChatPage {
+            render() {
+                return `
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message bot">
+                                <div class="message-avatar">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <div class="message-content">
+                                    <p class="message-text">Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?</p>
+                                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="item-actions">
-                            <button class="modify-btn" onclick="modifyMedication(${index})">
-                                <i class="fas fa-edit"></i> Modify
+                        <div class="chat-input-container">
+                            <form class="chat-input-form" id="chatForm">
+                                <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
+                                <button type="submit" class="chat-send-btn" id="chatSendBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async init() {
+                const chatForm = document.getElementById('chatForm');
+                const chatInput = document.getElementById('chatInput');
+                const chatMessages = document.getElementById('chatMessages');
+
+                // Auto-resize textarea
+                chatInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                });
+
+                // Send message
+                chatForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const message = chatInput.value.trim();
+                    if (!message) return;
+
+                    this.addMessage(message, 'user');
+                    chatInput.value = '';
+                    chatInput.style.height = 'auto';
+
+ // Show thinking indicator
+                    const thinkingDiv = this.addThinkingIndicator();
+
+                    try {
+                        // Send message to backend
+                        const response = await app.apiCall('/ask', 'POST', { message });
+                        const botResponse = response.reply;
+                        
+                        // Remove thinking indicator
+                        thinkingDiv.remove();
+                        
+                        // Add bot response
+                        this.addMessage(botResponse, 'bot');
+                    } catch (error) {
+                        // Remove thinking indicator
+                        thinkingDiv.remove();
+                        
+                        // Add error message
+                        this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+                    }
+                });
+            }
+
+            addMessage(text, sender) {
+                const chatMessages = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender} fade-in`;
+                
+                const avatar = sender === 'user' ? 
+                    '<i class="fas fa-user"></i>' : 
+                    '<i class="fas fa-robot"></i>';
+
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">${avatar}</div>
+                    <div class="message-content">
+                        <p class="message-text">${text}</p>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                `;
+
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            addThinkingIndicator() {
+                const chatMessages = document.getElementById('chatMessages');
+                const thinkingDiv = document.createElement('div');
+                thinkingDiv.className = 'message bot thinking-indicator';
+                thinkingDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <div class="thinking-indicator">
+                            <span>HealthBot is thinking</span>
+                            <div class="thinking-dots">
+                                <div class="thinking-dot"></div>
+                                <div class="thinking-dot"></div>
+                                <div class="thinking-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatMessages.appendChild(thinkingDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                return thinkingDiv;
+            }
+        }
+
+        // --- Profile Page ---
+        class ProfilePage {
+            render() {
+                return `
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Profile Management</h2>
+                            <div class="card-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- BMI Calculator -->
+                        <div class="bmi-calculator">
+                            <h3>BMI Calculator</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Height (cm)</label>
+                                    <input type="number" class="form-input" id="bmiHeight" placeholder="e.g., 175">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Weight (kg)</label>
+                                    <input type="number" class="form-input" id="bmiWeight" placeholder="e.g., 70">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" id="calculateBmi">Calculate BMI</button>
+                            <div id="bmiResult" class="bmi-result hidden"></div>
+                        </div>
+
+                        <!-- Profile Form -->
+                        <form id="profileForm" class="space-y-6">
+                            <h3 class="text-xl font-semibold text-white mb-4">Personal Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Name</label>
+                                    <input type="text" class="form-input" id="profileName" placeholder="Your Full Name">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-input" id="profileDob">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Gender</label>
+                                    <input type="text" class="form-input" id="profileGender" placeholder="Your Gender">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Blood Group</label>
+                                    <input type="text" class="form-input" id="profileBloodGroup" placeholder="e.g., A+">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Known Conditions</label>
+                                <input type="text" class="form-input" id="profileConditions" placeholder="e.g., Diabetes, Hypertension">
+                            </div>
+                            
+                            <!-- Custom Fields -->
+                            <div class="form-group">
+                                <h3 class="text-lg font-semibold text-white mb-2">Custom Fields</h3>
+                                <div id="customFields" class="space-y-4"></div>
+                                <button type="button" class="btn btn-outline" id="addCustomField">
+                                    <i class="fas fa-plus"></i> Add Custom Field
+                                </button>
+                            </div>
+                            
+                            <div class="flex justify-end">
+                                <button type="submit" class="btn btn-primary">Save Profile</button>
+                            </div>
+                        </form>
+                    </div>
+                `;
+            }
+
+            async init() {
+                // Load existing profile data
+                await app.loadData();
+                this.populateForm();
+
+                // BMI Calculator
+                document.getElementById('calculateBmi').addEventListener('click', () => {
+                    this.calculateBMI();
+                });
+
+                // Profile form
+                document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveProfile();
+                });
+
+                // Add custom field
+                document.getElementById('addCustomField').addEventListener('click', () => {
+                    this.addCustomField();
+                });
+            }
+
+            populateForm() {
+                const profile = app.data.profile || {};
+                document.getElementById('profileName').value = profile.name || '';
+                document.getElementById('profileDob').value = profile.dob || '';
+                document.getElementById('profileGender').value = profile.gender || '';
+                document.getElementById('profileBloodGroup').value = profile.blood_group || '';
+                document.getElementById('profileConditions').value = profile.conditions || '';
+
+                // Load custom fields
+                const customFieldsContainer = document.getElementById('customFields');
+                customFieldsContainer.innerHTML = '';
+                
+                for (const [key, value] of Object.entries(profile)) {
+                    if (!['name', 'dob', 'gender', 'blood_group', 'conditions'].includes(key)) {
+                        this.addCustomField(key, value);
+                    }
+                }
+            }
+
+            calculateBMI() {
+                const height = parseFloat(document.getElementById('bmiHeight').value);
+                const weight = parseFloat(document.getElementById('bmiWeight').value);
+                const resultDiv = document.getElementById('bmiResult');
+
+                if (height > 0 && weight > 0) {
+                    const heightM = height / 100;
+                    const bmi = weight / (heightM * heightM);
+                    let category = '';
+                    let colorClass = '';
+
+                    if (bmi < 18.5) {
+                        category = 'Underweight';
+                        colorClass = 'bg-yellow-500';
+                    } else if (bmi >= 18.5 && bmi < 24.9) {
+                        category = 'Normal weight';
+                        colorClass = 'bg-green-500';
+                    } else if (bmi >= 25 && bmi < 29.9) {
+                        category = 'Overweight';
+                        colorClass = 'bg-yellow-500';
+                    } else {
+                        category = 'Obesity';
+                        colorClass = 'bg-red-500';
+                    }
+
+                    resultDiv.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-2xl font-bold">BMI: ${bmi.toFixed(2)}</div>
+                            <div class="bmi-category ${colorClass} px-4 py-2 rounded-lg mt-2">${category}</div>
+                        </div>
+                    `;
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    app.showNotification('Please enter valid height and weight.', 'error');
+                }
+            }
+
+            addCustomField(key = '', value = '') {
+                const container = document.getElementById('customFields');
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'form-grid';
+                fieldDiv.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Field Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., Allergies" value="${key}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Field Value</label>
+                        <input type="text" class="form-input" placeholder="e.g., Penicillin" value="${value}">
+                    </div>
+                    <div class="form-group flex items-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(fieldDiv);
+            }
+
+            async saveProfile() {
+                const profileData = {
+                    name: document.getElementById('profileName').value,
+                    dob: document.getElementById('profileDob').value,
+                    gender: document.getElementById('profileGender').value,
+                    blood_group: document.getElementById('profileBloodGroup').value,
+                    conditions: document.getElementById('profileConditions').value
+                };
+
+                // Add custom fields
+                const customFields = document.querySelectorAll('#customFields .form-grid');
+                customFields.forEach(field => {
+                    const keyInput = field.querySelector('input:nth-of-type(1)');
+                    const valueInput = field.querySelector('input:nth-of-type(2)');
+                    if (keyInput.value && valueInput.value) {
+                        profileData[keyInput.value] = valueInput.value;
+                    }
+                });
+
+                await app.saveProfile(profileData);
+            }
+        }
+
+        // --- Medications Page ---
+        class MedicationsPage {
+            render() {
+                return `
+                    <div class="space-y-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Add Medication</h2>
+                                <div class="card-icon">
+                                    <i class="fas fa-pills"></i>
+                                </div>
+                            </div>
+                            <form id="medicationForm">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">Medication Name</label>
+                                        <input type="text" class="form-input" id="medName" placeholder="e.g., Metformin">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Dosage</label>
+                                        <input type="text" class="form-input" id="medDosage" placeholder="e.g., 500mg">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Schedule</label>
+                                        <input type="text" class="form-input" id="medSchedule" placeholder="e.g., Daily, 8am">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="btn btn-primary">Add Medication</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Your Medications</h2>
+                                <div class="card-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                            </div>
+                            <div id="medicationsList" class="data-list">
+                                <!-- Medications will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async init() {
+                await app.loadData();
+                this.renderMedications();
+
+                document.getElementById('medicationForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveMedication();
+                });
+            }
+
+            renderMedications() {
+                const container = document.getElementById('medicationsList');
+                container.innerHTML = '';
+
+                if (app.data.medications.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500">No medications added yet.</p>';
+                    return;
+                }
+
+                app.data.medications.forEach((med, index) => {
+                    const medDiv = document.createElement('div');
+                    medDiv.className = 'data-item';
+                    medDiv.innerHTML = `
+                        <div class="data-item-content">
+                            <div class="data-item-title">${med.name}</div>
+                            <div class="data-item-subtitle">Dosage: ${med.dosage} | Schedule: ${med.schedule}</div>
+                        </div>
+                        <div class="data-item-actions">
+                            <button class="btn btn-outline btn-sm" onclick="medicationsPage.editMedication(${index})">
+                                <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="delete-btn" onclick="deleteMedication(${index})">
-                                <i class="fas fa-trash-alt"></i> Delete
+                            <button class="btn btn-danger btn-sm" onclick="medicationsPage.deleteMedication(${index})">
+                                <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
                     `;
-                    medicationsList.appendChild(medItem);
+                    container.appendChild(medDiv);
                 });
-                
-                // Load Emergency Contacts
-                const emergencyList = document.getElementById('emergency-list');
-                emergencyList.innerHTML = '';
-                (data.emergency_contacts || []).forEach((contact, index) => {
-                    const contactItem = document.createElement('div');
-                    contactItem.classList.add('emergency-item');
+            }
+
+            async saveMedication() {
+                const medicationData = {
+                    name: document.getElementById('medName').value,
+                    dosage: document.getElementById('medDosage').value,
+                    schedule: document.getElementById('medSchedule').value
+                };
+
+                if (!medicationData.name || !medicationData.dosage || !medicationData.schedule) {
+                    app.showNotification('Please fill in all fields.', 'error');
+                    return;
+                }
+
+                await app.saveMedication(medicationData);
+                document.getElementById('medicationForm').reset();
+                this.renderMedications();
+            }
+
+            async editMedication(index) {
+                const medication = app.data.medications[index];
+                document.getElementById('medName').value = medication.name;
+                document.getElementById('medDosage').value = medication.dosage;
+                document.getElementById('medSchedule').value = medication.schedule;
+
+                // Change form to update mode
+                const form = document.getElementById('medicationForm');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Update Medication';
+                submitBtn.onclick = async (e) => {
+                    e.preventDefault();
+                    const updatedData = {
+                        name: document.getElementById('medName').value,
+                        dosage: document.getElementById('medDosage').value,
+                        schedule: document.getElementById('medSchedule').value
+                    };
+                    await app.updateMedication(index, updatedData);
+                    form.reset();
+                    submitBtn.textContent = 'Add Medication';
+                    this.renderMedications();
+                };
+            }
+
+            async deleteMedication(index) {
+                app.showModal(
+                    'Delete Medication',
+                    'Are you sure you want to delete this medication?',
+                    async (confirmed) => {
+                        if (confirmed) {
+                            await app.deleteMedication(index);
+                            this.renderMedications();
+                        }
+                    }
+                );
+            }
+        }
+
+        // --- Emergency Page ---
+        class EmergencyPage {
+            render() {
+                return `
+                    <div class="space-y-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Add Emergency Contact</h2>
+                                <div class="card-icon">
+                                    <i class="fas fa-first-aid"></i>
+                                </div>
+                            </div>
+                            <form id="emergencyForm">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">Contact Name</label>
+                                        <input type="text" class="form-input" id="contactName" placeholder="e.g., Dr. Smith">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-input" id="contactPhone" placeholder="e.g., +1234567890">
+                                    </div>
+                                </div>
+                                
+                                <!-- Custom Fields -->
+                                <div class="form-group">
+                                    <h3 class="text-lg font-semibold text-white mb-2">Additional Information</h3>
+                                    <div id="emergencyCustomFields" class="space-y-4"></div>
+                                    <button type="button" class="btn btn-outline" id="addEmergencyField">
+                                        <i class="fas fa-plus"></i> Add Field
+                                    </button>
+                                </div>
+                                
+                                <div class="flex justify-end">
+                                    <button type="submit" class="btn btn-primary">Add Contact</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Emergency Contacts</h2>
+                                <div class="card-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                            </div>
+                            <div id="emergencyList" class="data-list">
+                                <!-- Contacts will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async init() {
+                await app.loadData();
+                this.renderContacts();
+
+                document.getElementById('emergencyForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveContact();
+                });
+
+                document.getElementById('addEmergencyField').addEventListener('click', () => {
+                    this.addCustomField();
+                });
+            }
+
+            renderContacts() {
+                const container = document.getElementById('emergencyList');
+                container.innerHTML = '';
+
+                if (app.data.emergency_contacts.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500">No emergency contacts added yet.</p>';
+                    return;
+                }
+
+                app.data.emergency_contacts.forEach((contact, index) => {
+                    const contactDiv = document.createElement('div');
+                    contactDiv.className = 'data-item';
                     
-                    let customHtml = '';
-                    for (const key in contact) {
-                        if (key !== 'name' && key !== 'number') {
-                             customHtml += `<p><strong>${key.replace('_', ' ').capitalize()}</strong>: ${contact[key]}</p>`;
+                    let customFieldsHtml = '';
+                    for (const [key, value] of Object.entries(contact)) {
+                        if (key !== 'name' && key !== 'phone') {
+                            customFieldsHtml += `<div class="text-sm text-gray-400">${key}: ${value}</div>`;
                         }
                     }
 
-                    contactItem.innerHTML = `
-                        <div class="item-details">
-                            <h4>${contact.name}</h4>
-                            <p>Number: ${contact.number}</p>
-                            ${customHtml}
+                    contactDiv.innerHTML = `
+                        <div class="data-item-content">
+                            <div class="data-item-title">${contact.name}</div>
+                            <div class="data-item-subtitle">Phone: ${contact.phone}</div>
+                            ${customFieldsHtml}
                         </div>
-                        <div class="item-actions">
-                            <button class="modify-btn" onclick="modifyEmergencyContact(${index})">
-                                <i class="fas fa-edit"></i> Modify
+                        <div class="data-item-actions">
+                            <button class="btn btn-outline btn-sm" onclick="emergencyPage.editContact(${index})">
+                                <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="delete-btn" onclick="deleteEmergencyContact(${index})">
-                                <i class="fas fa-trash-alt"></i> Delete
-                            </button>
-                        </div>
-                    `;
-                    emergencyList.appendChild(contactItem);
-                });
-                
-                // Load Appointments
-                const appointmentsList = document.getElementById('appointments-list');
-                appointmentsList.innerHTML = '';
-                (data.appointments || []).forEach((appt, index) => {
-                    const apptItem = document.createElement('div');
-                    apptItem.classList.add('appointment-item');
-                    apptItem.innerHTML = `
-                        <div class="item-details">
-                            <h4>${appt.title}</h4>
-                            <p>Date: ${appt.date}</p>
-                            <p>Time: ${appt.time}</p>
-                        </div>
-                        <div class="item-actions">
-                            <button class="modify-btn" onclick="modifyAppointment(${index})">
-                                <i class="fas fa-edit"></i> Modify
-                            </button>
-                            <button class="delete-btn" onclick="deleteAppointment(${index})">
-                                <i class="fas fa-trash-alt"></i> Delete
+                            <button class="btn btn-danger btn-sm" onclick="emergencyPage.deleteContact(${index})">
+                                <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
                     `;
-                    appointmentsList.appendChild(apptItem);
+                    container.appendChild(contactDiv);
                 });
-                
-                getHealthTipForWeather();
-
-            } catch (error) {
-                console.error("Failed to load user data:", error);
             }
-        }
-        
-        // Form & Data Submission Handlers
-        function clearProfileForm() {
-            document.getElementById('name').value = '';
-            document.getElementById('dob').value = '';
-            document.getElementById('gender').value = '';
-            document.getElementById('blood_group').value = '';
-            document.getElementById('conditions').value = '';
-            document.getElementById('custom-fields').innerHTML = '';
-        }
 
-        async function saveProfile() {
-            const profileData = {
-                name: document.getElementById('name').value,
-                dob: document.getElementById('dob').value,
-                gender: document.getElementById('gender').value,
-                blood_group: document.getElementById('blood_group').value,
-                conditions: document.getElementById('conditions').value
-            };
-            
-            const customFields = document.querySelectorAll('#custom-fields input');
-            for(let i = 0; i < customFields.length; i += 2) {
-                const key = customFields[i].value;
-                const value = customFields[i+1].value;
-                if (key && value) {
-                    profileData[key] = value;
+            addCustomField(key = '', value = '') {
+                const container = document.getElementById('emergencyCustomFields');
+                const fieldDiv = document.createElement('div');
+                fieldDiv.className = 'form-grid';
+                fieldDiv.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Field Name</label>
+                        <input type="text" class="form-input" placeholder="e.g., Relationship" value="${key}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Field Value</label>
+                        <input type="text" class="form-input" placeholder="e.g., Doctor" value="${value}">
+                    </div>
+                    <div class="form-group flex items-end">
+                        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(fieldDiv);
+            }
+
+            async saveContact() {
+                const contactData = {
+                    name: document.getElementById('contactName').value,
+                    phone: document.getElementById('contactPhone').value
+                };
+
+                if (!contactData.name || !contactData.phone) {
+                    app.showNotification('Please fill in name and phone number.', 'error');
+                    return;
                 }
-            }
 
-            try {
-                await fetch(window.location.origin + '/save_profile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(profileData)
-                });
-                showCustomModal('Profile saved successfully!', false, null);
-                loadData();
-                clearProfileForm();
-            } catch (error) {
-                showCustomModal('Failed to save profile.', false, null);
-            }
-        }
-
-        async function saveMedication() {
-            const medication = {
-                name: document.getElementById('med_name').value,
-                dosage: document.getElementById('med_dosage').value,
-                schedule: document.getElementById('med_schedule').value
-            };
-            
-            if (!medication.name || !medication.dosage || !medication.schedule) {
-                 showCustomModal("Please fill in all medication fields.", false, null);
-                 return;
-            }
-
-            const url = isEditingMedication ? `${window.location.origin}/update_medication/${editingMedicationIndex}` : `${window.location.origin}/save_medication`;
-            const method = isEditingMedication ? 'PUT' : 'POST';
-
-            try {
-                await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(medication)
-                });
-                resetMedicationForm();
-                await loadData();
-                showCustomModal(isEditingMedication ? 'Medication updated successfully!' : 'Medication added successfully!', false, null);
-            } catch (error) {
-                showCustomModal('Failed to save medication.', false, null);
-            }
-        }
-
-        function deleteMedication(index) {
-            showCustomModal("Are you sure you want to delete this medication?", true, async (confirmed) => {
-                if (confirmed) {
-                    try {
-                        await fetch(window.location.origin + `/delete_medication/${index}`, { method: 'DELETE' });
-                        showCustomModal("Medication deleted.", false, null);
-                        await loadData();
-                    } catch (error) {
-                        showCustomModal("Failed to delete medication.", false, null);
+                // Add custom fields
+                const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
+                customFields.forEach(field => {
+                    const keyInput = field.querySelector('input:nth-of-type(1)');
+                    const valueInput = field.querySelector('input:nth-of-type(2)');
+                    if (keyInput.value && valueInput.value) {
+                        contactData[keyInput.value] = valueInput.value;
                     }
-                }
-            });
-        }
-        
-        async function modifyMedication(index) {
-            const response = await fetch(window.location.origin + '/get_user_data');
-            const data = await response.json();
-            const medToModify = data.medications[index];
-            if (medToModify) {
-                document.getElementById('med_name').value = medToModify.name;
-                document.getElementById('med_dosage').value = medToModify.dosage;
-                document.getElementById('med_schedule').value = medToModify.schedule;
-                document.getElementById('save-med-btn').textContent = "Update Medication";
-                isEditingMedication = true;
-                editingMedicationIndex = index;
-            }
-        }
-        
-        function resetMedicationForm() {
-            document.getElementById('med_name').value = '';
-            document.getElementById('med_dosage').value = '';
-            document.getElementById('med_schedule').value = '';
-            document.getElementById('save-med-btn').textContent = "Add Medication";
-            isEditingMedication = false;
-            editingMedicationIndex = -1;
-        }
-
-        async function saveEmergencyContact() {
-            const contact = {
-                name: document.getElementById('contact_name').value,
-                number: document.getElementById('contact_number').value
-            };
-            
-            if (!contact.name || !contact.number) {
-                 showCustomModal("Please fill in both name and number.", false, null);
-                 return;
-            }
-            
-            const customFields = document.querySelectorAll('#emergency-custom-fields .emergency-custom-field');
-            customFields.forEach(field => {
-                const nameInput = field.querySelector('input:nth-of-type(1)');
-                const valueInput = field.querySelector('input:nth-of-type(2)');
-                if (nameInput.value && valueInput.value) {
-                    contact[nameInput.value] = valueInput.value;
-                }
-            });
-            
-            const url = isEditingEmergency ? `${window.location.origin}/update_emergency_contact/${editingEmergencyIndex}` : `${window.location.origin}/save_emergency_contact`;
-            const method = isEditingEmergency ? 'PUT' : 'POST';
-
-            try {
-                await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(contact)
                 });
-                resetEmergencyForm();
-                await loadData();
-                showCustomModal(isEditingEmergency ? 'Contact updated successfully!' : 'Contact added successfully!', false, null);
-            } catch (error) {
-                showCustomModal('Failed to save contact.', false, null);
-            }
-        }
 
-        function deleteEmergencyContact(index) {
-            showCustomModal("Are you sure you want to delete this emergency contact?", true, async (confirmed) => {
-                if (confirmed) {
-                    try {
-                        await fetch(window.location.origin + `/delete_emergency_contact/${index}`, { method: 'DELETE' });
-                        showCustomModal("Emergency contact deleted.", false, null);
-                        await loadData();
-                    } catch (error) {
-                        showCustomModal("Failed to delete contact.", false, null);
-                    }
-                }
-            });
-        }
-        
-        async function modifyEmergencyContact(index) {
-            const response = await fetch(window.location.origin + '/get_user_data');
-            const data = await response.json();
-            const contactToModify = data.emergency_contacts[index];
-            if (contactToModify) {
-                document.getElementById('contact_name').value = contactToModify.name;
-                document.getElementById('contact_number').value = contactToModify.number;
-                
-                const customFieldsContainer = document.getElementById('emergency-custom-fields');
+                await app.saveEmergencyContact(contactData);
+                document.getElementById('emergencyForm').reset();
+                document.getElementById('emergencyCustomFields').innerHTML = '';
+                this.renderContacts();
+            }
+
+            async editContact(index) {
+                const contact = app.data.emergency_contacts[index];
+                document.getElementById('contactName').value = contact.name;
+                document.getElementById('contactPhone').value = contact.phone;
+
+                // Load custom fields
+                const customFieldsContainer = document.getElementById('emergencyCustomFields');
                 customFieldsContainer.innerHTML = '';
                 
-                for (const key in contactToModify) {
-                    if (key !== 'name' && key !== 'number') {
-                        addEmergencyCustomField(key, contactToModify[key]);
+                for (const [key, value] of Object.entries(contact)) {
+                    if (key !== 'name' && key !== 'phone') {
+                        this.addCustomField(key, value);
                     }
                 }
-                
-                document.getElementById('save-emergency-btn').textContent = "Update Contact";
-                isEditingEmergency = true;
-                editingEmergencyIndex = index;
+
+                // Change form to update mode
+                const form = document.getElementById('emergencyForm');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Update Contact';
+                submitBtn.onclick = async (e) => {
+                    e.preventDefault();
+                    const updatedData = {
+                        name: document.getElementById('contactName').value,
+                        phone: document.getElementById('contactPhone').value
+                    };
+
+                    // Add custom fields
+                    const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
+                    customFields.forEach(field => {
+                        const keyInput = field.querySelector('input:nth-of-type(1)');
+                        const valueInput = field.querySelector('input:nth-of-type(2)');
+                        if (keyInput.value && valueInput.value) {
+                            updatedData[keyInput.value] = valueInput.value;
+                        }
+                    });
+
+                    await app.updateEmergencyContact(index, updatedData);
+                    form.reset();
+                    customFieldsContainer.innerHTML = '';
+                    submitBtn.textContent = 'Add Contact';
+                    this.renderContacts();
+                };
+            }
+
+            async deleteContact(index) {
+                app.showModal(
+                    'Delete Contact',
+                    'Are you sure you want to delete this emergency contact?',
+                    async (confirmed) => {
+                        if (confirmed) {
+                            await app.deleteEmergencyContact(index);
+                            this.renderContacts();
+                        }
+                    }
+                );
             }
         }
-        
-        function resetEmergencyForm() {
-            document.getElementById('contact_name').value = '';
-            document.getElementById('contact_number').value = '';
-            document.getElementById('emergency-custom-fields').innerHTML = '';
-            document.getElementById('save-emergency-btn').textContent = "Add Contact";
-            isEditingEmergency = false;
-            editingEmergencyIndex = -1;
-        }
 
-        async function saveAppointment() {
-            const appointment = {
-                title: document.getElementById('appt_name').value,
-                date: document.getElementById('appt_date').value,
-                time: document.getElementById('appt_time').value
-            };
-            
-            if (!appointment.title || !appointment.date || !appointment.time) {
-                showCustomModal("Please fill in all appointment fields.", false, null);
-                return;
+        // --- Appointments Page ---
+        class AppointmentsPage {
+            render() {
+                return `
+                    <div class="space-y-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Add Appointment</h2>
+                                <div class="card-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                            </div>
+                            <form id="appointmentForm">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">Appointment Title</label>
+                                        <input type="text" class="form-input" id="apptTitle" placeholder="e.g., Annual Checkup">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Date</label>
+                                        <input type="date" class="form-input" id="apptDate">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Time</label>
+                                        <input type="time" class="form-input" id="apptTime">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="btn btn-primary">Add Appointment</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="card-title">Your Appointments</h2>
+                                <div class="card-icon">
+                                    <i class="fas fa-list"></i>
+                                </div>
+                            </div>
+                            <div id="appointmentsList" class="data-list">
+                                <!-- Appointments will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
 
-            const url = isEditingAppointment ? `${window.location.origin}/update_appointment/${editingAppointmentIndex}` : `${window.location.origin}/save_appointment`;
-            const method = isEditingAppointment ? 'PUT' : 'POST';
+            async init() {
+                await app.loadData();
+                this.renderAppointments();
 
-            try {
-                await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(appointment)
+                document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveAppointment();
                 });
-                resetAppointmentForm();
-                await loadData();
-                showCustomModal(isEditingAppointment ? 'Appointment updated successfully!' : 'Appointment added successfully!', false, null);
-            } catch (error) {
-                showCustomModal('Failed to add appointment.', false, null);
             }
-        }
 
-        function deleteAppointment(index) {
-            showCustomModal("Are you sure you want to delete this appointment?", true, async (confirmed) => {
-                if (confirmed) {
-                    try {
-                        await fetch(window.location.origin + `/delete_appointment/${index}`, { method: 'DELETE' });
-                        showCustomModal("Appointment deleted.", false, null);
-                        await loadData();
-                    } catch (error) {
-                        showCustomModal("Failed to delete appointment.", false, null);
-                    }
+            renderAppointments() {
+                const container = document.getElementById('appointmentsList');
+                container.innerHTML = '';
+
+                if (app.data.appointments.length === 0) {
+                    container.innerHTML = '<p class="text-center text-gray-500">No appointments scheduled yet.</p>';
+                    return;
                 }
-            });
-        }
 
-        async function modifyAppointment(index) {
-            const response = await fetch(window.location.origin + '/get_user_data');
-            const data = await response.json();
-            const apptToModify = data.appointments[index];
-            if (apptToModify) {
-                document.getElementById('appt_name').value = apptToModify.title;
-                document.getElementById('appt_date').value = apptToModify.date;
-                document.getElementById('appt_time').value = apptToModify.time;
-                document.getElementById('save-appt-btn').textContent = "Update Appointment";
-                isEditingAppointment = true;
-                editingAppointmentIndex = index;
+                app.data.appointments.forEach((appt, index) => {
+                    const apptDiv = document.createElement('div');
+                    apptDiv.className = 'data-item';
+                    apptDiv.innerHTML = `
+                        <div class="data-item-content">
+                            <div class="data-item-title">${appt.title}</div>
+                            <div class="data-item-subtitle">Date: ${appt.date} | Time: ${appt.time}</div>
+                        </div>
+                        <div class="data-item-actions">
+                            <button class="btn btn-outline btn-sm" onclick="appointmentsPage.editAppointment(${index})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="appointmentsPage.deleteAppointment(${index})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(apptDiv);
+                });
+            }
+
+            async saveAppointment() {
+                const appointmentData = {
+                    title: document.getElementById('apptTitle').value,
+                    date: document.getElementById('apptDate').value,
+                    time: document.getElementById('apptTime').value
+                };
+
+                if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
+                    app.showNotification('Please fill in all fields.', 'error');
+                    return;
+                }
+
+                await app.saveAppointment(appointmentData);
+                document.getElementById('appointmentForm').reset();
+                this.renderAppointments();
+            }
+
+            async editAppointment(index) {
+                const appointment = app.data.appointments[index];
+                document.getElementById('apptTitle').value = appointment.title;
+                document.getElementById('apptDate').value = appointment.date;
+                document.getElementById('apptTime').value = appointment.time;
+
+                // Change form to update mode
+                const form = document.getElementById('appointmentForm');
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Update Appointment';
+                submitBtn.onclick = async (e) => {
+                    e.preventDefault();
+                    const updatedData = {
+                        title: document.getElementById('apptTitle').value,
+                        date: document.getElementById('apptDate').value,
+                        time: document.getElementById('apptTime').value
+                    };
+                    await app.updateAppointment(index, updatedData);
+                    form.reset();
+                    submitBtn.textContent = 'Add Appointment';
+                    this.renderAppointments();
+                };
+            }
+
+            async deleteAppointment(index) {
+                app.showModal(
+                    'Delete Appointment',
+                    'Are you sure you want to delete this appointment?',
+                    async (confirmed) => {
+                        if (confirmed) {
+                            await app.deleteAppointment(index);
+                            this.renderAppointments();
+                        }
+                    }
+                );
             }
         }
 
-        function resetAppointmentForm() {
-            document.getElementById('appt_name').value = '';
-            document.getElementById('appt_date').value = '';
-            document.getElementById('appt_time').value = '';
-            document.getElementById('save-appt-btn').textContent = "Add Appointment";
-            isEditingAppointment = false;
-            editingAppointmentIndex = -1;
+        // --- Wellness Page ---
+        class WellnessPage {
+            render() {
+                return `
+                    <div class="card text-center">
+                        <div class="card-header">
+                            <h2 class="card-title">Daily Wellness Tips</h2>
+                            <div class="card-icon">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                        </div>
+                        <div class="p-8">
+                            <div id="wellnessTipDisplay" class="text-lg text-gray-200 italic mb-6">
+                                Loading your personalized tip...
+                            </div>
+                            <button class="btn btn-primary" id="refreshTip">
+                                <i class="fas fa-refresh"></i> Get New Tip
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            async init() {
+                await this.loadWellnessTip();
+
+                document.getElementById('refreshTip').addEventListener('click', async () => {
+                    await this.loadWellnessTip();
+                });
+            }
+
+            async loadWellnessTip() {
+                try {
+                    const tip = await app.getWeatherTip();
+                    document.getElementById('wellnessTipDisplay').textContent = tip;
+                } catch (error) {
+                    document.getElementById('wellnessTipDisplay').textContent = 
+                        "Remember to stay hydrated and maintain a balanced diet for optimal health!";
+                }
+            }
         }
 
-        function addCustomField(key = '', value = '') {
-            const customFieldsContainer = document.getElementById('custom-fields');
-            const fieldGroup = document.createElement('div');
-            fieldGroup.classList.add('profile-input-group');
-            fieldGroup.innerHTML = `
-                <label>Field Name</label>
-                <input type="text" placeholder="e.g., Allergies" value="${key}">
-                <label>Field Value</label>
-                <input type="text" placeholder="e.g., Penicillin" value="${value}">
-            `;
-            customFieldsContainer.appendChild(fieldGroup);
-        }
-        
-        function addEmergencyCustomField(key = '', value = '') {
-            const customFieldsContainer = document.getElementById('emergency-custom-fields');
-            const fieldGroup = document.createElement('div');
-            fieldGroup.classList.add('emergency-custom-field');
-            fieldGroup.innerHTML = `
-                <div class="emergency-input-group">
-                    <label>Field Name</label>
-                    <input type="text" placeholder="e.g., Relationship" value="${key}">
-                </div>
-                <div class="emergency-input-group">
-                    <label>Field Value</label>
-                    <input type="text" placeholder="e.g., Mother" value="${value}">
-                </div>
-            `;
-            customFieldsContainer.appendChild(fieldGroup);
-        }
+        // --- Initialize Application ---
+        const pageManager = new PageManager();
 
-        // --- Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData();
+        // Initialize page instances for global access
+        let profilePage, medicationsPage, emergencyPage, appointmentsPage, wellnessPage;
+
+        // Sidebar toggle
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+            app.isSidebarCollapsed = !app.isSidebarCollapsed;
+        });
+
+        // Theme toggle
+        document.getElementById('themeToggle').addEventListener('change', (e) => {
+            app.setTheme(e.target.checked);
+        });
+
+        // Sidebar navigation
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                pageManager.loadPage(item.dataset.page);
+            });
+        });
+
+        // Load initial data and page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await app.loadData();
+            await pageManager.loadPage('chat');
+            
+            // Load wellness tip in sidebar
+            try {
+                const tip = await app.getWeatherTip();
+                document.getElementById('wellnessTipText').textContent = tip;
+            } catch (error) {
+                document.getElementById('wellnessTipText').textContent = 
+                    "Remember to stay hydrated and maintain a balanced diet for optimal health!";
+            }
+
+            // Set initial theme
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            app.setTheme(savedTheme === 'dark');
+            document.getElementById('themeToggle').checked = savedTheme === 'dark';
         });
     </script>
 </body>
