@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import google.generativeai as genai
 import os, json, datetime
-import requests
 
 app = Flask(__name__)
 
