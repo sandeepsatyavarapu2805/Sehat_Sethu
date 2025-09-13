@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify , session
 import google.generativeai as genai
 import os, json, datetime
 
@@ -88,12 +88,35 @@ def home():
 @app.route("/ask", methods=["POST"])
 def ask():
     """Handles chat messages and returns an AI response."""
-    user_input = request.json.get("message")
+    user_input = request.json.get("message", "").strip()
     current_user_data = load_user_data()
     system_instruction = create_system_instruction(current_user_data)
-    
+
+    # 🔸 NEW: handle language switching
+    if "telugu" in user_input.lower():
+        session["lang"] = "te"
+        return jsonify({"reply": "సరే, ఇప్పుడు నేను తెలుగులో సమాధానం ఇస్తాను."})
+
+    if "english" in user_input.lower():
+        session["lang"] = "en"
+        return jsonify({"reply": "Okay, I will reply in English now."})
+
+    lang = session.get("lang", "en")  # default English
+
+    # 🔸 NEW: wrap input depending on language
+    if lang == "te":
+        formatted_input = (
+            f"Please reply in Telugu.\n\nUser: {user_input}\n\n"
+            f"HealthBot instructions: {system_instruction}"
+        )
+    else:
+        formatted_input = (
+            f"User: {user_input}\n\n"
+            f"HealthBot instructions: {system_instruction}"
+        )
+
     try:
-        response = chat.send_message(f"**User:** {user_input}\n\n**HealthBot, remember your instructions:** {system_instruction}")
+        response = chat.send_message(formatted_input)
         bot_text = getattr(response, "text", "") or getattr(response, "last", "")
 
         with open(LOG_FILE, "a", encoding="utf-8") as log:

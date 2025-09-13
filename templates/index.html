@@ -68,6 +68,49 @@
         }
 
         /* --- Advanced Sidebar --- */
+        /* Sidebar default */
+.sidebar {
+  width: 220px;
+  transition: width 0.3s ease;
+  overflow: hidden;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+  width: 60px;
+}
+
+/* Sidebar text fades out when collapsed */
+.sidebar .sidebar-item span,
+.sidebar h1 {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.sidebar.collapsed .sidebar-item span,
+.sidebar.collapsed h1 {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Align icons to center when collapsed */
+.sidebar.collapsed .sidebar-item i {
+  margin-right: 0;
+  text-align: center;
+  width: 100%;
+}
+
+/* Main content shifts */
+.main-content {
+  margin-left: 220px;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.collapsed {
+  margin-left: 60px;
+}
+
         .sidebar {
             width: 280px;
             background-color: var(--sidebar-bg);
