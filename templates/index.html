@@ -2309,24 +2309,36 @@
         });
 
         });
-    document.addEventListener("DOMContentLoaded", async () => {
-    // Create app state
-    window.app = new AppState();
 
-    // Create page manager
-    window.pageManager = new PageManager();
+        async function loadSidebarTip() {
+            try {
+            const response = await fetch("/get_weather_tip");
+            const data = await response.json();
+            document.getElementById("wellnessTipText").textContent = data.tip;
+            } catch (err) {
+                console.error("Failed to load tip:", err);
+                document.getElementById("wellnessTipText").textContent = "Could not load tip.";
+            }
+        }
 
-    // Load the default page (chat)
-    await pageManager.loadPage("chat");
+        document.addEventListener("DOMContentLoaded", async () => {
+        // Create app state
+        window.app = new AppState();
 
-    // Sidebar navigation
-    document.querySelectorAll(".sidebar-item").forEach(item => {
+        // Create page manager
+        window.pageManager = new PageManager();
+
+        // Load the default page (chat)
+        await pageManager.loadPage("chat");
+
+        // Sidebar navigation
+        document.querySelectorAll(".sidebar-item").forEach(item => {
         item.addEventListener("click", async (e) => {
             e.preventDefault();
             const pageId = item.getAttribute("data-page");
             await pageManager.loadPage(pageId);
         });
-    });
+        });
 
     // Sidebar toggle
     document.getElementById("sidebarToggle").addEventListener("click", () => {
