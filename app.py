@@ -4,18 +4,6 @@ import os, json, datetime
 
 app = Flask(__name__)
 
-DATA_FILE = "user_data.json"
-
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {"profile": {}, "medications": [], "emergency_contacts": []}
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
-
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
 API_KEY = os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise ValueError("⚠️ GOOGLE_API_KEY is not set.")
@@ -157,8 +145,30 @@ def delete_emergency_contact(index):
     if 0 <= index < len(data.get("emergency_contacts", [])):
         data["emergency_contacts"].pop(index)
         save_user_data(data)
-        return jsonify({"status": "success", "message": "Emergency contact deleted."})
-    return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
+        return jsonify({"status": "success", "message": "Emergency contact not found."}), 404
+
+@app.route("/save_appointment", methods=["POST"])
+def save_appointment():
+    data = load_user_data()
+    appointment = request.json
+    if "appointments" not in data:
+        data["appointments"] = []
+    data["appointments"].append(appointment)
+    save_user_data(data)
+    return jsonify({"status": "success", "message": "Appointment added!"})
+
+@app.route("/delete_appointment/<int:index>", methods=["DELETE"])
+def delete_appointment(index):
+    data = load_user_data()
+    if 0 <= index < len(data.get("appointments", [])):
+        data["appointments"].pop(index)
+        save_user_data(data)
+        return jsonify({"status": "success", "message": "Appointment deleted."})
+    return jsonify({"status": "error", "message": "Appointment not found."}), 404
+
+@app.route("/health-tips")
+def health_tips():
+    return render_template("health_tips.html")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
