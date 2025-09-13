@@ -1039,15 +1039,16 @@
 </head>
 <body class="dark-theme">
     <!-- Sidebar -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+    
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
                 <div class="sidebar-header .logo img">SS</div>
                 <h1>Sehat Sethu</h1>
             </div>
-            <button class="sidebar-toggle" id="sidebarToggle">
-                <i class="fas fa-bars"></i>
-            </button>
         </div>
         
         <ul class="sidebar-menu">
@@ -2242,7 +2243,7 @@
                             </div>
                         </div>
                         <div class="p-8">
-                            <div id="wellnessTipDisplay" class="text-lg text-gray-200 italic mb-6">
+                            <div id="wellnessTipDisplay" class="text-lg italic mb-6 text-gray-800 dark:text-gray-200">
                                 Loading your personalized tip...
                             </div>
                             <button class="btn btn-primary" id="refreshTip">
@@ -2299,18 +2300,6 @@
 
         // Load first sidebar wellness tip
         loadSidebarTip();
-
-        // Sidebar toggle
-        document.getElementById('sidebarToggle').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            app.isSidebarCollapsed = !app.isSidebarCollapsed;
-            
-        // Fix: allow expand properly
-        if (!app.isSidebarCollapsed) {
-            sidebar.classList.remove('collapsed');
-        }
-        });
 
         // Theme toggle
         document.getElementById('themeToggle').addEventListener('change', (e) => {
