@@ -4,6 +4,18 @@ import os, json, datetime
 
 app = Flask(__name__)
 
+DATA_FILE = "user_data.json"
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {"profile": {}, "medications": [], "emergency_contacts": []}
+    with open(DATA_FILE, "r") as f:
+        return json.load(f)
+
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
 API_KEY = os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise ValueError("⚠️ GOOGLE_API_KEY is not set.")
