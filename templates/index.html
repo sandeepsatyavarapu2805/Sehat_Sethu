@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sehat Sethu</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -23,6 +25,9 @@
             --button-bg-dark: #3c5471;
             --button-hover-dark: #557291;
             --input-bg-dark: #283445;
+            --primary-color: #4CAF50;
+            --delete-color: #f44336;
+            --add-color: #2196F3;
         }
 
         body {
@@ -33,6 +38,21 @@
             background-color: var(--main-bg-dark);
             color: var(--text-dark-dark);
             height: 100vh;
+            overflow: hidden;
+            transition: all 0.5s ease-in-out;
+        }
+
+        body.sidebar-hidden .sidebar {
+            width: 70px;
+        }
+
+        body.sidebar-hidden .sidebar-header,
+        body.sidebar-hidden .sidebar-item span {
+            display: none;
+        }
+
+        body.sidebar-hidden .sidebar-item {
+            justify-content: center;
         }
 
         .sidebar {
@@ -43,17 +63,31 @@
             display: flex;
             flex-direction: column;
             border-right: 1px solid var(--divider-dark);
+            transition: width 0.5s ease-in-out;
         }
 
         .sidebar-header {
             text-align: center;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            white-space: nowrap;
         }
 
         .sidebar-header h1 {
-            color: #4CAF50;
+            color: var(--primary-color);
             margin: 0;
             font-size: 1.5em;
+            transition: all 0.5s ease-in-out;
+        }
+
+        .sidebar-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--sidebar-text-dark);
+            font-size: 1.2em;
+            cursor: pointer;
         }
 
         .sidebar-item {
@@ -73,6 +107,8 @@
 
         .sidebar-item.active {
             background-color: var(--sidebar-active-bg-dark);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 11px;
         }
 
         .sidebar-item i {
@@ -84,6 +120,7 @@
         .sidebar-item span {
             color: var(--sidebar-text-dark);
             font-weight: 500;
+            transition: opacity 0.5s ease-in-out;
         }
 
         .main-content {
@@ -230,17 +267,17 @@
         }
 
         .save-btn {
-            background-color: #4CAF50;
+            background-color: var(--primary-color);
             color: white;
         }
 
         .delete-btn {
-            background-color: #f44336;
+            background-color: var(--delete-color);
             color: white;
         }
 
         .add-btn {
-            background-color: #2196F3;
+            background-color: var(--add-color);
             color: white;
         }
         .appointments-list, .medications-list, .emergency-list {
@@ -256,6 +293,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .item-details {
             flex-grow: 1;
@@ -265,17 +303,27 @@
         }
         .item-details p {
             margin: 5px 0 0;
+            color: #ccc;
         }
-        .delete-btn {
-            background-color: #f44336;
-            color: white;
+        .notification-info {
+            background-color: var(--tip-bg-dark);
+            color: var(--text-dark-dark);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
     </style>
 </head>
-<body>
+<body class="sidebar-visible">
     <div class="sidebar">
         <div class="sidebar-header">
             <h1>Sehat Sethu</h1>
+            <button class="sidebar-toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
         <div class="sidebar-item active" id="chat-tab">
             <i class="fas fa-comments"></i>
@@ -306,7 +354,8 @@
     <div class="main-content">
         <div id="chat-container" class="chat-container active">
             <div class="chat-log" id="chat-log">
-                </div>
+                <!-- Chat messages will be appended here -->
+            </div>
             <div class="input-area">
                 <input type="text" id="user-input" placeholder="Type your message...">
                 <button onclick="sendMessage()">Send</button>
@@ -337,7 +386,8 @@
                     <input type="text" id="conditions" name="conditions">
                 </div>
                 <div id="custom-fields">
-                    </div>
+                    <!-- Custom fields will be added here -->
+                </div>
                 <button type="button" class="add-btn" onclick="addCustomField()">Add Custom Field</button>
                 <div class="action-buttons">
                     <button type="button" class="save-btn" onclick="saveProfile()">Save Profile</button>
@@ -347,6 +397,11 @@
 
         <div id="medication-container" class="medication-container">
             <h2>Medications</h2>
+            <div class="notification-info">
+                <i class="fas fa-bell"></i>
+                <p>Enable browser notifications to get reminders for your medications.</p>
+                <button class="add-btn" onclick="requestNotificationPermission()">Enable Notifications</button>
+            </div>
             <div class="medication-form">
                 <div class="medication-input-group">
                     <label for="med_name">Medication Name</label>
@@ -357,7 +412,7 @@
                     <input type="text" id="med_dosage">
                 </div>
                 <div class="medication-input-group">
-                    <label for="med_schedule">Schedule</label>
+                    <label for="med_schedule">Schedule (e.g., 9:00 AM, 5:30 PM)</label>
                     <input type="text" id="med_schedule">
                 </div>
                 <div class="action-buttons">
@@ -365,7 +420,8 @@
                 </div>
             </div>
             <div class="medications-list" id="medications-list">
-                </div>
+                <!-- Medications will be displayed here -->
+            </div>
         </div>
 
         <div id="emergency-container" class="emergency-container">
@@ -384,7 +440,8 @@
                 </div>
             </div>
             <div class="emergency-list" id="emergency-list">
-                </div>
+                <!-- Emergency contacts will be displayed here -->
+            </div>
         </div>
 
         <div id="appointments-container" class="appointments-container">
@@ -407,7 +464,8 @@
                 </div>
             </div>
             <div class="appointments-list" id="appointments-list">
-                </div>
+                <!-- Appointments will be displayed here -->
+            </div>
         </div>
         
     </div>
@@ -441,7 +499,7 @@
             userInput.value = '';
 
             try {
-                const response = await fetch('/ask', {
+                const response = await fetch(window.location.origin + '/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message })
@@ -474,10 +532,70 @@
             });
         });
 
+        // Sidebar toggle logic
+        function toggleSidebar() {
+            document.body.classList.toggle('sidebar-hidden');
+        }
+
+        // Medication notification logic
+        let notificationInterval;
+
+        async function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                alert("This browser does not support desktop notification");
+                return;
+            }
+
+            const permission = await Notification.requestPermission();
+            if (permission === "granted") {
+                alert("Notifications enabled! You will receive reminders for your medications.");
+                startMedicationChecker();
+            } else {
+                alert("Notification permission denied. Please enable it in your browser settings to get reminders.");
+            }
+        }
+
+        async function startMedicationChecker() {
+            // Clear any existing interval to prevent duplicates
+            if (notificationInterval) {
+                clearInterval(notificationInterval);
+            }
+
+            const medications = await getMedications();
+            if (medications.length === 0) return;
+
+            // Check every minute
+            notificationInterval = setInterval(() => {
+                const now = new Date();
+                const currentTime = now.getHours() + ':' + now.getMinutes();
+
+                medications.forEach(med => {
+                    const schedules = med.schedule.split(',').map(s => s.trim().toUpperCase());
+                    if (schedules.includes(currentTime)) {
+                        new Notification("Medication Reminder", {
+                            body: `It's time to take your ${med.name}. Dosage: ${med.dosage}.`,
+                            icon: 'https://placehold.co/60x60/4CAF50/ffffff?text=Pill'
+                        });
+                    }
+                });
+            }, 60000); // 1 minute
+        }
+
+        async function getMedications() {
+            try {
+                const response = await fetch(window.location.origin + '/get_user_data');
+                const data = await response.json();
+                return data.medications || [];
+            } catch (error) {
+                console.error("Failed to fetch medications:", error);
+                return [];
+            }
+        }
+
         // User data management functions
         async function loadData() {
             try {
-                const response = await fetch('/get_user_data');
+                const response = await fetch(window.location.origin + '/get_user_data');
                 const data = await response.json();
                 
                 // Populate profile form
@@ -552,7 +670,7 @@
                 conditions: document.getElementById('conditions').value
             };
             try {
-                await fetch('/save_profile', {
+                await fetch(window.location.origin + '/save_profile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(profileData)
@@ -570,7 +688,7 @@
                 schedule: document.getElementById('med_schedule').value
             };
             try {
-                await fetch('/save_medication', {
+                await fetch(window.location.origin + '/save_medication', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(medication)
@@ -587,7 +705,7 @@
         async function deleteMedication(index) {
             if (confirm("Are you sure you want to delete this medication?")) {
                 try {
-                    await fetch(`/delete_medication/${index}`, { method: 'DELETE' });
+                    await fetch(window.location.origin + `/delete_medication/${index}`, { method: 'DELETE' });
                     alert("Medication deleted.");
                     await loadData();
                 } catch (error) {
@@ -602,7 +720,7 @@
                 number: document.getElementById('contact_number').value
             };
             try {
-                await fetch('/save_emergency_contact', {
+                await fetch(window.location.origin + '/save_emergency_contact', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(contact)
@@ -618,7 +736,7 @@
         async function deleteEmergencyContact(index) {
             if (confirm("Are you sure you want to delete this emergency contact?")) {
                 try {
-                    await fetch(`/delete_emergency_contact/${index}`, { method: 'DELETE' });
+                    await fetch(window.location.origin + `/delete_emergency_contact/${index}`, { method: 'DELETE' });
                     alert("Emergency contact deleted.");
                     await loadData();
                 } catch (error) {
@@ -634,7 +752,7 @@
                 time: document.getElementById('appt_time').value
             };
             try {
-                await fetch('/save_appointment', {
+                await fetch(window.location.origin + '/save_appointment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(appointment)
@@ -651,7 +769,7 @@
         async function deleteAppointment(index) {
             if (confirm("Are you sure you want to delete this appointment?")) {
                 try {
-                    await fetch(`/delete_appointment/${index}`, { method: 'DELETE' });
+                    await fetch(window.location.origin + `/delete_appointment/${index}`, { method: 'DELETE' });
                     alert("Appointment deleted.");
                     await loadData();
                 } catch (error) {
@@ -662,26 +780,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
-            // ... all your existing code here
         });
-
-        // Add this new function here, outside the DOMContentLoaded listener.
-        window.addCustomField = () => {
-            const customFieldsContainer = document.getElementById('custom-fields');
-            const fieldGroup = document.createElement('div');
-            fieldGroup.classList.add('custom-field-group');
-            fieldGroup.innerHTML = `
-                <div class="profile-input-group">
-                    <label>Field Name</label>
-                    <input type="text" class="custom-field-name" placeholder="e.g., Allergies" />
-                </div>
-                <div class="profile-input-group">
-                    <label>Field Value</label>
-                    <input type="text" class="custom-field-value" placeholder="e.g., Penicillin" />
-                </div>
-            `;
-            customFieldsContainer.appendChild(fieldGroup);
-        };
     </script>
 </body>
 </html>
