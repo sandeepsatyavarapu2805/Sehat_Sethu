@@ -1450,7 +1450,7 @@
                 messageDiv.innerHTML = `
                     <div class="message-avatar">${avatar}</div>
                     <div class="message-content">
-                        <p class="message-text">${marked.parse(text)}</p>
+                        <p class="message-text">${text}</p>
                         <div class="message-time">${new Date().toLocaleTimeString()}</div>
                     </div>
                 `;
@@ -2210,22 +2210,16 @@
                 });
             }
 
-        async loadWellnessTip() {
-            const tips = [
-                "Drink at least 8 glasses of water daily 💧",
-                "Take a 5-minute stretch break every hour 🧘",
-                "Sleep 7–8 hours every night 😴",
-                "Add more fruits and veggies to your meals 🥦🍎",
-                "Practice deep breathing to reduce stress 🌿",
-                "Limit screen time before bed for better sleep 📵",
-                "Walk at least 30 minutes a day 🚶‍♂️",
-                "Smile often — it boosts immunity 😊"
-            ];
-        const randomTip = tips[Math.floor(Math.random() * tips.length)];
-        document.getElementById('wellnessTipDisplay').textContent = randomTip;
-        const sidebarTip = document.getElementById('wellnessTipText');
-        if (sidebarTip) sidebarTip.textContent = randomTip;
-        }}
+            async loadWellnessTip() {
+                try {
+                    const tip = await app.getWeatherTip();
+                    document.getElementById('wellnessTipDisplay').textContent = tip;
+                } catch (error) {
+                    document.getElementById('wellnessTipDisplay').textContent = 
+                        "Remember to stay hydrated and maintain a balanced diet for optimal health!";
+                }
+            }
+        }
 
         // --- Initialize Application ---
         const pageManager = new PageManager();
@@ -2235,14 +2229,8 @@
 
         // Sidebar toggle
         document.getElementById('sidebarToggle').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            document.getElementById('sidebar').classList.toggle('collapsed');
             app.isSidebarCollapsed = !app.isSidebarCollapsed;
-            
-        // Fix: allow expand properly
-        if (!app.isSidebarCollapsed) {
-            sidebar.classList.remove('collapsed');
-        }
         });
 
         // Theme toggle
