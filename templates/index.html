@@ -137,6 +137,14 @@
         }
 
         .sidebar-toggle {
+        
+            /* Keep toggle always visible when collapsed */
+            .sidebar.collapsed .sidebar-toggle {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            z-index: 1010; /* above sidebar content */
+            }
             background: none;
             border: none;
             color: var(--text-secondary);
@@ -2211,27 +2219,43 @@
             }
 
         async loadWellnessTip() {
-            const tips = [
-                "Drink at least 8 glasses of water daily 💧",
-                "Take a 5-minute stretch break every hour 🧘",
-                "Sleep 7–8 hours every night 😴",
-                "Add more fruits and veggies to your meals 🥦🍎",
-                "Practice deep breathing to reduce stress 🌿",
-                "Limit screen time before bed for better sleep 📵",
-                "Walk at least 30 minutes a day 🚶‍♂️",
-                "Smile often — it boosts immunity 😊"
-            ];
-        const randomTip = tips[Math.floor(Math.random() * tips.length)];
-        document.getElementById('wellnessTipDisplay').textContent = randomTip;
-        const sidebarTip = document.getElementById('wellnessTipText');
-        if (sidebarTip) sidebarTip.textContent = randomTip;
-        }}
+    const categories = {
+        "Workout": [
+            "Do 3 sets of 15 squats 🏋️‍♂️\n1. Stand straight.\n2. Lower hips as if sitting.\n3. Keep knees behind toes.\n4. Rise back up.",
+            "Push-ups (3 sets of 10)\n1. Keep body straight.\n2. Lower chest to the ground.\n3. Push back up."
+        ],
+        "Diseases": [
+            "For Diabetes: Maintain stable sugar levels 🍬\n1. Walk 30 mins daily.\n2. Eat high-fiber foods.\n3. Avoid processed sugar.",
+            "For Hypertension: Lower blood pressure ❤️\n1. Reduce salt intake.\n2. Practice yoga breathing.\n3. Sleep at least 7 hrs."
+        ],
+        "Yoga": [
+            "Surya Namaskar 🌞\n1. Stand straight.\n2. Raise arms & bend forward.\n3. Stretch back.\n4. Step into plank.\n5. Cobra pose.\n6. Repeat.",
+            "Tree Pose 🌳\n1. Stand on one leg.\n2. Place other foot on thigh.\n3. Join palms.\n4. Hold for 30 seconds."
+        ],
+        "Meditation": [
+            "Breathing Meditation 🌿\n1. Sit comfortably.\n2. Close eyes.\n3. Inhale 4 sec, hold 4 sec, exhale 4 sec.\n4. Repeat for 5 min.",
+            "Mindfulness 🧘\n1. Sit quietly.\n2. Focus on breath.\n3. Notice thoughts without judgment.\n4. Continue 10 min."
+        ]
+    };
+
+    // Pick a random category
+    const categoryNames = Object.keys(categories);
+    const randomCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
+    const tips = categories[randomCategory];
+    const randomTip = tips[Math.floor(Math.random() * tips.length)];
+
+    document.getElementById('wellnessTipDisplay').textContent = `${randomCategory} Tip:\n\n${randomTip}`;
+}
+}
 
         // --- Initialize Application ---
         const pageManager = new PageManager();
 
         // Initialize page instances for global access
         let profilePage, medicationsPage, emergencyPage, appointmentsPage, wellnessPage;
+
+        // Load first sidebar wellness tip
+        loadSidebarTip();
 
         // Sidebar toggle
         document.getElementById('sidebarToggle').addEventListener('click', () => {
@@ -2276,6 +2300,14 @@
             const savedTheme = localStorage.getItem('theme') || 'dark';
             app.setTheme(savedTheme === 'dark');
             document.getElementById('themeToggle').checked = savedTheme === 'dark';
+
+            const sidebar = document.getElementById('sidebar');
+            const toggleButton = document.getElementById('sidebarToggle');
+
+            toggleButton.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
         });
     </script>
 </body>
