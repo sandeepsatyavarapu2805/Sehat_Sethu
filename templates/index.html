@@ -2309,6 +2309,41 @@
         });
 
         });
+        document.addEventListener("DOMContentLoaded", async () => {
+
+        // Create app + page manager
+    const pageManager = new PageManager();
+    window.pageManager = pageManager; // expose globally if needed
+
+    // Load default page (chat)
+    await pageManager.loadPage("chat");
+
+    // Sidebar navigation
+    document.querySelectorAll(".sidebar-item").forEach(item => {
+        item.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const pageId = item.getAttribute("data-page");
+            await pageManager.loadPage(pageId);
+        });
+    });
+
+    // Sidebar toggle
+    document.getElementById("sidebarToggle").addEventListener("click", () => {
+        document.getElementById("sidebar").classList.toggle("collapsed");
+        document.querySelector(".main-content").classList.toggle("collapsed");
+    });
+
+    // Theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    themeToggle.addEventListener("change", (e) => {
+        app.setTheme(e.target.checked);
+    });
+
+    // Apply saved theme on reload
+    const savedTheme = localStorage.getItem("theme");
+    app.setTheme(savedTheme === "dark");
+    themeToggle.checked = savedTheme === "dark";
+});
     </script>
 </body>
 </html>
