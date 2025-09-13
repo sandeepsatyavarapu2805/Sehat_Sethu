@@ -28,6 +28,26 @@
             --primary-color: #4CAF50;
             --delete-color: #f44336;
             --add-color: #2196F3;
+            --modify-color: #ff9800;
+        }
+
+        body.light-theme {
+            --sidebar-bg-dark: #f1f1f1;
+            --sidebar-item-bg-dark: #e0e0e0;
+            --sidebar-active-bg-dark: #c5c5c5;
+            --sidebar-text-dark: #333;
+            --main-bg-dark: #e5e5e5;
+            --chat-bg-dark: #f1f1f1;
+            --bot-msg-bg-dark: #e0e0e0;
+            --user-msg-bg-dark: #c5c5c5;
+            --text-dark-dark: #333;
+            --text-light-dark: #333;
+            --tip-bg-dark: #d6d6d6;
+            --tip-icon-dark: #333;
+            --divider-dark: #b0b0b0;
+            --button-bg-dark: #c5c5c5;
+            --button-hover-dark: #a0a0a0;
+            --input-bg-dark: #e0e0e0;
         }
 
         body {
@@ -46,8 +66,9 @@
             width: 70px;
         }
 
-        body.sidebar-hidden .sidebar-header,
-        body.sidebar-hidden .sidebar-item span {
+        body.sidebar-hidden .sidebar-header h1,
+        body.sidebar-hidden .sidebar-item span,
+        body.sidebar-hidden .health-tip-card {
             display: none;
         }
 
@@ -64,6 +85,7 @@
             flex-direction: column;
             border-right: 1px solid var(--divider-dark);
             transition: width 0.5s ease-in-out;
+            flex-shrink: 0;
         }
 
         .sidebar-header {
@@ -88,6 +110,16 @@
             color: var(--sidebar-text-dark);
             font-size: 1.2em;
             cursor: pointer;
+        }
+        
+        .theme-toggle-btn {
+            background: none;
+            border: none;
+            color: var(--sidebar-text-dark);
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: auto;
+            align-self: center;
         }
 
         .sidebar-item {
@@ -115,6 +147,11 @@
             margin-right: 15px;
             font-size: 1.2em;
             color: var(--sidebar-text-dark);
+            transition: margin-right 0.5s ease-in-out;
+        }
+
+        body.sidebar-hidden .sidebar-item i {
+            margin-right: 0;
         }
 
         .sidebar-item span {
@@ -122,12 +159,26 @@
             font-weight: 500;
             transition: opacity 0.5s ease-in-out;
         }
+        
+        .health-tip-card {
+            background-color: var(--bot-msg-bg-dark);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s ease-in-out;
+        }
+        .health-tip-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
 
         .main-content {
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             padding: 20px;
+            overflow-y: hidden;
         }
 
         .chat-container {
@@ -137,6 +188,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .chat-log {
@@ -144,6 +196,16 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            padding-right: 10px;
+        }
+
+        .chat-log::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-log::-webkit-scrollbar-thumb {
+            background-color: var(--sidebar-active-bg-dark);
+            border-radius: 4px;
         }
 
         .message-row {
@@ -217,6 +279,23 @@
             display: none;
             flex-grow: 1;
             flex-direction: column;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .profile-container::-webkit-scrollbar,
+        .medication-container::-webkit-scrollbar,
+        .emergency-container::-webkit-scrollbar,
+        .appointments-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .profile-container::-webkit-scrollbar-thumb,
+        .medication-container::-webkit-scrollbar-thumb,
+        .emergency-container::-webkit-scrollbar-thumb,
+        .appointments-container::-webkit-scrollbar-thumb {
+            background-color: var(--sidebar-active-bg-dark);
+            border-radius: 4px;
         }
 
         .profile-container.active, .medication-container.active, .emergency-container.active, .appointments-container.active {
@@ -231,6 +310,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .profile-input-group, .medication-input-group, .emergency-input-group, .appointment-input-group {
@@ -244,7 +324,7 @@
             color: var(--text-dark-dark);
         }
 
-        .profile-input-group input, .medication-input-group input, .emergency-input-group input, .appointment-input-group input {
+        .profile-input-group input, .medication-input-group input, .emergency-input-group input, .appointment-input-group input, .emergency-custom-field input {
             padding: 10px;
             border-radius: 8px;
             border: 1px solid var(--divider-dark);
@@ -264,6 +344,11 @@
             border: none;
             cursor: pointer;
             font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .action-buttons button:hover {
+            transform: translateY(-2px);
         }
 
         .save-btn {
@@ -280,6 +365,33 @@
             background-color: var(--add-color);
             color: white;
         }
+
+        .modify-btn {
+            background-color: var(--modify-color);
+            color: white;
+        }
+
+        .add-field-btn {
+            background-color: var(--button-bg-dark);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .add-field-btn-emergency {
+            background-color: var(--button-bg-dark);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+
         .appointments-list, .medications-list, .emergency-list {
             display: flex;
             flex-direction: column;
@@ -294,7 +406,14 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
         .item-details {
             flex-grow: 1;
         }
@@ -315,9 +434,73 @@
             align-items: center;
             gap: 10px;
         }
+        
+        /* Custom Modal for alerts/confirmations */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: var(--chat-bg-dark);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-content p {
+            margin: 0 0 20px 0;
+            font-size: 1.1em;
+            color: var(--text-dark-dark);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .modal-buttons button {
+            padding: 10px 25px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .modal-confirm-btn {
+            background-color: var(--delete-color);
+            color: white;
+        }
+        
+        .modal-cancel-btn {
+            background-color: var(--button-bg-dark);
+            color: white;
+        }
     </style>
 </head>
 <body class="sidebar-visible">
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-content">
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button class="modal-confirm-btn" id="modal-confirm-btn">Confirm</button>
+                <button class="modal-cancel-btn" id="modal-cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="sidebar">
         <div class="sidebar-header">
             <h1>Sehat Sethu</h1>
@@ -345,10 +528,17 @@
             <i class="fas fa-calendar-alt"></i>
             <span>Appointments</span>
         </div>
-        <a href="/health-tips" class="sidebar-item">
+        <div class="sidebar-item" id="health-tips-sidebar">
             <i class="fas fa-heartbeat"></i>
             <span>Health Tips</span>
-        </a>
+        </div>
+        <div class="health-tip-card">
+            <h3>Weather-Based Tip</h3>
+            <p id="dynamic-health-tip">Loading tip...</p>
+        </div>
+        <button class="theme-toggle-btn" onclick="toggleTheme()">
+            <i class="fas fa-sun" id="theme-icon"></i>
+        </button>
     </div>
 
     <div class="main-content">
@@ -370,8 +560,8 @@
                     <input type="text" id="name" name="name">
                 </div>
                 <div class="profile-input-group">
-                    <label for="age">Age</label>
-                    <input type="number" id="age" name="age">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob">
                 </div>
                 <div class="profile-input-group">
                     <label for="gender">Gender</label>
@@ -388,7 +578,7 @@
                 <div id="custom-fields">
                     <!-- Custom fields will be added here -->
                 </div>
-                <button type="button" class="add-btn" onclick="addCustomField()">Add Custom Field</button>
+                <button type="button" class="add-btn add-field-btn" onclick="addCustomField()">Add Custom Field</button>
                 <div class="action-buttons">
                     <button type="button" class="save-btn" onclick="saveProfile()">Save Profile</button>
                 </div>
@@ -416,7 +606,7 @@
                     <input type="text" id="med_schedule">
                 </div>
                 <div class="action-buttons">
-                    <button type="button" class="save-btn" onclick="saveMedication()">Add Medication</button>
+                    <button type="button" class="save-btn" id="save-med-btn" onclick="saveMedication()">Add Medication</button>
                 </div>
             </div>
             <div class="medications-list" id="medications-list">
@@ -435,8 +625,12 @@
                     <label for="contact_number">Number</label>
                     <input type="tel" id="contact_number">
                 </div>
+                <div id="emergency-custom-fields">
+                    <!-- Custom fields will be added here -->
+                </div>
+                <button type="button" class="add-field-btn add-field-btn-emergency" onclick="addEmergencyCustomField()">Add Custom Field</button>
                 <div class="action-buttons">
-                    <button type="button" class="save-btn" onclick="saveEmergencyContact()">Add Contact</button>
+                    <button type="button" class="save-btn" id="save-emergency-btn" onclick="saveEmergencyContact()">Add Contact</button>
                 </div>
             </div>
             <div class="emergency-list" id="emergency-list">
@@ -460,14 +654,13 @@
                     <input type="time" id="appt_time">
                 </div>
                 <div class="action-buttons">
-                    <button type="button" class="save-btn" onclick="saveAppointment()">Add Appointment</button>
+                    <button type="button" class="save-btn" id="save-appt-btn" onclick="saveAppointment()">Add Appointment</button>
                 </div>
             </div>
             <div class="appointments-list" id="appointments-list">
                 <!-- Appointments will be displayed here -->
             </div>
         </div>
-        
     </div>
 
     <script>
@@ -475,6 +668,49 @@
         const userInput = document.getElementById('user-input');
         const tabs = document.querySelectorAll('.sidebar-item');
         const containers = document.querySelectorAll('.main-content > div');
+
+        let isEditingMedication = false;
+        let editingMedicationIndex = -1;
+        let isEditingEmergency = false;
+        let editingEmergencyIndex = -1;
+        let isEditingAppointment = false;
+        let editingAppointmentIndex = -1;
+        let customModalCallback = null;
+
+        // Custom Modal Functions
+        function showCustomModal(message, isConfirm, callback) {
+            const modal = document.getElementById('confirm-modal');
+            const modalMessage = document.getElementById('modal-message');
+            const confirmBtn = document.getElementById('modal-confirm-btn');
+            const cancelBtn = document.getElementById('modal-cancel-btn');
+
+            modalMessage.textContent = message;
+            customModalCallback = callback;
+            
+            if (isConfirm) {
+                confirmBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+            } else {
+                confirmBtn.style.display = 'none';
+                cancelBtn.textContent = "OK";
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+            document.getElementById('confirm-modal').style.display = 'none';
+            if (customModalCallback) {
+                customModalCallback(true);
+            }
+        });
+
+        document.getElementById('modal-cancel-btn').addEventListener('click', () => {
+            document.getElementById('confirm-modal').style.display = 'none';
+            if (customModalCallback) {
+                customModalCallback(false);
+            }
+        });
 
         function showMessage(text, isUser) {
             const messageRow = document.createElement('div');
@@ -531,10 +767,52 @@
                 }
             });
         });
-
+        
         // Sidebar toggle logic
         function toggleSidebar() {
             document.body.classList.toggle('sidebar-hidden');
+            const toggleIcon = document.querySelector('.sidebar-toggle-btn i');
+            if (document.body.classList.contains('sidebar-hidden')) {
+                toggleIcon.classList.remove('fa-bars');
+                toggleIcon.classList.add('fa-chevron-right');
+            } else {
+                toggleIcon.classList.remove('fa-chevron-right');
+                toggleIcon.classList.add('fa-bars');
+            }
+        }
+
+        // Theme toggle logic
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const themeIcon = document.getElementById('theme-icon');
+            if (document.body.classList.contains('light-theme')) {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+        }
+
+        // Health Tip logic
+        async function getHealthTipForWeather() {
+            const tips = {
+                'Clear': "It's a beautiful day! Go outside and get some natural sunlight. It's great for your mood and vitamin D levels.",
+                'Clouds': "It's a bit cloudy today. Remember to still stay active. A brisk walk can do wonders for your energy.",
+                'Rain': "Don't let the rain stop you! Stay indoors and try some gentle stretches or yoga to keep your body moving.",
+                'Snow': "It's snowy out! Be careful if you go outside. Stay warm, wear layers, and consider a hot beverage to keep cozy.",
+                'Mist': "Visibility is low due to mist. Stay safe if you are driving. Inside, take some time for mindfulness and deep breathing.",
+                'default': "The weather is changing. Remember to drink plenty of water and get a balanced meal. Your body will thank you!"
+            };
+
+            const tipElement = document.getElementById('dynamic-health-tip');
+            try {
+                // Mock API call to get weather. In a real app, you would use a service like OpenWeatherMap
+                const weatherCondition = await new Promise(resolve => setTimeout(() => resolve('Rain'), 1000));
+                tipElement.textContent = tips[weatherCondition] || tips['default'];
+            } catch (error) {
+                tipElement.textContent = tips['default'];
+            }
         }
 
         // Medication notification logic
@@ -542,21 +820,20 @@
 
         async function requestNotificationPermission() {
             if (!("Notification" in window)) {
-                alert("This browser does not support desktop notification");
+                showCustomModal("This browser does not support desktop notification", false, null);
                 return;
             }
 
             const permission = await Notification.requestPermission();
             if (permission === "granted") {
-                alert("Notifications enabled! You will receive reminders for your medications.");
+                showCustomModal("Notifications enabled! You will receive reminders for your medications.", false, null);
                 startMedicationChecker();
             } else {
-                alert("Notification permission denied. Please enable it in your browser settings to get reminders.");
+                showCustomModal("Notification permission denied. Please enable it in your browser settings to get reminders.", false, null);
             }
         }
 
         async function startMedicationChecker() {
-            // Clear any existing interval to prevent duplicates
             if (notificationInterval) {
                 clearInterval(notificationInterval);
             }
@@ -564,13 +841,12 @@
             const medications = await getMedications();
             if (medications.length === 0) return;
 
-            // Check every minute
             notificationInterval = setInterval(() => {
                 const now = new Date();
-                const currentTime = now.getHours() + ':' + now.getMinutes();
-
+                const currentTime = `${now.getHours()}:${now.getMinutes() < 10 ? '0' : ''}${now.getMinutes()}`;
+                
                 medications.forEach(med => {
-                    const schedules = med.schedule.split(',').map(s => s.trim().toUpperCase());
+                    const schedules = med.schedule.split(',').map(s => s.trim());
                     if (schedules.includes(currentTime)) {
                         new Notification("Medication Reminder", {
                             body: `It's time to take your ${med.name}. Dosage: ${med.dosage}.`,
@@ -598,15 +874,13 @@
                 const response = await fetch(window.location.origin + '/get_user_data');
                 const data = await response.json();
                 
-                // Populate profile form
                 const profile = data.profile || {};
                 document.getElementById('name').value = profile.name || '';
-                document.getElementById('age').value = profile.age || '';
+                document.getElementById('dob').value = profile.dob || '';
                 document.getElementById('gender').value = profile.gender || '';
                 document.getElementById('blood_group').value = profile.blood_group || '';
                 document.getElementById('conditions').value = profile.conditions || '';
 
-                // Display medications
                 const medicationsList = document.getElementById('medications-list');
                 medicationsList.innerHTML = '';
                 (data.medications || []).forEach((med, index) => {
@@ -618,28 +892,41 @@
                             <p>Dosage: ${med.dosage}</p>
                             <p>Schedule: ${med.schedule}</p>
                         </div>
-                        <button class="delete-btn" onclick="deleteMedication(${index})">Delete</button>
+                        <div class="item-actions">
+                            <button class="modify-btn" onclick="modifyMedication(${index})">Modify</button>
+                            <button class="delete-btn" onclick="deleteMedication(${index})">Delete</button>
+                        </div>
                     `;
                     medicationsList.appendChild(medItem);
                 });
 
-                // Display emergency contacts
                 const emergencyList = document.getElementById('emergency-list');
                 emergencyList.innerHTML = '';
                 (data.emergency_contacts || []).forEach((contact, index) => {
                     const contactItem = document.createElement('div');
                     contactItem.classList.add('emergency-item');
+                    
+                    let customHtml = '';
+                    for (const key in contact) {
+                        if (key !== 'name' && key !== 'number') {
+                             customHtml += `<p>${key}: ${contact[key]}</p>`;
+                        }
+                    }
+
                     contactItem.innerHTML = `
                         <div class="item-details">
                             <h4>${contact.name}</h4>
                             <p>${contact.number}</p>
+                            ${customHtml}
                         </div>
-                        <button class="delete-btn" onclick="deleteEmergencyContact(${index})">Delete</button>
+                        <div class="item-actions">
+                            <button class="modify-btn" onclick="modifyEmergencyContact(${index})">Modify</button>
+                            <button class="delete-btn" onclick="deleteEmergencyContact(${index})">Delete</button>
+                        </div>
                     `;
                     emergencyList.appendChild(contactItem);
                 });
                 
-                // Display appointments
                 const appointmentsList = document.getElementById('appointments-list');
                 appointmentsList.innerHTML = '';
                 (data.appointments || []).forEach((appt, index) => {
@@ -651,10 +938,15 @@
                             <p>Date: ${appt.date}</p>
                             <p>Time: ${appt.time}</p>
                         </div>
-                        <button class="delete-btn" onclick="deleteAppointment(${index})">Delete</button>
+                        <div class="item-actions">
+                            <button class="modify-btn" onclick="modifyAppointment(${index})">Modify</button>
+                            <button class="delete-btn" onclick="deleteAppointment(${index})">Delete</button>
+                        </div>
                     `;
                     appointmentsList.appendChild(apptItem);
                 });
+                
+                getHealthTipForWeather();
 
             } catch (error) {
                 console.error("Failed to load user data:", error);
@@ -664,7 +956,7 @@
         async function saveProfile() {
             const profileData = {
                 name: document.getElementById('name').value,
-                age: document.getElementById('age').value,
+                dob: document.getElementById('dob').value,
                 gender: document.getElementById('gender').value,
                 blood_group: document.getElementById('blood_group').value,
                 conditions: document.getElementById('conditions').value
@@ -675,9 +967,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(profileData)
                 });
-                alert('Profile saved successfully!');
+                showCustomModal('Profile saved successfully!', false, null);
             } catch (error) {
-                alert('Failed to save profile.');
+                showCustomModal('Failed to save profile.', false, null);
             }
         }
 
@@ -687,31 +979,57 @@
                 dosage: document.getElementById('med_dosage').value,
                 schedule: document.getElementById('med_schedule').value
             };
+
+            const url = isEditingMedication ? `${window.location.origin}/update_medication/${editingMedicationIndex}` : `${window.location.origin}/save_medication`;
+            const method = isEditingMedication ? 'PUT' : 'POST';
+
             try {
-                await fetch(window.location.origin + '/save_medication', {
-                    method: 'POST',
+                await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(medication)
                 });
-                document.getElementById('med_name').value = '';
-                document.getElementById('med_dosage').value = '';
-                document.getElementById('med_schedule').value = '';
+                resetMedicationForm();
                 await loadData();
             } catch (error) {
-                alert('Failed to add medication.');
+                showCustomModal('Failed to save medication.', false, null);
             }
         }
 
-        async function deleteMedication(index) {
-            if (confirm("Are you sure you want to delete this medication?")) {
-                try {
-                    await fetch(window.location.origin + `/delete_medication/${index}`, { method: 'DELETE' });
-                    alert("Medication deleted.");
-                    await loadData();
-                } catch (error) {
-                    alert("Failed to delete medication.");
+        function deleteMedication(index) {
+            showCustomModal("Are you sure you want to delete this medication?", true, async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await fetch(window.location.origin + `/delete_medication/${index}`, { method: 'DELETE' });
+                        showCustomModal("Medication deleted.", false, null);
+                        await loadData();
+                    } catch (error) {
+                        showCustomModal("Failed to delete medication.", false, null);
+                    }
                 }
+            });
+        }
+        
+        async function modifyMedication(index) {
+            const data = await getMedications();
+            const medToModify = data[index];
+            if (medToModify) {
+                document.getElementById('med_name').value = medToModify.name;
+                document.getElementById('med_dosage').value = medToModify.dosage;
+                document.getElementById('med_schedule').value = medToModify.schedule;
+                document.getElementById('save-med-btn').textContent = "Update Medication";
+                isEditingMedication = true;
+                editingMedicationIndex = index;
             }
+        }
+        
+        function resetMedicationForm() {
+            document.getElementById('med_name').value = '';
+            document.getElementById('med_dosage').value = '';
+            document.getElementById('med_schedule').value = '';
+            document.getElementById('save-med-btn').textContent = "Add Medication";
+            isEditingMedication = false;
+            editingMedicationIndex = -1;
         }
 
         async function saveEmergencyContact() {
@@ -719,63 +1037,176 @@
                 name: document.getElementById('contact_name').value,
                 number: document.getElementById('contact_number').value
             };
+            
+            const customFields = document.querySelectorAll('.emergency-custom-field');
+            customFields.forEach(field => {
+                const nameInput = field.querySelector('input:nth-of-type(1)');
+                const valueInput = field.querySelector('input:nth-of-type(2)');
+                if (nameInput.value && valueInput.value) {
+                    contact[nameInput.value] = valueInput.value;
+                }
+            });
+            
+            const url = isEditingEmergency ? `${window.location.origin}/update_emergency_contact/${editingEmergencyIndex}` : `${window.location.origin}/save_emergency_contact`;
+            const method = isEditingEmergency ? 'PUT' : 'POST';
+
             try {
-                await fetch(window.location.origin + '/save_emergency_contact', {
-                    method: 'POST',
+                await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(contact)
                 });
-                document.getElementById('contact_name').value = '';
-                document.getElementById('contact_number').value = '';
+                resetEmergencyForm();
                 await loadData();
             } catch (error) {
-                alert('Failed to add contact.');
+                showCustomModal('Failed to save contact.', false, null);
             }
         }
 
-        async function deleteEmergencyContact(index) {
-            if (confirm("Are you sure you want to delete this emergency contact?")) {
-                try {
-                    await fetch(window.location.origin + `/delete_emergency_contact/${index}`, { method: 'DELETE' });
-                    alert("Emergency contact deleted.");
-                    await loadData();
-                } catch (error) {
-                    alert("Failed to delete contact.");
+        function deleteEmergencyContact(index) {
+            showCustomModal("Are you sure you want to delete this emergency contact?", true, async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await fetch(window.location.origin + `/delete_emergency_contact/${index}`, { method: 'DELETE' });
+                        showCustomModal("Emergency contact deleted.", false, null);
+                        await loadData();
+                    } catch (error) {
+                        showCustomModal("Failed to delete contact.", false, null);
+                    }
                 }
+            });
+        }
+        
+        async function modifyEmergencyContact(index) {
+            const response = await fetch(window.location.origin + '/get_user_data');
+            const data = await response.json();
+            const contactToModify = data.emergency_contacts[index];
+            if (contactToModify) {
+                document.getElementById('contact_name').value = contactToModify.name;
+                document.getElementById('contact_number').value = contactToModify.number;
+                
+                const customFieldsContainer = document.getElementById('emergency-custom-fields');
+                customFieldsContainer.innerHTML = '';
+                
+                for (const key in contactToModify) {
+                    if (key !== 'name' && key !== 'number') {
+                        const fieldGroup = document.createElement('div');
+                        fieldGroup.classList.add('emergency-custom-field');
+                        fieldGroup.innerHTML = `
+                            <div class="emergency-input-group">
+                                <label>Field Name</label>
+                                <input type="text" value="${key}">
+                            </div>
+                            <div class="emergency-input-group">
+                                <label>Field Value</label>
+                                <input type="text" value="${contactToModify[key]}">
+                            </div>
+                        `;
+                        customFieldsContainer.appendChild(fieldGroup);
+                    }
+                }
+                
+                document.getElementById('save-emergency-btn').textContent = "Update Contact";
+                isEditingEmergency = true;
+                editingEmergencyIndex = index;
             }
         }
         
+        function resetEmergencyForm() {
+            document.getElementById('contact_name').value = '';
+            document.getElementById('contact_number').value = '';
+            document.getElementById('emergency-custom-fields').innerHTML = '';
+            document.getElementById('save-emergency-btn').textContent = "Add Contact";
+            isEditingEmergency = false;
+            editingEmergencyIndex = -1;
+        }
+
         async function saveAppointment() {
             const appointment = {
                 title: document.getElementById('appt_name').value,
                 date: document.getElementById('appt_date').value,
                 time: document.getElementById('appt_time').value
             };
+
+            const url = isEditingAppointment ? `${window.location.origin}/update_appointment/${editingAppointmentIndex}` : `${window.location.origin}/save_appointment`;
+            const method = isEditingAppointment ? 'PUT' : 'POST';
+
             try {
-                await fetch(window.location.origin + '/save_appointment', {
-                    method: 'POST',
+                await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(appointment)
                 });
-                document.getElementById('appt_name').value = '';
-                document.getElementById('appt_date').value = '';
-                document.getElementById('appt_time').value = '';
+                resetAppointmentForm();
                 await loadData();
             } catch (error) {
-                alert('Failed to add appointment.');
+                showCustomModal('Failed to add appointment.', false, null);
             }
         }
 
-        async function deleteAppointment(index) {
-            if (confirm("Are you sure you want to delete this appointment?")) {
-                try {
-                    await fetch(window.location.origin + `/delete_appointment/${index}`, { method: 'DELETE' });
-                    alert("Appointment deleted.");
-                    await loadData();
-                } catch (error) {
-                    alert("Failed to delete appointment.");
+        function deleteAppointment(index) {
+            showCustomModal("Are you sure you want to delete this appointment?", true, async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        await fetch(window.location.origin + `/delete_appointment/${index}`, { method: 'DELETE' });
+                        showCustomModal("Appointment deleted.", false, null);
+                        await loadData();
+                    } catch (error) {
+                        showCustomModal("Failed to delete appointment.", false, null);
+                    }
                 }
+            });
+        }
+
+        async function modifyAppointment(index) {
+            const response = await fetch(window.location.origin + '/get_user_data');
+            const data = await response.json();
+            const apptToModify = data.appointments[index];
+            if (apptToModify) {
+                document.getElementById('appt_name').value = apptToModify.title;
+                document.getElementById('appt_date').value = apptToModify.date;
+                document.getElementById('appt_time').value = apptToModify.time;
+                document.getElementById('save-appt-btn').textContent = "Update Appointment";
+                isEditingAppointment = true;
+                editingAppointmentIndex = index;
             }
+        }
+
+        function resetAppointmentForm() {
+            document.getElementById('appt_name').value = '';
+            document.getElementById('appt_date').value = '';
+            document.getElementById('appt_time').value = '';
+            document.getElementById('save-appt-btn').textContent = "Add Appointment";
+            isEditingAppointment = false;
+            editingAppointmentIndex = -1;
+        }
+
+        function addCustomField() {
+            const customFieldsContainer = document.getElementById('custom-fields');
+            const fieldGroup = document.createElement('div');
+            fieldGroup.classList.add('profile-input-group');
+            fieldGroup.innerHTML = `
+                <label>Custom Field</label>
+                <input type="text" placeholder="e.g. 'Allergies: Penicillin'">
+            `;
+            customFieldsContainer.appendChild(fieldGroup);
+        }
+        
+        function addEmergencyCustomField() {
+            const customFieldsContainer = document.getElementById('emergency-custom-fields');
+            const fieldGroup = document.createElement('div');
+            fieldGroup.classList.add('emergency-custom-field');
+            fieldGroup.innerHTML = `
+                <div class="emergency-input-group">
+                    <label>Field Name</label>
+                    <input type="text" placeholder="e.g., Relationship">
+                </div>
+                <div class="emergency-input-group">
+                    <label>Field Value</label>
+                    <input type="text" placeholder="e.g., Mother">
+                </div>
+            `;
+            customFieldsContainer.appendChild(fieldGroup);
         }
 
         document.addEventListener('DOMContentLoaded', () => {

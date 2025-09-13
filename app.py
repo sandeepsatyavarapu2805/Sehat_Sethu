@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import google.generativeai as genai
 import os, json, datetime
+import requests
 
 app = Flask(__name__)
 
@@ -8,35 +9,44 @@ API_KEY = os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise ValueError("⚠️ GOOGLE_API_KEY is not set.")
 
+# Using a mock for the Weather API key for this example.
+# In a real application, you would use a real API key.
+WEATHER_API_KEY = "your_weather_api_key"
+
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 LOG_FILE = "chat_log.txt"
 USER_DATA_FILE = "user_data.json"
 
-# Move the load and save functions to the top
-# so they are defined before being called.
 def load_user_data():
+    """Loads user data from the JSON file."""
     if os.path.exists(USER_DATA_FILE):
         try:
             with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, FileNotFoundError):
-            return {"profile": {}, "appointments": [], "emergency": [], "medications": []}
-    return {"profile": {}, "appointments": [], "emergency": [], "medications": []}
+            return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
+    return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
 
 def save_user_data(data):
+    """Saves user data to the JSON file."""
     with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
+# Load data on app startup
 user_data = load_user_data()
 
-# Create the detailed system instruction after loading data
 def create_system_instruction(user_data):
+    """Generates a personalized system instruction for the AI."""
     profile_text = ""
     if user_data.get('profile'):
         profile = user_data['profile']
-        profile_text = f"The user's health profile includes: Name - {profile.get('name', 'N/A')}, Age - {profile.get('age', 'N/A')}, Gender - {profile.get('gender', 'N/A')}, Blood Group - {profile.get('blood_group', 'N/A')}, Known Conditions - {profile.get('conditions', 'N/A')}."
+        profile_details = [f"Name - {profile.get('name', 'N/A')}", f"Date of Birth - {profile.get('dob', 'N/A')}", f"Gender - {profile.get('gender', 'N/A')}", f"Blood Group - {profile.get('blood_group', 'N/A')}", f"Known Conditions - {profile.get('conditions', 'N/A')}"]
+        for key, value in profile.items():
+            if key not in ['name', 'dob', 'gender', 'blood_group', 'conditions']:
+                profile_details.append(f"{key} - {value}")
+        profile_text = f"The user's health profile includes: {', '.join(profile_details)}."
     
     medications_text = ""
     if user_data.get('medications'):
@@ -45,10 +55,12 @@ def create_system_instruction(user_data):
 
     emergency_text = ""
     if user_data.get('emergency_contacts'):
-        contact_list = [f"{c['name']} ({c['number']})" for c in user_data['emergency_contacts']]
+        contact_list = []
+        for c in user_data['emergency_contacts']:
+            contact_details = [f"{k}: {v}" for k, v in c.items()]
+            contact_list.append(f"({', '.join(contact_details)})")
         emergency_text = f"The user's emergency contacts are: {', '.join(contact_list)}."
 
-    # A more robust and structured system instruction
     instruction = (
         "You are HealthBot, a friendly, helpful, and empathetic AI health assistant. Your main purpose is to provide **general health and wellness information**, tips, and motivation. You can discuss workout routines, nutrition, and general well-being. "
         "**Never give specific medical diagnoses, treatments, or remedies.** Always start your response with a clear and prominent disclaimer stating that you are not a medical professional. "
@@ -61,6 +73,7 @@ def create_system_instruction(user_data):
     )
     return instruction
 
+# Initialize chat with the system instruction
 chat = model.start_chat(
     history=[
         {"role": "user", "parts": [create_system_instruction(user_data)]},
@@ -70,23 +83,22 @@ chat = model.start_chat(
 
 @app.route("/")
 def home():
+    """Renders the main page."""
     return render_template("index.html")
 
 @app.route("/ask", methods=["POST"])
 def ask():
+    """Handles chat messages and returns an AI response."""
     user_input = request.json.get("message")
-    
-    # Reload user data to get the latest profile information
     current_user_data = load_user_data()
     system_instruction = create_system_instruction(current_user_data)
     
     try:
-        # Send the user's message along with the personalized system instruction
         response = chat.send_message(f"**User:** {user_input}\n\n**HealthBot, remember your instructions:** {system_instruction}")
         bot_text = getattr(response, "text", "") or getattr(response, "last", "")
 
         with open(LOG_FILE, "a", encoding="utf-8") as log:
-            log.write(f"[{datetime.datetime.now()}]\nYou: {user_input}\nHealthBot: {bot_text}\n\n")
+            log.write(f"[{datetime.datetime.now()}]\nUser: {user_input}\nHealthBot: {bot_text}\n\n")
 
     except Exception as e:
         bot_text = f"Sorry, something went wrong: {e}"
@@ -95,23 +107,22 @@ def ask():
 
 @app.route("/get_user_data", methods=["GET"])
 def get_user_data():
+    """Returns all user data as a JSON object."""
     data = load_user_data()
     return jsonify(data)
 
 @app.route("/save_profile", methods=["POST"])
 def save_profile():
+    """Saves the user's profile, including custom fields."""
     data = load_user_data()
     profile_data = request.json
-    
-    # Ensure custom fields are handled correctly
-    profile_data['custom_fields'] = profile_data.get('custom_fields', [])
-    
     data["profile"] = profile_data
     save_user_data(data)
-    return jsonify({"status": "success", "message": "Profile saved!", "data": profile_data})
+    return jsonify({"status": "success", "message": "Profile saved!"})
 
 @app.route("/save_medication", methods=["POST"])
 def save_medication():
+    """Adds a new medication."""
     data = load_user_data()
     medication = request.json
     if "medications" not in data:
@@ -120,8 +131,20 @@ def save_medication():
     save_user_data(data)
     return jsonify({"status": "success", "message": "Medication added!"})
 
+@app.route("/update_medication/<int:index>", methods=["PUT"])
+def update_medication(index):
+    """Updates an existing medication by its index."""
+    data = load_user_data()
+    updated_medication = request.json
+    if 0 <= index < len(data.get("medications", [])):
+        data["medications"][index] = updated_medication
+        save_user_data(data)
+        return jsonify({"status": "success", "message": "Medication updated."})
+    return jsonify({"status": "error", "message": "Medication not found."}), 404
+
 @app.route("/delete_medication/<int:index>", methods=["DELETE"])
 def delete_medication(index):
+    """Deletes a medication by its index."""
     data = load_user_data()
     if 0 <= index < len(data.get("medications", [])):
         data["medications"].pop(index)
@@ -131,6 +154,7 @@ def delete_medication(index):
 
 @app.route("/save_emergency_contact", methods=["POST"])
 def save_emergency_contact():
+    """Adds a new emergency contact, including custom fields."""
     data = load_user_data()
     contact = request.json
     if "emergency_contacts" not in data:
@@ -139,16 +163,30 @@ def save_emergency_contact():
     save_user_data(data)
     return jsonify({"status": "success", "message": "Emergency contact added!"})
 
+@app.route("/update_emergency_contact/<int:index>", methods=["PUT"])
+def update_emergency_contact(index):
+    """Updates an existing emergency contact by its index."""
+    data = load_user_data()
+    updated_contact = request.json
+    if 0 <= index < len(data.get("emergency_contacts", [])):
+        data["emergency_contacts"][index] = updated_contact
+        save_user_data(data)
+        return jsonify({"status": "success", "message": "Emergency contact updated."})
+    return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
+
 @app.route("/delete_emergency_contact/<int:index>", methods=["DELETE"])
 def delete_emergency_contact(index):
+    """Deletes an emergency contact by its index."""
     data = load_user_data()
     if 0 <= index < len(data.get("emergency_contacts", [])):
         data["emergency_contacts"].pop(index)
         save_user_data(data)
-        return jsonify({"status": "success", "message": "Emergency contact not found."}), 404
+        return jsonify({"status": "success", "message": "Emergency contact deleted."})
+    return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
 @app.route("/save_appointment", methods=["POST"])
 def save_appointment():
+    """Adds a new appointment."""
     data = load_user_data()
     appointment = request.json
     if "appointments" not in data:
@@ -157,8 +195,20 @@ def save_appointment():
     save_user_data(data)
     return jsonify({"status": "success", "message": "Appointment added!"})
 
+@app.route("/update_appointment/<int:index>", methods=["PUT"])
+def update_appointment(index):
+    """Updates an existing appointment by its index."""
+    data = load_user_data()
+    updated_appointment = request.json
+    if 0 <= index < len(data.get("appointments", [])):
+        data["appointments"][index] = updated_appointment
+        save_user_data(data)
+        return jsonify({"status": "success", "message": "Appointment updated."})
+    return jsonify({"status": "error", "message": "Appointment not found."}), 404
+
 @app.route("/delete_appointment/<int:index>", methods=["DELETE"])
 def delete_appointment(index):
+    """Deletes an appointment by its index."""
     data = load_user_data()
     if 0 <= index < len(data.get("appointments", [])):
         data["appointments"].pop(index)
@@ -166,9 +216,32 @@ def delete_appointment(index):
         return jsonify({"status": "success", "message": "Appointment deleted."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
-@app.route("/health-tips")
-def health_tips():
-    return render_template("health_tips.html")
+@app.route("/get_weather_tip", methods=["GET"])
+def get_weather_tip():
+    """
+    Fetches weather data for a location and provides a relevant health tip.
+    NOTE: A real API key and location detection would be needed here.
+    """
+    tips = {
+        'Clear': "It's a beautiful day! Go for a walk and get some natural sunlight. It's great for your mood and Vitamin D.",
+        'Clouds': "A cloudy day is perfect for an indoor workout. Try some light stretches or yoga to stay active.",
+        'Rain': "Stay indoors and hydrate! A warm cup of herbal tea can be very comforting on a rainy day.",
+        'Snow': "If you're going out, remember to bundle up in layers to stay warm. A hot, nutritious soup is a great way to warm up afterwards.",
+        'Mist': "Visibility is low. If you're driving, be extra careful. Inside, take some time for mindfulness and deep breathing.",
+        'default': "The weather is changing. Remember to drink plenty of water and eat a balanced meal to keep your immune system strong."
+    }
+
+    try:
+        # Mocking a real weather API call for a simple example.
+        # In a real app, you would use a service like OpenWeatherMap
+        # and get the user's location.
+        mock_weather_data = {'weather': [{'main': 'Clear'}]}
+        condition = mock_weather_data['weather'][0]['main']
+        tip = tips.get(condition, tips['default'])
+        return jsonify({"tip": tip})
+    except Exception as e:
+        print(f"Error fetching weather data: {e}")
+        return jsonify({"tip": tips['default']}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
