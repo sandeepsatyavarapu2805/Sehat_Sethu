@@ -1456,11 +1456,11 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
   <h2 class="text-lg font-semibold">Chat</h2>
   <div class="flex gap-2">
     <button id="historyBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg shadow transition">
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
         📜 Chat History
     </button>
     <button id="clearChatBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow transition"
+            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition"
             title="Start a new chat">
         🆕 New Chat
     </button>
@@ -1588,37 +1588,6 @@ async init() {
         }
     });
 
-    // --- Clear / New Chat button ---
-    document.getElementById("clearChatBtn").addEventListener("click", async () => {
-        if (!confirm("Start a new chat? All previous messages will be cleared.")) return;
-
-        try {
-            // Clear backend chat log (resets with greeting)
-            const data = await app.apiCall("/clear_chat", "POST");
-            if (data.status === "success") {
-                chatMessages.innerHTML = ""; // clear frontend
-                app.showNotification("New chat started!", "success");
-
-                // Reload initial greeting from backend
-                const history = await app.apiCall("/get_chat_history", "GET");
-                if (history.status === "success") {
-                    history.history.forEach(item => {
-                        if(item.bot) this.addMessage(item.bot, "bot");
-                    });
-                }
-            } else {
-                app.showNotification("Failed to start new chat.", "error");
-            }
-        } catch {
-            app.showNotification("Failed to start new chat.", "error");
-        }
-    });
-    // --- Toggle to Chat History page ---
-document.getElementById("historyBtn").addEventListener("click", () => {
-    document.getElementById("chatContainer").classList.add("hidden"); // hide main chat
-    document.getElementById("chatHistoryPage").classList.remove("hidden"); // show history
-    loadChatHistory(); // load messages dynamically
-});
 
     // --- Back to Chat page ---
     document.getElementById("backToChatBtn").addEventListener("click", () => {
@@ -1658,18 +1627,6 @@ async function loadChatHistory() {
         chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
     }
 }
-
-// --- Event listeners for History page buttons ---
-document.getElementById("historyBtn").addEventListener("click", () => {
-    document.getElementById("chatContainer").classList.add("hidden");
-    document.getElementById("chatHistoryPage").classList.remove("hidden");
-    loadChatHistory();
-});
-
-document.getElementById("backToChatBtn").addEventListener("click", () => {
-    document.getElementById("chatHistoryPage").classList.add("hidden");
-    document.getElementById("chatContainer").classList.remove("hidden");
-});
 
 document.getElementById("clearHistoryBtn").addEventListener("click", async () => {
     if (!confirm("Are you sure you want to clear all chat history?")) return;
@@ -2663,5 +2620,55 @@ class WellnessPage {
     document.getElementById("wellnessTipText").textContent = tip;
 });
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+  function bindOnceByCloning(id, handler) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const clone = el.cloneNode(true);
+    el.parentNode.replaceChild(clone, el);
+    clone.addEventListener("click", handler);
+    return clone;
+  }
+
+  const chatMessages = document.getElementById("chatMessages");
+
+  // Use "historyBtn" instead of "chatHistoryBtn" to match your HTML
+  bindOnceByCloning("historyBtn", async () => {
+    try {
+      const data = await app.apiCall("/get_chat_history", "GET");
+      if (data.status === "success") {
+        if (chatMessages) chatMessages.innerHTML = "";
+        data.history.forEach(item => {
+          if (item.user) app.addMessage(item.user, "user");
+          if (item.bot) app.addMessage(item.bot, "bot");
+        });
+      }
+    } catch (e) { console.error(e); }
+  });
+
+  bindOnceByCloning("clearChatBtn", async (ev) => {
+    const btn = ev.currentTarget;
+    if (btn.disabled) return;
+    btn.disabled = true;
+    try {
+      const ok = confirm("Start a new chat? All previous messages will be cleared.");
+      if (!ok) return;
+      const data = await app.apiCall("/clear_chat", "POST");
+      if (data.status === "success") {
+        if (chatMessages) chatMessages.innerHTML = "";
+        const history = await app.apiCall("/get_chat_history", "GET");
+        if (history.status === "success") {
+          history.history.forEach(item => { if (item.bot) app.addMessage(item.bot, "bot"); });
+        }
+      }
+    } catch (e) { console.error(e); }
+    finally { btn.disabled = false; }
+  });
+});
+</script>
+</body>
+</html>
+
 </body>
 </html>
