@@ -2437,69 +2437,50 @@ class WellnessPage {
             });
         });
 
-        // Load initial data and page
-        document.addEventListener('DOMContentLoaded', async () => {
-            await app.loadData();
-            await pageManager.loadPage('chat');
-            
-            // Load wellness tip in sidebar
-            try {
-                const tip = await app.getWeatherTip();
-                document.getElementById('wellnessTipText').textContent = tip;
-            } catch (error) {
-                document.getElementById('wellnessTipText').textContent = 
-                    "Remember to stay hydrated and maintain a balanced diet for optimal health!";
-            }
+// Load everything when the page is ready
+document.addEventListener("DOMContentLoaded", async () => {
+    // Create global state
+    window.app = new AppState();
+    window.pageManager = new PageManager();
 
-            // Set initial theme
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            app.setTheme(savedTheme === 'dark');
-            document.getElementById('themeToggle').checked = savedTheme === 'dark';
+    // Load initial data
+    await app.loadData();
 
-            const sidebar = document.getElementById('sidebar');
-            const toggleButton = document.getElementById('sidebarToggle');
+    // Load the default page (chat)
+    await pageManager.loadPage("chat");
 
-            toggleButton.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
+    // Load wellness tip in sidebar
+    try {
+        const response = await fetch("/get_weather_tip");
+        const data = await response.json();
+        document.getElementById("wellnessTipText").textContent = data.tip;
+    } catch (error) {
+        console.error("Failed to load tip:", error);
+        document.getElementById("wellnessTipText").textContent =
+            "Remember to stay hydrated and maintain a balanced diet for optimal health!";
+    }
 
-        });
+    // Set initial theme
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    app.setTheme(savedTheme === "dark");
+    document.getElementById("themeToggle").checked = savedTheme === "dark";
 
-        async function loadSidebarTip() {
-            try {
-            const response = await fetch("/get_weather_tip");
-            const data = await response.json();
-            document.getElementById("wellnessTipText").textContent = data.tip;
-            } catch (err) {
-                console.error("Failed to load tip:", err);
-                document.getElementById("wellnessTipText").textContent = "Could not load tip.";
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-        // Create app state
-        window.app = new AppState();
-
-        // Create page manager
-        window.pageManager = new PageManager();
-
-        // Load the default page (chat)
-        await pageManager.loadPage("chat");
-
-        // Sidebar navigation
-        document.querySelectorAll(".sidebar-item").forEach(item => {
+    // Sidebar navigation
+    document.querySelectorAll(".sidebar-item").forEach(item => {
         item.addEventListener("click", async (e) => {
             e.preventDefault();
             const pageId = item.getAttribute("data-page");
             await pageManager.loadPage(pageId);
         });
-        });
+    });
 
     // Sidebar toggle
     document.getElementById("sidebarToggle").addEventListener("click", () => {
         document.getElementById("sidebar").classList.toggle("collapsed");
         document.querySelector(".main-content").classList.toggle("collapsed");
     });
+});
+
 
     // Theme toggle
     const themeToggle = document.getElementById("themeToggle");
@@ -2515,7 +2496,7 @@ class WellnessPage {
     // Load daily wellness tip
     const tip = await app.getWeatherTip();
     document.getElementById("wellnessTipText").textContent = tip;
-});
+
     </script>
 </body>
 </html>

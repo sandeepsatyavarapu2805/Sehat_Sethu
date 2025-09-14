@@ -1,5 +1,5 @@
-Flask==2.3.2
-google-generativeai
-colorama==0.4.6
-flask_cors
+Flask==2.3.3
+google-generativeai==0.3.2
 google-trans-new==1.1.9
+flask-cors==4.0.0
+gunicorn==21.2.0
