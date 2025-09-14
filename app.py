@@ -465,37 +465,55 @@ def set_language():
 
 @app.route("/get_chat_history", methods=["GET"])
 def get_chat_history():
-    """Return full chat history, add initial greeting if empty."""
+    """Return chat history from the last 5 days, add initial greeting if empty."""
     try:
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             history = json.load(f)
+    except:
+        history = []
 
-        # Add initial greeting if history is empty
-        if len(history) == 0:
-            greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
-            history.append({"user": "", "bot": greeting})
-            with open(LOG_FILE, "w", encoding="utf-8") as f:
-                json.dump(history, f)
+    # Add initial greeting if history is empty
+    if len(history) == 0:
+        greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
+        history.append({
+            "id": str(datetime.datetime.now().timestamp()),
+            "user": "",
+            "bot": greeting,
+            "timestamp": datetime.datetime.now().isoformat()
+        })
+        with open(LOG_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
 
-        # Optional: Keep only last 50 messages
-        history = history[-50:]
+    # Filter for last 5 days only
+    five_days_ago = datetime.datetime.now() - datetime.timedelta(days=5)
+    filtered_history = [
+        h for h in history
+        if "timestamp" in h and datetime.datetime.fromisoformat(h["timestamp"]) >= five_days_ago
+    ]
 
-        return jsonify({"status": "success", "history": history})
+    # Limit to last 50 messages to avoid overload
+    filtered_history = filtered_history[-50:]
 
-    except Exception as e:
-        print("Error in get_chat_history:", e)
-        return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"status": "success", "history": filtered_history})
 
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
     """Clear chat history and start new chat."""
     try:
-        # Reset chat log to contain only initial greeting
         greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
+        
+        history = [{
+            "id": str(datetime.datetime.now().timestamp()),
+            "user": "",
+            "bot": greeting,
+            "timestamp": datetime.datetime.now().isoformat()
+        }]
+
         with open(LOG_FILE, "w", encoding="utf-8") as f:
-            json.dump([{"user": "", "bot": greeting}], f)
+            json.dump(history, f, ensure_ascii=False, indent=2)
 
         return jsonify({"status": "success", "message": "Chat cleared"})
+
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
