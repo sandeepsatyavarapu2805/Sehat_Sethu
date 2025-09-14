@@ -1155,7 +1155,8 @@
                         options.body = JSON.stringify(data);
                     }
 
-                    const response = await fetch(endpoint, options);
+                    const BASE_URL = window.location.origin;
+                    const response = await fetch(`${BASE_URL}${endpoint}`, options);
                     
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1446,6 +1447,26 @@
                 `;
             }
 
+addMessage(text, sender) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    const id = Date.now(); // unique ID based on timestamp
+
+    messageDiv.className = `message ${sender}`;
+    messageDiv.dataset.id = id;
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i>
+        </div>
+        <div class="message-content">
+            <p class="message-text">${text}</p>
+            ${sender === 'user' ? `<button class="edit-btn">✎ Edit</button>` : ''}
+        </div>
+    `;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 async init() {
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
@@ -1502,22 +1523,17 @@ async init() {
             messageText.innerText = newText;
 
             // Send edited message to backend
-            fetch("/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: newText,
-                    edit_id: editId
-                }),
-            })
-            .then(res => res.json())
-            .then(data => {
-                // Update bot reply (assumes bot message div follows user div)
-                const botReplyDiv = messageDiv.nextElementSibling;
-                if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
-                    botReplyDiv.querySelector('.message-text').innerText = data.reply;
-                }
-            });
+            app.apiCall("/ask", "POST", { message: newText, edit_id: editId })
+                .then(data => {
+                    const botReplyDiv = messageDiv.nextElementSibling;
+                    if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
+                        botReplyDiv.querySelector('.message-text').innerText = data.reply;
+                    }
+    })
+    .catch(() => {
+        app.showNotification("Edit failed. Please try again.", "error");
+    });
+
         }
     });
 }
@@ -1819,10 +1835,10 @@ async init() {
                             <div class="data-item-subtitle">Dosage: ${med.dosage} | Schedule: ${med.schedule}</div>
                         </div>
                         <div class="data-item-actions">
-                            <button class="btn btn-outline btn-sm" onclick="medicationsPage.editMedication(${index})">
+                            <button class="btn btn-outline btn-sm" onclick="app.pages.medicationsPage.editMedication(${index})">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="medicationsPage.deleteMedication(${index})">
+                            <button class="btn btn-danger btn-sm" onclick="app.pages.medicationsPage.deleteMedication(${index})">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
@@ -1981,10 +1997,10 @@ async init() {
                             ${customFieldsHtml}
                         </div>
                         <div class="data-item-actions">
-                            <button class="btn btn-outline btn-sm" onclick="emergencyPage.editContact(${index})">
+                            <button class="btn btn-outline btn-sm" onclick="app.pages.emergencyPage.editContact(${index})">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="emergencyPage.deleteContact(${index})">
+                           <button class="btn btn-danger btn-sm" onclick="app.pages.emergency.deleteContact(${index})">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
@@ -2176,10 +2192,10 @@ async init() {
                             <div class="data-item-subtitle">Date: ${appt.date} | Time: ${appt.time}</div>
                         </div>
                         <div class="data-item-actions">
-                            <button class="btn btn-outline btn-sm" onclick="appointmentsPage.editAppointment(${index})">
+                            <button class="btn btn-outline btn-sm" onclick="app.pages.appointmentsPage.editAppointment(${index})">
                                 <i class="fas fa-edit"></i> Edit
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="appointmentsPage.deleteAppointment(${index})">
+                            <button class="btn btn-danger btn-sm" onclick="app.pages.appointmentsPage.deleteAppointment(${index})">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
