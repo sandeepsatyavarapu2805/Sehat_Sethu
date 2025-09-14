@@ -1456,15 +1456,20 @@ addMessage(text, sender) {
 
     messageDiv.className = `message ${sender}`;
     messageDiv.dataset.id = id;
+
+    // ✅ If bot → render Markdown
+    const parsedText = sender === 'bot' ? marked.parse(text) : text;
+
     messageDiv.innerHTML = `
         <div class="message-avatar">
             <i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i>
         </div>
         <div class="message-content">
-            <p class="message-text">${text}</p>
+            <div class="message-text">${parsedText}</div>
             ${sender === 'user' ? `<button class="edit-btn">✎ Edit</button>` : ''}
         </div>
     `;
+
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -1502,7 +1507,7 @@ async init() {
             // Remove thinking indicator
             thinkingDiv.remove();
 
-            // Add bot response
+            // ✅ Add bot response with Markdown rendering
             this.addMessage(botResponse, 'bot');
         } catch (error) {
             thinkingDiv.remove();
@@ -1525,21 +1530,20 @@ async init() {
             messageText.innerText = newText;
 
             // Send edited message to backend
-app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
+            app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
                 .then(data => {
                     const botReplyDiv = messageDiv.nextElementSibling;
                     if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
-                        botReplyDiv.querySelector('.message-text').innerText = data.reply;
+                        // ✅ Render Markdown for updated bot reply
+                        botReplyDiv.querySelector('.message-text').innerHTML = marked.parse(data.reply);
                     }
-    })
-    .catch(() => {
-        app.showNotification("Edit failed. Please try again.", "error");
-    });
-
+                })
+                .catch(() => {
+                    app.showNotification("Edit failed. Please try again.", "error");
+                });
         }
     });
 }
-
 
             addThinkingIndicator() {
                 const chatMessages = document.getElementById('chatMessages');
