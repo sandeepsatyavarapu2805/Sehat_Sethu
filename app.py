@@ -143,8 +143,8 @@ def ask():
     try:
         user_input = request.json.get("message", "").strip()
         incoming_edit_id = request.json.get("edit_id")
-        if incoming_edit_id is not None:
-            edit_id = str(incoming_edit_id)
+        edit_id = str(incoming_edit_id) if incoming_edit_id else None
+
 
         current_user_data = load_user_data()
         system_instruction = create_system_instruction(current_user_data)
@@ -211,7 +211,7 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+                bot_text = response.text
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
@@ -234,7 +234,7 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+                bot_text = response.text
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
@@ -261,7 +261,7 @@ def ask():
             )
             try:
                 response = chat.send_message(formatted_input)
-                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+                bot_text = response.text
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
@@ -279,7 +279,7 @@ def ask():
             )
             try:
                 response = chat.send_message(formatted_input)
-                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+                bot_text = response.text
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
@@ -289,7 +289,7 @@ def ask():
             formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
             try:
                 response = chat.send_message(formatted_input)
-                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+                bot_text = response.text
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
