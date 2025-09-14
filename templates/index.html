@@ -1494,7 +1494,7 @@ async init() {
 
         try {
             // Send message to backend
-            const response = await app.apiCall('/ask', 'POST', { message });
+            const response = await app.apiCall('/chat', 'POST', { message });
             const botResponse = response.reply;
 
             // Remove thinking indicator
@@ -1523,7 +1523,7 @@ async init() {
             messageText.innerText = newText;
 
             // Send edited message to backend
-            app.apiCall("/ask", "POST", { message: newText, edit_id: editId })
+            app.apiCall("/chat", "POST", { message: newText, edit_id: editId })
                 .then(data => {
                     const botReplyDiv = messageDiv.nextElementSibling;
                     if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
