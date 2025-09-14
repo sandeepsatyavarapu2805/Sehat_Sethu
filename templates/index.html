@@ -1155,7 +1155,7 @@
                         options.body = JSON.stringify(data);
                     }
 
-                    const BASE_URL = window.location.origin;
+                    const BASE_URL = "https://sehat-sethu-2.onrender.com";
                     const response = await fetch(`${BASE_URL}${endpoint}`, options);
                     
                     if (!response.ok) {
@@ -1418,8 +1418,7 @@
                 app.currentPage = pageId;
             }
         }
-        
-        // Base URL for API calls
+
 // Base URL for API calls
 const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real Render URL
 
