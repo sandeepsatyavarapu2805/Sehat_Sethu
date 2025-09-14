@@ -442,6 +442,28 @@ def set_language():
     session["lang"] = lang
     return jsonify({"status": "success", "message": f"Language set to {lang}"})
 
+@app.route("/get_chat_history", methods=["GET"])
+def get_chat_history():
+    """Return full chat history from log file."""
+    if os.path.exists(LOG_FILE):
+        try:
+            with open(LOG_FILE, "r", encoding="utf-8") as f:
+                history = json.load(f)
+            return jsonify({"status": "success", "history": history})
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 500
+    return jsonify({"status": "success", "history": []})
+
+
+@app.route("/clear_chat", methods=["POST"])
+def clear_chat():
+    """Clear chat history (both backend log and frontend)."""
+    try:
+        with open(LOG_FILE, "w", encoding="utf-8") as f:
+            json.dump([], f)  # reset to empty list
+        return jsonify({"status": "success", "message": "Chat cleared"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/get_weather_tip", methods=["GET"])
 def get_weather_tip():

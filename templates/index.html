@@ -1426,6 +1426,15 @@ const BASE_URL = window.location.origin; // replace with your real Render URL
             render() {
                 return `
                     <div class="chat-container">
+
+                        <div class="flex justify-between items-center mb-2 px-2">
+  <h2 class="text-lg font-semibold">Chat</h2>
+    <button id="clearChatBtn" 
+          class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded shadow">
+    🗑 Clear Chat
+  </button>
+</div>
+
                         <div class="chat-messages" id="chatMessages">
                             <div class="message bot">
                                 <div class="message-avatar">
@@ -1478,6 +1487,20 @@ async init() {
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
+
+    // Load chat history from backend on page load
+    app.apiCall("/get_chat_history", "GET")
+        .then(data => {
+            if (data.status === "success") {
+                data.history.forEach(item => {
+                    if(item.user) this.addMessage(item.user, "user");
+                    if(item.bot) this.addMessage(item.bot, "bot");
+                });
+            }
+        })
+        .catch(() => {
+            app.showNotification("Failed to load history", "error");
+        });
 
     // Auto-resize textarea
     chatInput.addEventListener('input', function() {
@@ -1532,17 +1555,41 @@ async init() {
             // Send edited message to backend
             app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
                 .then(data => {
-                    const botReplyDiv = messageDiv.nextElementSibling;
-                    if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
-                        // ✅ Render Markdown for updated bot reply
-                        botReplyDiv.querySelector('.message-text').innerHTML = marked.parse(data.reply);
-                    }
+                // Remove everything after the edited user message
+                let next = messageDiv.nextElementSibling;
+                while (next) {
+                    const toRemove = next;
+                    next = next.nextElementSibling;
+                    toRemove.remove();
+                }
+                    // Add the fresh bot reply as new continuation
+                this.addMessage(data.reply, 'bot');
+
                 })
                 .catch(() => {
                     app.showNotification("Edit failed. Please try again.", "error");
                 });
         }
     });
+
+    // Clear chat button listener
+    document.getElementById("clearChatBtn").addEventListener("click", () => {
+        if (!confirm("Are you sure you want to clear the chat?")) return;
+
+        app.apiCall("/clear_chat", "POST", {})
+            .then(data => {
+                if (data.status === "success") {
+                    document.getElementById("chatMessages").innerHTML = "";
+                    app.showNotification("Chat history cleared!", "success");
+                } else {
+                    app.showNotification("Failed to clear history", "error");
+                }
+            })
+            .catch(() => {
+                app.showNotification("Clear chat failed!", "error");
+            });
+    });
+
 }
 
             addThinkingIndicator() {
