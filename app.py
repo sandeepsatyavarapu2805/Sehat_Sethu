@@ -465,16 +465,16 @@ def set_language():
 
 @app.route("/get_chat_history", methods=["GET"])
 def get_chat_history():
-    """Return chat history from the last 5 days, add initial greeting if empty."""
     try:
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             history = json.load(f)
     except:
         history = []
 
-    # Add initial greeting if history is empty
-    if len(history) == 0:
-        greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
+    greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
+
+    # Append greeting only if no messages or no existing greeting
+    if len(history) == 0 or not any(h.get("bot") == greeting for h in history):
         history.append({
             "id": str(datetime.datetime.now().timestamp()),
             "user": "",
@@ -484,16 +484,12 @@ def get_chat_history():
         with open(LOG_FILE, "w", encoding="utf-8") as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
 
-    # Filter for last 5 days only
+    # Filter the chats from last 5 days
     five_days_ago = datetime.datetime.now() - datetime.timedelta(days=5)
-    filtered_history = [
-        h for h in history
-        if "timestamp" in h and datetime.datetime.fromisoformat(h["timestamp"]) >= five_days_ago
-    ]
-
-    # Limit to last 50 messages to avoid overload
+    filtered_history = [h for h in history if "timestamp" in h and datetime.datetime.fromisoformat(h["timestamp"]) >= five_days_ago]
+    
+    # Limit to last 50 messages
     filtered_history = filtered_history[-50:]
-
     return jsonify({"status": "success", "history": filtered_history})
 
 @app.route("/clear_chat", methods=["POST"])
