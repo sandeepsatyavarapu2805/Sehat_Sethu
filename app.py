@@ -310,8 +310,7 @@ def ask():
         if edit_id:
             update_log(edit_id, user_input, bot_text)
         else:
-            with open(LOG_FILE, "a", encoding="utf-8") as f:
-                f.write(f"[{datetime.datetime.now()}]\nUser: {user_input}\nBot: {bot_text}\n\n")
+            save_message(user_input, bot_text)
 
         return jsonify({"reply": bot_text})
 
@@ -319,6 +318,23 @@ def ask():
         print(f"Error in ask route: {e}")
         print(traceback.format_exc())
         return jsonify({"reply": "I'm sorry, I'm experiencing technical difficulties. Please try again later."}), 500
+    
+def save_message(user_input, bot_text):
+    try:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            history = json.load(f)
+    except:
+        history = []
+
+    history.append({
+        "id": str(datetime.datetime.now().timestamp()),
+        "user": user_input,
+        "bot": bot_text,
+        "timestamp": datetime.datetime.now().isoformat()
+    })
+
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
 
 
 @app.route("/get_user_data", methods=["GET"])

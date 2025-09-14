@@ -1425,7 +1425,7 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
         class ChatPage {
             render() {
                 return `
-                    <div class="chat-container">
+                    <div class="chat-container" id="chatContainer">
 
 <!-- Chat History Page (hidden by default) -->
 <div id="chatHistoryPage" class="hidden">
@@ -1453,30 +1453,22 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
 
 <!-- Main Chat Header -->
 <div class="flex justify-between items-center mb-2 px-2 gap-2">
-    <h2 class="text-lg font-semibold">Chat</h2>
-    <div class="flex gap-2">
-        <button id="historyBtn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded">
-            Chat History
-        </button>
-        <button id="clearChatBtn"
-                class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm font-medium rounded shadow transition duration-200"
-                title="Start a new chat">
-            🆕 New Chat
-        </button>
-    </div>
+  <h2 class="text-lg font-semibold">Chat</h2>
+  <div class="flex gap-2">
+    <button id="historyBtn" 
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg shadow transition">
+        📜 Chat History
+    </button>
+    <button id="clearChatBtn" 
+            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow transition"
+            title="Start a new chat">
+        🆕 New Chat
+    </button>
+  </div>
 </div>
 
-                        <div class="chat-messages" id="chatMessages">
-                            <div class="message bot">
-                                <div class="message-avatar">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <div class="message-content">
-                                    <p class="message-text">Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?</p>
-                                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="chat-messages" id="chatMessages"></div>
+
                         <div class="chat-input-container">
                             <form class="chat-input-form" id="chatForm">
                                 <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
@@ -1489,10 +1481,10 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
                 `;
             }
 
-addMessage(text, sender) {
+addMessage(text, sender, timestamp = null) {
     const chatMessages = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
-    const id = Date.now(); // unique ID based on timestamp
+    const id = Date.now(); // unique ID
 
     messageDiv.className = `message ${sender}`;
     messageDiv.dataset.id = id;
@@ -1500,12 +1492,18 @@ addMessage(text, sender) {
     // ✅ If bot → render Markdown
     const parsedText = sender === 'bot' ? marked.parse(text) : text;
 
+    // ✅ Use backend timestamp if provided, otherwise fallback to now
+    const timeString = timestamp
+        ? new Date(timestamp).toLocaleString()
+        : new Date().toLocaleTimeString();
+
     messageDiv.innerHTML = `
         <div class="message-avatar">
             <i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i>
         </div>
         <div class="message-content">
             <div class="message-text">${parsedText}</div>
+            <div class="message-time">${timeString}</div>
             ${sender === 'user' ? `<button class="edit-btn">✎ Edit</button>` : ''}
         </div>
     `;
