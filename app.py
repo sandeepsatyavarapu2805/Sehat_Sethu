@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request, jsonify, session
-import google.generativeai as genai
-import os, json, datetime
-from google_trans_new import google_translator
-from flask_cors import CORS
+import datetime
+import json
+import os
 import traceback
+
+import google.generativeai as genai
+from flask import Flask, jsonify, render_template, request, session
+from flask_cors import CORS
+from google_trans_new import google_translator
 
 # Initialize translator
 translator = google_translator()
