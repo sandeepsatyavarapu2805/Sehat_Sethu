@@ -3,6 +3,7 @@ import google.generativeai as genai
 import os, json, datetime
 from google_trans_new import google_translator
 from flask_cors import CORS
+import traceback
 
 # Initialize translator
 translator = google_translator()
@@ -139,127 +140,180 @@ def home():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    user_input = request.json.get("message", "").strip()
-    edit_id = request.json.get("edit_id")
-    if edit_id is not None:
-        edit_id = str(edit_id)
+    try:
+        user_input = request.json.get("message", "").strip()
+        edit_id = request.json.get("edit_id")
+        if edit_id is not None:
+            edit_id = str(edit_id)
 
-    current_user_data = load_user_data()
-    system_instruction = create_system_instruction(current_user_data)
+        current_user_data = load_user_data()
+        system_instruction = create_system_instruction(current_user_data)
 
-    lang = session.get("lang", "en")
+        lang = session.get("lang", "en")
 
-    # Translate input if Telugu
-    user_input_en = translator.translate(user_input, lang_tgt='en') if lang == "te" else user_input
+        # Translate input if Telugu
+        try:
+            user_input_en = translator.translate(user_input, lang_tgt='en') if lang == "te" else user_input
+        except Exception as e:
+            print(f"Translation error: {e}")
+            user_input_en = user_input  # Fallback to original input
 
-    # Emergency check
-    emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
-    if any(word in user_input_en.lower() for word in emergency_keywords):
-        emergency_message = (
-            "⚠️ Emergency detected!\n"
-            "Please call 108 immediately for an ambulance.\n"
-            "If possible, go to the nearest hospital right away.\n"
-            "Do not wait — seek help immediately!"
-        )
+        # Emergency check
+        emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
+        if any(word in user_input_en.lower() for word in emergency_keywords):
+            emergency_message = (
+                "⚠️ Emergency detected!\n"
+                "Please call 108 immediately for an ambulance.\n"
+                "If possible, go to the nearest hospital right away.\n"
+                "Do not wait — seek help immediately!"
+            )
+            if lang == "te":
+                try:
+                    emergency_message = translator.translate(emergency_message, lang_tgt='te')
+                except:
+                    pass  # Use English if translation fails
+            return jsonify({"reply": emergency_message})
+
+        # Mental health check
+        if any(word.lower() in user_input_en.lower() for word in ["stress", "anxious", "depressed", "sad", "low mood"]):
+            prompt = (
+                "You are HealthBot, a friendly AI assistant. "
+                "The user is feeling stressed or anxious. "
+                "Provide **3 practical mental health tips**, each 1-2 sentences. "
+                "Do not repeat previous tips. "
+                "Add a friendly tone and include a disclaimer: "
+                "'This is general advice, not a substitute for professional help.'"
+                f"\nUser input: {user_input_en}"
+            )
+            try:
+                response = chat.send_message(prompt)
+                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+            except Exception as e:
+                print(f"AI response error: {e}")
+                bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+            if lang == "te":
+                try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+                except:
+                    pass  # Use English if translation fails
+            return jsonify({"reply": bot_text})
+        
+        # Nutrition and lifestyle check
+        if any(word.lower() in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
+            prompt = (
+                "You are HealthBot, a friendly AI assistant. "
+                "The user asked about nutrition or healthy lifestyle. "
+                "Provide **3 practical tips** based on the input. "
+                "Include simple advice suitable for everyday life. "
+                "Add a friendly disclaimer: 'This is general advice, not a substitute for professional help.'"
+                f"\nUser input: {user_input_en}"
+            )
+            try:
+                response = chat.send_message(prompt)
+                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+            except Exception as e:
+                print(f"AI response error: {e}")
+                bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+            if lang == "te":
+                try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+                except:
+                    pass
+            return jsonify({"reply": bot_text})
+
+        # Quiz and tips check
+        if "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
+            prompt = (
+                "You are HealthBot. Provide a **new health quiz question or tip** for the user. "
+                "Keep it engaging, educational, and safe. "
+                "Do not repeat previous questions. "
+                "Add a short disclaimer if necessary."
+                f"\nUser input: {user_input_en}"
+            )
+            try:
+                response = chat.send_message(prompt)
+                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+            except Exception as e:
+                print(f"AI response error: {e}")
+                bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+            if lang == "te":
+                try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+                except:
+                    pass
+            return jsonify({"reply": bot_text})
+        
+        # Medicine info check
+        medicine_keywords = ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]
+        if any(word.lower() in user_input_en.lower() for word in medicine_keywords):
+            disclaimer = (
+                "⚠️ I can provide **general information about medicines only**. "
+                "I cannot give personalized dosage, treatment plans, or recommend medicines for your condition. "
+                "Always consult a doctor or pharmacist before taking any medicine."
+            )
+            formatted_input = (
+                f"{disclaimer}\n\n"
+                f"User question: {user_input_en}\n"
+                "Instructions: Provide general info about the medicine, including uses, common dosage ranges, side effects, and precautions."
+            )
+            try:
+                response = chat.send_message(formatted_input)
+                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+            except Exception as e:
+                print(f"AI response error: {e}")
+                bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+
+        # Symptom checker
+        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
+            disclaimer = (
+                "⚠️ I can provide general information only. "
+                "This is not a substitute for medical advice. Consult a doctor if symptoms persist."
+            )
+            formatted_input = (
+                f"{disclaimer}\n\n"
+                f"User symptoms: {user_input_en}\n"
+                "Instructions: Suggest possible general causes and safe home remedies."
+            )
+            try:
+                response = chat.send_message(formatted_input)
+                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+            except Exception as e:
+                print(f"AI response error: {e}")
+                bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+
+        # Default chat
+        else:
+            formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
+            try:
+                response = chat.send_message(formatted_input)
+                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+            except Exception as e:
+                print(f"AI response error: {e}")
+                bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+
+        # Translate back to Telugu if needed
         if lang == "te":
-            emergency_message = translator.translate(emergency_message, lang_tgt='te')
-        return jsonify({"reply": emergency_message})
+            try:
+                bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                print(f"Translation error: {e}")
+                # Keep English text if translation fails
 
-    # Mental health check
-    if any(word.lower() in user_input_en.lower() for word in ["stress", "anxious", "depressed", "sad", "low mood"]):
-        prompt = (
-            "You are HealthBot, a friendly AI assistant. "
-            "The user is feeling stressed or anxious. "
-            "Provide **3 practical mental health tips**, each 1-2 sentences. "
-            "Do not repeat previous tips. "
-            "Add a friendly tone and include a disclaimer: "
-            "'This is general advice, not a substitute for professional help.'"
-            f"\nUser input: {user_input_en}"
-        )
-        response = chat.send_message(prompt)
-        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
-        if lang == "te":
-            bot_text = translator.translate(bot_text, lang_tgt='te')
+        if edit_id:
+            update_log(edit_id, user_input, bot_text)
+        else:
+            with open(LOG_FILE, "a", encoding="utf-8") as f:
+                f.write(f"[{datetime.datetime.now()}]\nUser: {user_input}\nBot: {bot_text}\n\n")
+
         return jsonify({"reply": bot_text})
-    
-    # Nutrition and lifestyle check
-    if any(word.lower() in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
-        prompt = (
-            "You are HealthBot, a friendly AI assistant. "
-            "The user asked about nutrition or healthy lifestyle. "
-            "Provide **3 practical tips** based on the input. "
-            "Include simple advice suitable for everyday life. "
-            "Add a friendly disclaimer: 'This is general advice, not a substitute for professional help.'"
-            f"\nUser input: {user_input_en}"
-        )
-        response = chat.send_message(prompt)
-        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
-        if lang == "te":
-            bot_text = translator.translate(bot_text, lang_tgt='te')
-        return jsonify({"reply": bot_text})
 
-    # Quiz and tips check
-    if "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
-        prompt = (
-            "You are HealthBot. Provide a **new health quiz question or tip** for the user. "
-            "Keep it engaging, educational, and safe. "
-            "Do not repeat previous questions. "
-            "Add a short disclaimer if necessary."
-            f"\nUser input: {user_input_en}"
-        )
-        response = chat.send_message(prompt)
-        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
-        if lang == "te":
-            bot_text = translator.translate(bot_text, lang_tgt='te')
-        return jsonify({"reply": bot_text})
-    
-    # Medicine info check
-    medicine_keywords = ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]
-    if any(word.lower() in user_input_en.lower() for word in medicine_keywords):
-        disclaimer = (
-            "⚠️ I can provide **general information about medicines only**. "
-            "I cannot give personalized dosage, treatment plans, or recommend medicines for your condition. "
-            "Always consult a doctor or pharmacist before taking any medicine."
-        )
-        formatted_input = (
-            f"{disclaimer}\n\n"
-            f"User question: {user_input_en}\n"
-            "Instructions: Provide general info about the medicine, including uses, common dosage ranges, side effects, and precautions."
-        )
-        response = chat.send_message(formatted_input)
-        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
-
-    # Symptom checker
-    elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
-        disclaimer = (
-            "⚠️ I can provide general information only. "
-            "This is not a substitute for medical advice. Consult a doctor if symptoms persist."
-        )
-        formatted_input = (
-            f"{disclaimer}\n\n"
-            f"User symptoms: {user_input_en}\n"
-            "Instructions: Suggest possible general causes and safe home remedies."
-        )
-        response = chat.send_message(formatted_input)
-        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
-
-    # Default chat
-    else:
-        formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
-        response = chat.send_message(formatted_input)
-        bot_text = getattr(response, "text", "") or getattr(response, "last", "")
-
-    # Translate back to Telugu if needed
-    if lang == "te":
-        bot_text = translator.translate(bot_text, lang_tgt='te')
-
-    if edit_id:
-        update_log(edit_id, user_input, bot_text)
-    else:
-        with open(LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(f"[{datetime.datetime.now()}]\nUser: {user_input}\nBot: {bot_text}\n\n")
-
-    return jsonify({"reply": bot_text})
+    except Exception as e:
+        print(f"Error in ask route: {e}")
+        print(traceback.format_exc())
+        return jsonify({"reply": "I'm sorry, I'm experiencing technical difficulties. Please try again later."}), 500
 
 
 @app.route("/get_user_data", methods=["GET"])
@@ -419,4 +473,4 @@ def get_weather_tip():
 # ---------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=True)
+app.run(host="0.0.0.0", port=port, debug=False)
