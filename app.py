@@ -27,6 +27,12 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 
 # File storage
 LOG_FILE = "chat_log.json"
+
+# ✅ Auto-create file if it doesn't exist
+if not os.path.exists(LOG_FILE):
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump([], f)
+
 USER_DATA_FILE = "user_data.json"
 
 # ---------------------------
