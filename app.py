@@ -144,7 +144,7 @@ def ask():
         user_input = request.json.get("message", "").strip()
         incoming_edit_id = request.json.get("edit_id")
         if incoming_edit_id is not None:
-            edit_id = str(edit_id)
+            edit_id = str(incoming_edit_id)
 
         current_user_data = load_user_data()
         system_instruction = create_system_instruction(current_user_data)
@@ -187,7 +187,7 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = getattr(response, "text", "") or getattr(response, "last", "")
+                bot_text = response.text
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
@@ -473,4 +473,4 @@ def get_weather_tip():
 # ---------------------------
 if __name__ == "__main__":
     Flask_port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=Flask_port, debug=False)
+    app.run(host="0.0.0.0", port=Flask_port, debug=False)
