@@ -26,9 +26,9 @@ genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 # File storage
-LOG_FILE = "chat_log.json"
+LOG_FILE = os.path.join(os.path.dirname(__file__), "chat_log.json")
 
-# ✅ Auto-create file if it doesn't exist
+# Auto-create file if missing
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         json.dump([], f)
@@ -450,16 +450,14 @@ def set_language():
 
 @app.route("/get_chat_history", methods=["GET"])
 def get_chat_history():
-    """Return full chat history from log file."""
-    if os.path.exists(LOG_FILE):
-        try:
-            with open(LOG_FILE, "r", encoding="utf-8") as f:
-                history = json.load(f)
-            return jsonify({"status": "success", "history": history})
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
-    return jsonify({"status": "success", "history": []})
-
+    """Return full chat history from log file safely."""
+    try:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            history = json.load(f)
+        return jsonify({"status": "success", "history": history})
+    except Exception as e:
+        print("Error in get_chat_history:", e)  # logs the error on server
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
