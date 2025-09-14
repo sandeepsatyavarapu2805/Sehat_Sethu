@@ -2334,9 +2334,41 @@ class AppointmentsPage {
 }
 // --- Wellness Page ---
 class WellnessPage {
-    constructor(autoRotateInterval = 15000) { // 15 sec default
-        this.autoRotateInterval = autoRotateInterval;
-        this.categories = {
+    render() {
+        return `
+            <div class="card text-center">
+                <div class="card-header">
+                    <h2 class="card-title">Daily Wellness Tips</h2>
+                    <div class="card-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                </div>
+                <div class="p-8">
+                    <div id="wellnessTipDisplay" class="text-lg font-bold font-sans mb-6 text-blue-900 dark:text-blue-300">
+                        Loading your personalized tip...
+                    </div>
+                    <button class="btn btn-primary" id="refreshTip">
+                        <i class="fas fa-refresh"></i> Get New Tip
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    async init() {
+        await this.loadWellnessTip();
+
+        const refreshBtn = document.getElementById('refreshTip');
+        if (!refreshBtn.dataset.bound) {
+            refreshBtn.addEventListener('click', async () => {
+                await this.loadWellnessTip();
+            });
+            refreshBtn.dataset.bound = "true"; // ✅ Prevent duplicate binding
+        }
+    }
+
+    async loadWellnessTip() {
+        const categories = {
             "Workout": [
                 "Do 3 sets of 15 squats 🏋️‍♂️<br>1. Stand straight.<br>2. Lower hips as if sitting.<br>3. Keep knees behind toes.<br>4. Rise back up.",
                 "Push-ups (3 sets of 10) 💪<br>1. Keep body straight.<br>2. Lower chest to the ground.<br>3. Push back up.",
@@ -2368,84 +2400,15 @@ class WellnessPage {
                 "Eat on time ⏰<br>Have 3 main meals & 2 small snacks regularly."
             ]
         };
-    }
 
-    render() {
-        return `
-            <div class="card text-center wellness-card">
-                <div class="card-header">
-                    <h2 class="card-title">Daily Wellness Tips</h2>
-                    <div class="card-icon"><i class="fas fa-heartbeat"></i></div>
-                </div>
-                <div class="card-body">
-                    <div id="wellnessTipDisplay" class="wellness-tip text-lg font-bold mb-6 text-blue-900 dark:text-blue-300">
-                        Loading your personalized tip...
-                    </div>
-                    <button class="btn btn-primary" id="refreshTip">
-                        <i class="fas fa-refresh"></i> Get New Tip
-                    </button>
-                    <div class="tip mt-4">
-                        <button class="collapsible">🧘 Mental Wellness Tips</button>
-                        <div class="content">
-                            <ul>
-                                <li>Practice mindfulness or meditation for 10 minutes daily.</li>
-                                <li>Take short breaks while working or studying to reduce stress.</li>
-                                <li>Connect with friends or family regularly for emotional support.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <style>
-                .wellness-card { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background-color: #fefefe; }
-                .card-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
-                .card-icon i { color: #e74c3c; font-size: 1.5rem; }
-                .tip { margin-bottom: 15px; text-align: left; }
-                .collapsible { background-color: #eee; color: #333; cursor: pointer; padding: 10px; width: 100%; border: none; border-radius: 8px; text-align: left; font-size: 16px; }
-                .collapsible:after { content: '\\002B'; float: right; }
-                .collapsible.active:after { content: "\\2212"; }
-                .content { padding: 0 15px; display: none; overflow: hidden; background-color: #f9f9f9; border-left: 2px solid #e74c3c; margin-top: 5px; }
-                .wellness-tip { transition: opacity 0.5s ease-in-out; opacity: 1; }
-            </style>
-        `;
-    }
-
-    async init() {
-        this.displayEl = document.getElementById('wellnessTipDisplay');
-        this.refreshBtn = document.getElementById('refreshTip');
-
-        // Load first tip
-        await this.loadWellnessTip();
-
-        // Refresh button
-        this.refreshBtn.addEventListener('click', () => this.loadWellnessTip());
-
-        // Collapsible
-        const coll = document.getElementsByClassName("collapsible");
-        for (let i = 0; i < coll.length; i++) {
-            coll[i].addEventListener("click", function () {
-                this.classList.toggle("active");
-                const content = this.nextElementSibling;
-                content.style.display = content.style.display === "block" ? "none" : "block";
-            });
-        }
-
-        // Auto-rotate tips
-        this.autoRotate = setInterval(() => this.loadWellnessTip(), this.autoRotateInterval);
-    }
-
-    async loadWellnessTip() {
-        const categoryNames = Object.keys(this.categories);
+        // Pick a random category
+        const categoryNames = Object.keys(categories);
         const randomCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
-        const tips = this.categories[randomCategory];
+        const tips = categories[randomCategory];
         const randomTip = tips[Math.floor(Math.random() * tips.length)];
 
-        // Fade out, change, fade in
-        this.displayEl.style.opacity = 0;
-        setTimeout(() => {
-            this.displayEl.innerHTML = `<strong>${randomCategory} Tip:</strong><br><br>${randomTip}`;
-            this.displayEl.style.opacity = 1;
-        }, 300);
+        // ✅ Use innerHTML so <br> works
+        document.getElementById('wellnessTipDisplay').innerHTML = `${randomCategory} Tip:<br><br>${randomTip}`;
     }
 }
 
