@@ -1759,565 +1759,694 @@ async init() {
             }
         }
 
-        // --- Medications Page ---
-        class MedicationsPage {
-            render() {
-                return `
-                    <div class="space-y-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Add Medication</h2>
-                                <div class="card-icon">
-                                    <i class="fas fa-pills"></i>
-                                </div>
-                            </div>
-                            <form id="medicationForm">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label class="form-label">Medication Name</label>
-                                        <input type="text" class="form-input" id="medName" placeholder="e.g., Metformin">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Dosage</label>
-                                        <input type="text" class="form-input" id="medDosage" placeholder="e.g., 500mg">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Schedule</label>
-                                        <input type="text" class="form-input" id="medSchedule" placeholder="e.g., Daily, 8am">
-                                    </div>
-                                </div>
-                                <div class="flex justify-end">
-                                    <button type="submit" class="btn btn-primary">Add Medication</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Your Medications</h2>
-                                <div class="card-icon">
-                                    <i class="fas fa-list"></i>
-                                </div>
-                            </div>
-                            <div id="medicationsList" class="data-list">
-                                <!-- Medications will be loaded here -->
-                            </div>
+// --- Medications Page ---
+class MedicationsPage {
+    render() {
+        return `
+            <div class="space-y-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Add Medication</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-pills"></i>
                         </div>
                     </div>
-                `;
-            }
-
-            async init() {
-                await app.loadData();
-                this.renderMedications();
-
-                document.getElementById('medicationForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.saveMedication();
-                });
-            }
-
-            renderMedications() {
-                const container = document.getElementById('medicationsList');
-                container.innerHTML = '';
-
-                if (app.data.medications.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500">No medications added yet.</p>';
-                    return;
-                }
-
-                app.data.medications.forEach((med, index) => {
-                    const medDiv = document.createElement('div');
-                    medDiv.className = 'data-item';
-                    medDiv.innerHTML = `
-                        <div class="data-item-content">
-                            <div class="data-item-title">${med.name}</div>
-                            <div class="data-item-subtitle">Dosage: ${med.dosage} | Schedule: ${med.schedule}</div>
+                    <form id="medicationForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Medication Name</label>
+                                <input type="text" class="form-input" id="medName" placeholder="e.g., Metformin">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Dosage</label>
+                                <input type="text" class="form-input" id="medDosage" placeholder="e.g., 500mg">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Schedule</label>
+                                <input type="text" class="form-input" id="medSchedule" placeholder="e.g., Daily, 8am">
+                            </div>
                         </div>
-                        <div class="data-item-actions">
-                            <button class="btn btn-outline btn-sm" onclick="app.pages.medicationsPage.editMedication(${index})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="app.pages.medicationsPage.deleteMedication(${index})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
+                        <div class="flex justify-end">
+                            <button type="submit" class="btn btn-primary">Add Medication</button>
                         </div>
-                    `;
-                    container.appendChild(medDiv);
-                });
-            }
+                    </form>
+                </div>
 
-            async saveMedication() {
-                const medicationData = {
-                    name: document.getElementById('medName').value,
-                    dosage: document.getElementById('medDosage').value,
-                    schedule: document.getElementById('medSchedule').value
-                };
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Your Medications</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                    </div>
+                    <div id="medicationsList" class="data-list">
+                        <!-- Medications will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 
-                if (!medicationData.name || !medicationData.dosage || !medicationData.schedule) {
-                    app.showNotification('Please fill in all fields.', 'error');
-                    return;
-                }
+    async init() {
+        await app.loadData();
+        this.renderMedications();
 
-                await app.saveMedication(medicationData);
-                document.getElementById('medicationForm').reset();
-                this.renderMedications();
-            }
-
-            async editMedication(index) {
-                const medication = app.data.medications[index];
-                document.getElementById('medName').value = medication.name;
-                document.getElementById('medDosage').value = medication.dosage;
-                document.getElementById('medSchedule').value = medication.schedule;
-
-                // Change form to update mode
-                const form = document.getElementById('medicationForm');
-                const submitBtn = form.querySelector('button[type="submit"]');
-                submitBtn.textContent = 'Update Medication';
-                submitBtn.onclick = async (e) => {
-                    e.preventDefault();
-                    const updatedData = {
-                        name: document.getElementById('medName').value,
-                        dosage: document.getElementById('medDosage').value,
-                        schedule: document.getElementById('medSchedule').value
-                    };
-                    await app.updateMedication(index, updatedData);
-                    form.reset();
-                    submitBtn.textContent = 'Add Medication';
-                    this.renderMedications();
-                };
-            }
-
-            async deleteMedication(index) {
-                app.showModal(
-                    'Delete Medication',
-                    'Are you sure you want to delete this medication?',
-                    async (confirmed) => {
-                        if (confirmed) {
-                            await app.deleteMedication(index);
-                            this.renderMedications();
-                        }
-                    }
-                );
-            }
+        // ✅ Prevent double form binding
+        const form = document.getElementById('medicationForm');
+        if (!form.dataset.bound) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.saveMedication();
+            });
+            form.dataset.bound = "true";
         }
+
+        // ✅ Event delegation for edit/delete
+        const container = document.getElementById('medicationsList');
+        if (!container.dataset.bound) {
+            container.addEventListener('click', (e) => {
+                const item = e.target.closest('.data-item');
+                if (!item) return;
+                const index = parseInt(item.dataset.index);
+
+                if (e.target.closest('.edit-btn')) {
+                    this.editMedication(index);
+                }
+                if (e.target.closest('.delete-btn')) {
+                    this.deleteMedication(index);
+                }
+            });
+            container.dataset.bound = "true";
+        }
+    }
+
+    renderMedications() {
+        const container = document.getElementById('medicationsList');
+        container.innerHTML = '';
+
+        if (app.data.medications.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">No medications added yet.</p>';
+            return;
+        }
+
+        app.data.medications.forEach((med, index) => {
+            const medDiv = document.createElement('div');
+            medDiv.className = 'data-item';
+            medDiv.dataset.index = index; // ✅ needed for delegation
+
+            medDiv.innerHTML = `
+                <div class="data-item-content">
+                    <div class="data-item-title">${med.name}</div>
+                    <div class="data-item-subtitle">Dosage: ${med.dosage} | Schedule: ${med.schedule}</div>
+                </div>
+                <div class="data-item-actions">
+                    <button class="btn btn-outline btn-sm edit-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-btn">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            container.appendChild(medDiv);
+        });
+    }
+
+    async saveMedication() {
+        const medicationData = {
+            name: document.getElementById('medName').value,
+            dosage: document.getElementById('medDosage').value,
+            schedule: document.getElementById('medSchedule').value
+        };
+
+        if (!medicationData.name || !medicationData.dosage || !medicationData.schedule) {
+            app.showNotification('Please fill in all fields.', 'error');
+            return;
+        }
+
+        await app.saveMedication(medicationData);
+        document.getElementById('medicationForm').reset();
+        this.renderMedications();
+    }
+
+    async editMedication(index) {
+        const medication = app.data.medications[index];
+        document.getElementById('medName').value = medication.name;
+        document.getElementById('medDosage').value = medication.dosage;
+        document.getElementById('medSchedule').value = medication.schedule;
+
+        // Change form to update mode
+        const form = document.getElementById('medicationForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Update Medication';
+        submitBtn.onclick = async (e) => {
+            e.preventDefault();
+            const updatedData = {
+                name: document.getElementById('medName').value,
+                dosage: document.getElementById('medDosage').value,
+                schedule: document.getElementById('medSchedule').value
+            };
+            await app.updateMedication(index, updatedData);
+            form.reset();
+            submitBtn.textContent = 'Add Medication';
+            this.renderMedications();
+        };
+    }
+
+    async deleteMedication(index) {
+        app.showModal(
+            'Delete Medication',
+            'Are you sure you want to delete this medication?',
+            async (confirmed) => {
+                if (confirmed) {
+                    await app.deleteMedication(index);
+                    this.renderMedications();
+                }
+            }
+        );
+    }
+}
 
         // --- Emergency Page ---
-        class EmergencyPage {
-            render() {
-                return `
-                    <div class="space-y-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Add Emergency Contact</h2>
-                                <div class="card-icon">
-                                    <i class="fas fa-first-aid"></i>
-                                </div>
-                            </div>
-                            <form id="emergencyForm">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label class="form-label">Contact Name</label>
-                                        <input type="text" class="form-input" id="contactName" placeholder="e.g., Dr. Smith">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Phone Number</label>
-                                        <input type="tel" class="form-input" id="contactPhone" placeholder="e.g., +1234567890">
-                                    </div>
-                                </div>
-                                
-                                <!-- Custom Fields -->
-                                <div class="form-group">
-                                    <h3 class="text-lg font-semibold text-white mb-2">Additional Information</h3>
-                                    <div id="emergencyCustomFields" class="space-y-4"></div>
-                                    <button type="button" class="btn btn-outline" id="addEmergencyField">
-                                        <i class="fas fa-plus"></i> Add Field
-                                    </button>
-                                </div>
-                                
-                                <div class="flex justify-end">
-                                    <button type="submit" class="btn btn-primary">Add Contact</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Emergency Contacts</h2>
-                                <div class="card-icon">
-                                    <i class="fas fa-list"></i>
-                                </div>
-                            </div>
-                            <div id="emergencyList" class="data-list">
-                                <!-- Contacts will be loaded here -->
-                            </div>
+class EmergencyPage {
+    render() {
+        return `
+            <div class="space-y-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Add Emergency Contact</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-first-aid"></i>
                         </div>
                     </div>
-                `;
-            }
-
-            async init() {
-                await app.loadData();
-                this.renderContacts();
-
-                document.getElementById('emergencyForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.saveContact();
-                });
-
-                document.getElementById('addEmergencyField').addEventListener('click', () => {
-                    this.addCustomField();
-                });
-            }
-
-            renderContacts() {
-                const container = document.getElementById('emergencyList');
-                container.innerHTML = '';
-
-                if (app.data.emergency_contacts.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500">No emergency contacts added yet.</p>';
-                    return;
-                }
-
-                app.data.emergency_contacts.forEach((contact, index) => {
-                    const contactDiv = document.createElement('div');
-                    contactDiv.className = 'data-item';
-                    
-                    let customFieldsHtml = '';
-                    for (const [key, value] of Object.entries(contact)) {
-                        if (key !== 'name' && key !== 'phone') {
-                            customFieldsHtml += `<div class="text-sm text-gray-400">${key}: ${value}</div>`;
-                        }
-                    }
-
-                    contactDiv.innerHTML = `
-                        <div class="data-item-content">
-                            <div class="data-item-title">${contact.name}</div>
-                            <div class="data-item-subtitle">Phone: ${contact.phone}</div>
-                            ${customFieldsHtml}
+                    <form id="emergencyForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Contact Name</label>
+                                <input type="text" class="form-input" id="contactName" placeholder="e.g., Dr. Smith">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-input" id="contactPhone" placeholder="e.g., +1234567890">
+                            </div>
                         </div>
-                        <div class="data-item-actions">
-                            <button class="btn btn-outline btn-sm" onclick="app.pages.emergencyPage.editContact(${index})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                           <button class="btn btn-danger btn-sm" onclick="app.pages.emergency.deleteContact(${index})">
-                                <i class="fas fa-trash"></i> Delete
+                        
+                        <!-- Custom Fields -->
+                        <div class="form-group">
+                            <h3 class="text-lg font-semibold text-white mb-2">Additional Information</h3>
+                            <div id="emergencyCustomFields" class="space-y-4"></div>
+                            <button type="button" class="btn btn-outline" id="addEmergencyField">
+                                <i class="fas fa-plus"></i> Add Field
                             </button>
                         </div>
-                    `;
-                    container.appendChild(contactDiv);
-                });
-            }
+                        
+                        <div class="flex justify-end">
+                            <button type="submit" class="btn btn-primary">Add Contact</button>
+                        </div>
+                    </form>
+                </div>
 
-            addCustomField(key = '', value = '') {
-                const container = document.getElementById('emergencyCustomFields');
-                const fieldDiv = document.createElement('div');
-                fieldDiv.className = 'form-grid';
-                fieldDiv.innerHTML = `
-                    <div class="form-group">
-                        <label class="form-label">Field Name</label>
-                        <input type="text" class="form-input" placeholder="e.g., Relationship" value="${key}">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Emergency Contacts</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Field Value</label>
-                        <input type="text" class="form-input" placeholder="e.g., Doctor" value="${value}">
+                    <div id="emergencyList" class="data-list">
+                        <!-- Contacts will be loaded here -->
                     </div>
-                    <div class="form-group flex items-end">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(fieldDiv);
-            }
+                </div>
+            </div>
+        `;
+    }
 
-            async saveContact() {
-                const contactData = {
-                    name: document.getElementById('contactName').value,
-                    phone: document.getElementById('contactPhone').value
-                };
+    async init() {
+        await app.loadData();
+        this.renderContacts();
 
-                if (!contactData.name || !contactData.phone) {
-                    app.showNotification('Please fill in name and phone number.', 'error');
-                    return;
+        // ✅ Prevent double binding
+        const form = document.getElementById('emergencyForm');
+        if (!form.dataset.bound) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.saveContact();
+            });
+            form.dataset.bound = "true";
+        }
+
+        document.getElementById('addEmergencyField').addEventListener('click', () => {
+            this.addCustomField();
+        });
+
+        // ✅ Event delegation for edit/delete
+        const container = document.getElementById('emergencyList');
+        if (!container.dataset.bound) {
+            container.addEventListener('click', (e) => {
+                const item = e.target.closest('.data-item');
+                if (!item) return;
+                const index = parseInt(item.dataset.index);
+
+                if (e.target.closest('.edit-btn')) {
+                    this.editContact(index);
                 }
+                if (e.target.closest('.delete-btn')) {
+                    this.deleteContact(index);
+                }
+            });
+            container.dataset.bound = "true";
+        }
+    }
 
-                // Add custom fields
-                const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
-                customFields.forEach(field => {
-                    const keyInput = field.querySelector('input:nth-of-type(1)');
-                    const valueInput = field.querySelector('input:nth-of-type(2)');
-                    if (keyInput.value && valueInput.value) {
-                        contactData[keyInput.value] = valueInput.value;
-                    }
-                });
+    renderContacts() {
+        const container = document.getElementById('emergencyList');
+        container.innerHTML = '';
 
-                await app.saveEmergencyContact(contactData);
-                document.getElementById('emergencyForm').reset();
-                document.getElementById('emergencyCustomFields').innerHTML = '';
-                this.renderContacts();
+        if (app.data.emergency_contacts.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">No emergency contacts added yet.</p>';
+            return;
+        }
+
+        app.data.emergency_contacts.forEach((contact, index) => {
+            const contactDiv = document.createElement('div');
+            contactDiv.className = 'data-item';
+            contactDiv.dataset.index = index; // ✅ needed for delegation
+            
+            let customFieldsHtml = '';
+            for (const [key, value] of Object.entries(contact)) {
+                if (key !== 'name' && key !== 'phone') {
+                    customFieldsHtml += `<div class="text-sm text-gray-400">${key}: ${value}</div>`;
+                }
             }
 
-            async editContact(index) {
-                const contact = app.data.emergency_contacts[index];
-                document.getElementById('contactName').value = contact.name;
-                document.getElementById('contactPhone').value = contact.phone;
+            contactDiv.innerHTML = `
+                <div class="data-item-content">
+                    <div class="data-item-title">${contact.name}</div>
+                    <div class="data-item-subtitle">Phone: ${contact.phone}</div>
+                    ${customFieldsHtml}
+                </div>
+                <div class="data-item-actions">
+                    <button class="btn btn-outline btn-sm edit-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-btn">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            container.appendChild(contactDiv);
+        });
+    }
 
-                // Load custom fields
-                const customFieldsContainer = document.getElementById('emergencyCustomFields');
-                customFieldsContainer.innerHTML = '';
-                
-                for (const [key, value] of Object.entries(contact)) {
-                    if (key !== 'name' && key !== 'phone') {
-                        this.addCustomField(key, value);
-                    }
+    addCustomField(key = '', value = '') {
+        const container = document.getElementById('emergencyCustomFields');
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'form-grid';
+        fieldDiv.innerHTML = `
+            <div class="form-group">
+                <label class="form-label">Field Name</label>
+                <input type="text" class="form-input" placeholder="e.g., Relationship" value="${key}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Field Value</label>
+                <input type="text" class="form-input" placeholder="e.g., Doctor" value="${value}">
+            </div>
+            <div class="form-group flex items-end">
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(fieldDiv);
+    }
+
+    async saveContact() {
+        const contactData = {
+            name: document.getElementById('contactName').value,
+            phone: document.getElementById('contactPhone').value
+        };
+
+        if (!contactData.name || !contactData.phone) {
+            app.showNotification('Please fill in name and phone number.', 'error');
+            return;
+        }
+
+        // Add custom fields
+        const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
+        customFields.forEach(field => {
+            const keyInput = field.querySelector('input:nth-of-type(1)');
+            const valueInput = field.querySelector('input:nth-of-type(2)');
+            if (keyInput.value && valueInput.value) {
+                contactData[keyInput.value] = valueInput.value;
+            }
+        });
+
+        await app.saveEmergencyContact(contactData);
+        document.getElementById('emergencyForm').reset();
+        document.getElementById('emergencyCustomFields').innerHTML = '';
+        this.renderContacts();
+    }
+
+    async editContact(index) {
+        const contact = app.data.emergency_contacts[index];
+        document.getElementById('contactName').value = contact.name;
+        document.getElementById('contactPhone').value = contact.phone;
+
+        // Load custom fields
+        const customFieldsContainer = document.getElementById('emergencyCustomFields');
+        customFieldsContainer.innerHTML = '';
+        
+        for (const [key, value] of Object.entries(contact)) {
+            if (key !== 'name' && key !== 'phone') {
+                this.addCustomField(key, value);
+            }
+        }
+
+        // Change form to update mode
+        const form = document.getElementById('emergencyForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Update Contact';
+        submitBtn.onclick = async (e) => {
+            e.preventDefault();
+            const updatedData = {
+                name: document.getElementById('contactName').value,
+                phone: document.getElementById('contactPhone').value
+            };
+
+            // Add custom fields
+            const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
+            customFields.forEach(field => {
+                const keyInput = field.querySelector('input:nth-of-type(1)');
+                const valueInput = field.querySelector('input:nth-of-type(2)');
+                if (keyInput.value && valueInput.value) {
+                    updatedData[keyInput.value] = valueInput.value;
                 }
+            });
 
-                // Change form to update mode
-                const form = document.getElementById('emergencyForm');
-                const submitBtn = form.querySelector('button[type="submit"]');
-                submitBtn.textContent = 'Update Contact';
-                submitBtn.onclick = async (e) => {
-                    e.preventDefault();
-                    const updatedData = {
-                        name: document.getElementById('contactName').value,
-                        phone: document.getElementById('contactPhone').value
-                    };
+            await app.updateEmergencyContact(index, updatedData);
+            form.reset();
+            customFieldsContainer.innerHTML = '';
+            submitBtn.textContent = 'Add Contact';
+            this.renderContacts();
+        };
+    }
 
-                    // Add custom fields
-                    const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
-                    customFields.forEach(field => {
-                        const keyInput = field.querySelector('input:nth-of-type(1)');
-                        const valueInput = field.querySelector('input:nth-of-type(2)');
-                        if (keyInput.value && valueInput.value) {
-                            updatedData[keyInput.value] = valueInput.value;
-                        }
-                    });
-
-                    await app.updateEmergencyContact(index, updatedData);
-                    form.reset();
-                    customFieldsContainer.innerHTML = '';
-                    submitBtn.textContent = 'Add Contact';
+    async deleteContact(index) {
+        app.showModal(
+            'Delete Contact',
+            'Are you sure you want to delete this emergency contact?',
+            async (confirmed) => {
+                if (confirmed) {
+                    await app.deleteEmergencyContact(index);
                     this.renderContacts();
-                };
-            }
-
-            async deleteContact(index) {
-                app.showModal(
-                    'Delete Contact',
-                    'Are you sure you want to delete this emergency contact?',
-                    async (confirmed) => {
-                        if (confirmed) {
-                            await app.deleteEmergencyContact(index);
-                            this.renderContacts();
-                        }
-                    }
-                );
-            }
-        }
-
-        // --- Appointments Page ---
-        class AppointmentsPage {
-            render() {
-                return `
-                    <div class="space-y-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Add Appointment</h2>
-                                <div class="card-icon">
-                                    <i class="fas fa-calendar-check"></i>
-                                </div>
-                            </div>
-                            <form id="appointmentForm">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label class="form-label">Appointment Title</label>
-                                        <input type="text" class="form-input" id="apptTitle" placeholder="e.g., Annual Checkup">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Date</label>
-                                        <input type="date" class="form-input" id="apptDate">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Time</label>
-                                        <input type="time" class="form-input" id="apptTime">
-                                    </div>
-                                </div>
-                                <div class="flex justify-end">
-                                    <button type="submit" class="btn btn-primary">Add Appointment</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Your Appointments</h2>
-                                <div class="card-icon">
-                                    <i class="fas fa-list"></i>
-                                </div>
-                            </div>
-                            <div id="appointmentsList" class="data-list">
-                                <!-- Appointments will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            async init() {
-                await app.loadData();
-                this.renderAppointments();
-
-                document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.saveAppointment();
-                });
-            }
-
-            renderAppointments() {
-                const container = document.getElementById('appointmentsList');
-                container.innerHTML = '';
-
-                if (app.data.appointments.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500">No appointments scheduled yet.</p>';
-                    return;
                 }
-
-                app.data.appointments.forEach((appt, index) => {
-                    const apptDiv = document.createElement('div');
-                    apptDiv.className = 'data-item';
-                    apptDiv.innerHTML = `
-                        <div class="data-item-content">
-                            <div class="data-item-title">${appt.title}</div>
-                            <div class="data-item-subtitle">Date: ${appt.date} | Time: ${appt.time}</div>
-                        </div>
-                        <div class="data-item-actions">
-                            <button class="btn btn-outline btn-sm" onclick="app.pages.appointmentsPage.editAppointment(${index})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="app.pages.appointmentsPage.deleteAppointment(${index})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        </div>
-                    `;
-                    container.appendChild(apptDiv);
-                });
             }
-
-            async saveAppointment() {
-                const appointmentData = {
-                    title: document.getElementById('apptTitle').value,
-                    date: document.getElementById('apptDate').value,
-                    time: document.getElementById('apptTime').value
-                };
-
-                if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
-                    app.showNotification('Please fill in all fields.', 'error');
-                    return;
-                }
-
-                await app.saveAppointment(appointmentData);
-                document.getElementById('appointmentForm').reset();
-                this.renderAppointments();
-            }
-
-            async editAppointment(index) {
-                const appointment = app.data.appointments[index];
-                document.getElementById('apptTitle').value = appointment.title;
-                document.getElementById('apptDate').value = appointment.date;
-                document.getElementById('apptTime').value = appointment.time;
-
-                // Change form to update mode
-                const form = document.getElementById('appointmentForm');
-                const submitBtn = form.querySelector('button[type="submit"]');
-                submitBtn.textContent = 'Update Appointment';
-                submitBtn.onclick = async (e) => {
-                    e.preventDefault();
-                    const updatedData = {
-                        title: document.getElementById('apptTitle').value,
-                        date: document.getElementById('apptDate').value,
-                        time: document.getElementById('apptTime').value
-                    };
-                    await app.updateAppointment(index, updatedData);
-                    form.reset();
-                    submitBtn.textContent = 'Add Appointment';
-                    this.renderAppointments();
-                };
-            }
-
-            async deleteAppointment(index) {
-                app.showModal(
-                    'Delete Appointment',
-                    'Are you sure you want to delete this appointment?',
-                    async (confirmed) => {
-                        if (confirmed) {
-                            await app.deleteAppointment(index);
-                            this.renderAppointments();
-                        }
-                    }
-                );
-            }
-        }
-
-        // --- Wellness Page ---
-        class WellnessPage {
-            render() {
-                return `
-                    <div class="card text-center">
-                        <div class="card-header">
-                            <h2 class="card-title">Daily Wellness Tips</h2>
-                            <div class="card-icon">
-                                <i class="fas fa-heartbeat"></i>
-                            </div>
-                        </div>
-                        <div class="p-8">
-                            <div id="wellnessTipDisplay" class="text-lg font-bold font-sans mb-6 text-blue-900 dark:text-blue-300">
-                                Loading your personalized tip...
-                            </div>
-                            <button class="btn btn-primary" id="refreshTip">
-                                <i class="fas fa-refresh"></i> Get New Tip
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            async init() {
-                await this.loadWellnessTip();
-
-                document.getElementById('refreshTip').addEventListener('click', async () => {
-                    await this.loadWellnessTip();
-                });
-            }
-
-        async loadWellnessTip() {
-    const categories = {
-        "Workout": [
-            "Do 3 sets of 15 squats 🏋️‍♂️\n1. Stand straight.\n2. Lower hips as if sitting.\n3. Keep knees behind toes.\n4. Rise back up.",
-            "Push-ups (3 sets of 10)\n1. Keep body straight.\n2. Lower chest to the ground.\n3. Push back up."
-        ],
-        "Diseases": [
-            "For Diabetes: Maintain stable sugar levels 🍬\n1. Walk 30 mins daily.\n2. Eat high-fiber foods.\n3. Avoid processed sugar.",
-            "For Hypertension: Lower blood pressure ❤️\n1. Reduce salt intake.\n2. Practice yoga breathing.\n3. Sleep at least 7 hrs."
-        ],
-        "Yoga": [
-            "Surya Namaskar 🌞\n1. Stand straight.\n2. Raise arms & bend forward.\n3. Stretch back.\n4. Step into plank.\n5. Cobra pose.\n6. Repeat.",
-            "Tree Pose 🌳\n1. Stand on one leg.\n2. Place other foot on thigh.\n3. Join palms.\n4. Hold for 30 seconds."
-        ],
-        "Meditation": [
-            "Breathing Meditation 🌿\n1. Sit comfortably.\n2. Close eyes.\n3. Inhale 4 sec, hold 4 sec, exhale 4 sec.\n4. Repeat for 5 min.",
-            "Mindfulness 🧘\n1. Sit quietly.\n2. Focus on breath.\n3. Notice thoughts without judgment.\n4. Continue 10 min."
-        ]
-    };
-
-    // Pick a random category
-    const categoryNames = Object.keys(categories);
-    const randomCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
-    const tips = categories[randomCategory];
-    const randomTip = tips[Math.floor(Math.random() * tips.length)];
-
-    document.getElementById('wellnessTipDisplay').textContent = `${randomCategory} Tip:\n\n${randomTip}`;
+        );
+    }
 }
+
+// --- Appointments Page ---
+class AppointmentsPage {
+    render() {
+        return `
+            <div class="space-y-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Add Appointment</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                    <form id="appointmentForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Appointment Title</label>
+                                <input type="text" class="form-input" id="apptTitle" placeholder="e.g., Annual Checkup">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-input" id="apptDate">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Time</label>
+                                <input type="time" class="form-input" id="apptTime">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="btn btn-primary">Add Appointment</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Your Appointments</h2>
+                        <div class="card-icon">
+                            <i class="fas fa-list"></i>
+                        </div>
+                    </div>
+                    <div id="appointmentsList" class="data-list">
+                        <!-- Appointments will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    async init() {
+        await app.loadData();
+        this.renderAppointments();
+
+        // ✅ Prevent duplicate binding
+        const form = document.getElementById('appointmentForm');
+        if (!form.dataset.bound) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.saveAppointment();
+            });
+            form.dataset.bound = "true";
+        }
+
+        // ✅ Event delegation for edit/delete
+        const container = document.getElementById('appointmentsList');
+        if (!container.dataset.bound) {
+            container.addEventListener('click', (e) => {
+                const item = e.target.closest('.data-item');
+                if (!item) return;
+                const index = parseInt(item.dataset.index);
+
+                if (e.target.closest('.edit-btn')) {
+                    this.editAppointment(index);
+                }
+                if (e.target.closest('.delete-btn')) {
+                    this.deleteAppointment(index);
+                }
+            });
+            container.dataset.bound = "true";
+        }
+    }
+
+    renderAppointments() {
+        const container = document.getElementById('appointmentsList');
+        container.innerHTML = '';
+
+        if (app.data.appointments.length === 0) {
+            container.innerHTML = '<p class="text-center text-gray-500">No appointments scheduled yet.</p>';
+            return;
+        }
+
+        app.data.appointments.forEach((appt, index) => {
+            const apptDiv = document.createElement('div');
+            apptDiv.className = 'data-item';
+            apptDiv.dataset.index = index; // ✅ needed for delegation
+
+            apptDiv.innerHTML = `
+                <div class="data-item-content">
+                    <div class="data-item-title">${appt.title}</div>
+                    <div class="data-item-subtitle">Date: ${appt.date} | Time: ${appt.time}</div>
+                </div>
+                <div class="data-item-actions">
+                    <button class="btn btn-outline btn-sm edit-btn">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm delete-btn">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            `;
+            container.appendChild(apptDiv);
+        });
+    }
+
+    async saveAppointment() {
+        const appointmentData = {
+            title: document.getElementById('apptTitle').value,
+            date: document.getElementById('apptDate').value,
+            time: document.getElementById('apptTime').value
+        };
+
+        if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
+            app.showNotification('Please fill in all fields.', 'error');
+            return;
+        }
+
+        await app.saveAppointment(appointmentData);
+        document.getElementById('appointmentForm').reset();
+        this.renderAppointments();
+    }
+
+    async editAppointment(index) {
+        const appointment = app.data.appointments[index];
+        document.getElementById('apptTitle').value = appointment.title;
+        document.getElementById('apptDate').value = appointment.date;
+        document.getElementById('apptTime').value = appointment.time;
+
+        // Change form to update mode
+        const form = document.getElementById('appointmentForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.textContent = 'Update Appointment';
+        submitBtn.onclick = async (e) => {
+            e.preventDefault();
+            const updatedData = {
+                title: document.getElementById('apptTitle').value,
+                date: document.getElementById('apptDate').value,
+                time: document.getElementById('apptTime').value
+            };
+            await app.updateAppointment(index, updatedData);
+            form.reset();
+            submitBtn.textContent = 'Add Appointment';
+            this.renderAppointments();
+        };
+    }
+
+    async deleteAppointment(index) {
+        app.showModal(
+            'Delete Appointment',
+            'Are you sure you want to delete this appointment?',
+            async (confirmed) => {
+                if (confirmed) {
+                    await app.deleteAppointment(index);
+                    this.renderAppointments();
+                }
+            }
+        );
+    }
+}
+// --- Wellness Page ---
+class WellnessPage {
+    constructor(autoRotateInterval = 15000) { // 15 sec default
+        this.autoRotateInterval = autoRotateInterval;
+        this.categories = {
+            "Workout": [
+                "Do 3 sets of 15 squats 🏋️‍♂️<br>1. Stand straight.<br>2. Lower hips as if sitting.<br>3. Keep knees behind toes.<br>4. Rise back up.",
+                "Push-ups (3 sets of 10) 💪<br>1. Keep body straight.<br>2. Lower chest to the ground.<br>3. Push back up.",
+                "Plank Hold (3 sets, 30 sec each) 🤸<br>1. Keep back straight.<br>2. Engage core.<br>3. Don’t drop hips.",
+                "Jumping Jacks (3 sets of 20) 🏃‍♂️<br>1. Jump with arms overhead.<br>2. Return to standing.<br>3. Repeat quickly."
+            ],
+            "Diseases": [
+                "For Diabetes: 🍬<br>1. Walk 30 mins daily.<br>2. Eat high-fiber foods.<br>3. Avoid processed sugar.",
+                "For Hypertension: ❤️<br>1. Reduce salt intake.<br>2. Practice yoga breathing.<br>3. Sleep at least 7 hrs.",
+                "For Asthma: 🌬️<br>1. Avoid smoke/pollution.<br>2. Do breathing exercises.<br>3. Carry inhaler always.",
+                "For Arthritis: 🦵<br>1. Do gentle stretches.<br>2. Keep weight healthy.<br>3. Warm compress for relief."
+            ],
+            "Yoga": [
+                "Surya Namaskar 🌞<br>1. Stand straight.<br>2. Raise arms & bend forward.<br>3. Stretch back.<br>4. Step into plank.<br>5. Cobra pose.<br>6. Repeat.",
+                "Tree Pose 🌳<br>1. Stand on one leg.<br>2. Place other foot on thigh.<br>3. Join palms.<br>4. Hold for 30 seconds.",
+                "Child’s Pose 🧘‍♂️<br>1. Kneel on floor.<br>2. Stretch arms forward.<br>3. Rest forehead down.<br>4. Breathe deeply.",
+                "Bridge Pose 🌉<br>1. Lie on back.<br>2. Bend knees, feet flat.<br>3. Lift hips upward.<br>4. Hold for 20 sec."
+            ],
+            "Meditation": [
+                "Breathing Meditation 🌿<br>1. Sit comfortably.<br>2. Close eyes.<br>3. Inhale 4 sec, hold 4 sec, exhale 4 sec.<br>4. Repeat for 5 min.",
+                "Mindfulness 🧘<br>1. Sit quietly.<br>2. Focus on breath.<br>3. Notice thoughts without judgment.<br>4. Continue 10 min.",
+                "Body Scan Relaxation 🛌<br>1. Lie down.<br>2. Focus from head to toes.<br>3. Relax each part slowly.<br>4. Take deep breaths.",
+                "Gratitude Practice 🙏<br>1. Sit quietly.<br>2. Think of 3 things you’re grateful for.<br>3. Smile & breathe deeply."
+            ],
+            "Nutrition": [
+                "Stay hydrated 💧<br>Drink at least 2–3 liters of water daily.",
+                "Balanced diet 🍎<br>Eat fruits, veggies, protein & whole grains every day.",
+                "Limit junk food 🍔<br>Replace sugary drinks with fresh juices or water.",
+                "Eat on time ⏰<br>Have 3 main meals & 2 small snacks regularly."
+            ]
+        };
+    }
+
+    render() {
+        return `
+            <div class="card text-center wellness-card">
+                <div class="card-header">
+                    <h2 class="card-title">Daily Wellness Tips</h2>
+                    <div class="card-icon"><i class="fas fa-heartbeat"></i></div>
+                </div>
+                <div class="card-body">
+                    <div id="wellnessTipDisplay" class="wellness-tip text-lg font-bold mb-6 text-blue-900 dark:text-blue-300">
+                        Loading your personalized tip...
+                    </div>
+                    <button class="btn btn-primary" id="refreshTip">
+                        <i class="fas fa-refresh"></i> Get New Tip
+                    </button>
+                    <div class="tip mt-4">
+                        <button class="collapsible">🧘 Mental Wellness Tips</button>
+                        <div class="content">
+                            <ul>
+                                <li>Practice mindfulness or meditation for 10 minutes daily.</li>
+                                <li>Take short breaks while working or studying to reduce stress.</li>
+                                <li>Connect with friends or family regularly for emotional support.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .wellness-card { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background-color: #fefefe; }
+                .card-header { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px; }
+                .card-icon i { color: #e74c3c; font-size: 1.5rem; }
+                .tip { margin-bottom: 15px; text-align: left; }
+                .collapsible { background-color: #eee; color: #333; cursor: pointer; padding: 10px; width: 100%; border: none; border-radius: 8px; text-align: left; font-size: 16px; }
+                .collapsible:after { content: '\\002B'; float: right; }
+                .collapsible.active:after { content: "\\2212"; }
+                .content { padding: 0 15px; display: none; overflow: hidden; background-color: #f9f9f9; border-left: 2px solid #e74c3c; margin-top: 5px; }
+                .wellness-tip { transition: opacity 0.5s ease-in-out; opacity: 1; }
+            </style>
+        `;
+    }
+
+    async init() {
+        this.displayEl = document.getElementById('wellnessTipDisplay');
+        this.refreshBtn = document.getElementById('refreshTip');
+
+        // Load first tip
+        await this.loadWellnessTip();
+
+        // Refresh button
+        this.refreshBtn.addEventListener('click', () => this.loadWellnessTip());
+
+        // Collapsible
+        const coll = document.getElementsByClassName("collapsible");
+        for (let i = 0; i < coll.length; i++) {
+            coll[i].addEventListener("click", function () {
+                this.classList.toggle("active");
+                const content = this.nextElementSibling;
+                content.style.display = content.style.display === "block" ? "none" : "block";
+            });
+        }
+
+        // Auto-rotate tips
+        this.autoRotate = setInterval(() => this.loadWellnessTip(), this.autoRotateInterval);
+    }
+
+    async loadWellnessTip() {
+        const categoryNames = Object.keys(this.categories);
+        const randomCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
+        const tips = this.categories[randomCategory];
+        const randomTip = tips[Math.floor(Math.random() * tips.length)];
+
+        // Fade out, change, fade in
+        this.displayEl.style.opacity = 0;
+        setTimeout(() => {
+            this.displayEl.innerHTML = `<strong>${randomCategory} Tip:</strong><br><br>${randomTip}`;
+            this.displayEl.style.opacity = 1;
+        }, 300);
+    }
 }
 
         // --- Initialize Application ---
