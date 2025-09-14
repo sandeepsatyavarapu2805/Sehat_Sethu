@@ -1419,6 +1419,9 @@
             }
         }
 
+        // Base URL for API calls
+const BASE_URL = "https://your-app-name.onrender.com"; // Replace with your Render app URL
+
         // --- Chat Page ---
         class ChatPage {
             render() {
@@ -1494,7 +1497,7 @@ async init() {
 
         try {
             // Send message to backend
-            const response = await app.apiCall('/chat', 'POST', { message });
+            const response = await app.apiCall(`${BASE_URL}/ask`, 'POST', { message });
             const botResponse = response.reply;
 
             // Remove thinking indicator
@@ -1523,7 +1526,7 @@ async init() {
             messageText.innerText = newText;
 
             // Send edited message to backend
-            app.apiCall("/chat", "POST", { message: newText, edit_id: editId })
+app.apiCall(`${BASE_URL}/ask`, "POST", { message: newText, edit_id: editId })
                 .then(data => {
                     const botReplyDiv = messageDiv.nextElementSibling;
                     if (botReplyDiv && botReplyDiv.classList.contains('bot')) {
