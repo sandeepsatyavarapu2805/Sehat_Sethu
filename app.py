@@ -2,10 +2,12 @@ from flask import Flask, render_template, request, jsonify , session
 import google.generativeai as genai
 import os, json, datetime
 from google_trans_new import google_translator
+from flask_cors import CORS
 
 translator = google_translator()
 
 app = Flask(__name__)
+CORS(app)  # allow all origins, or you can restrict to your frontend domain
 
 API_KEY = os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
