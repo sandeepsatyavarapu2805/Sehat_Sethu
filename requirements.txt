@@ -1,4 +1,5 @@
 Flask==2.3.2
 google-generativeai
 colorama==0.4.6
+flask_cors
 google-trans-new==1.1.9
