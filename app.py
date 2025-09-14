@@ -142,8 +142,8 @@ def home():
 def ask():
     try:
         user_input = request.json.get("message", "").strip()
-        edit_id = request.json.get("edit_id")
-        if edit_id is not None:
+        incoming_edit_id = request.json.get("edit_id")
+        if incoming_edit_id is not None:
             edit_id = str(edit_id)
 
         current_user_data = load_user_data()
@@ -170,7 +170,7 @@ def ask():
             if lang == "te":
                 try:
                     emergency_message = translator.translate(emergency_message, lang_tgt='te')
-                except:
+                except Exception as e:
                     pass  # Use English if translation fails
             return jsonify({"reply": emergency_message})
 
@@ -192,10 +192,10 @@ def ask():
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
             
-            if lang == "te":
-                try:
+        if lang == "te":
+            try:
                     bot_text = translator.translate(bot_text, lang_tgt='te')
-                except:
+            except Exception as e:
                     pass  # Use English if translation fails
             return jsonify({"reply": bot_text})
         
@@ -216,10 +216,10 @@ def ask():
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
             
-            if lang == "te":
-                try:
+        if lang == "te":
+            try:
                     bot_text = translator.translate(bot_text, lang_tgt='te')
-                except:
+            except Exception as e:
                     pass
             return jsonify({"reply": bot_text})
 
@@ -239,10 +239,10 @@ def ask():
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
             
-            if lang == "te":
-                try:
+        if lang == "te":
+            try:
                     bot_text = translator.translate(bot_text, lang_tgt='te')
-                except:
+            except Exception as e:
                     pass
             return jsonify({"reply": bot_text})
         
@@ -472,5 +472,5 @@ def get_weather_tip():
 # Run
 # ---------------------------
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-app.run(host="0.0.0.0", port=port, debug=False)
+    Flask_port = int(os.environ.get("PORT", 5000))
+app.run(host="0.0.0.0", port=Flask_port, debug=False)
