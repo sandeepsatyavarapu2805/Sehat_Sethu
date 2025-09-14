@@ -25,10 +25,9 @@ WEATHER_API_KEY = "your_weather_api_key"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# File storage
 LOG_FILE = os.path.join(os.path.dirname(__file__), "chat_log.json")
 
-# Auto-create file if missing
+# Auto-create chat_log.json if missing
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         json.dump([], f)
@@ -450,21 +449,36 @@ def set_language():
 
 @app.route("/get_chat_history", methods=["GET"])
 def get_chat_history():
-    """Return full chat history from log file safely."""
+    """Return full chat history, add initial greeting if empty."""
     try:
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             history = json.load(f)
+
+        # Add initial greeting if history is empty
+        if len(history) == 0:
+            greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
+            history.append({"user": "", "bot": greeting})
+            with open(LOG_FILE, "w", encoding="utf-8") as f:
+                json.dump(history, f)
+
+        # Optional: Keep only last 50 messages
+        history = history[-50:]
+
         return jsonify({"status": "success", "history": history})
+
     except Exception as e:
-        print("Error in get_chat_history:", e)  # logs the error on server
+        print("Error in get_chat_history:", e)
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
-    """Clear chat history (both backend log and frontend)."""
+    """Clear chat history and start new chat."""
     try:
+        # Reset chat log to contain only initial greeting
+        greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
         with open(LOG_FILE, "w", encoding="utf-8") as f:
-            json.dump([], f)  # reset to empty list
+            json.dump([{"user": "", "bot": greeting}], f)
+
         return jsonify({"status": "success", "message": "Chat cleared"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500

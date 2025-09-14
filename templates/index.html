@@ -1427,12 +1427,43 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
                 return `
                     <div class="chat-container">
 
-                        <div class="flex justify-between items-center mb-2 px-2">
-  <h2 class="text-lg font-semibold">Chat</h2>
-    <button id="clearChatBtn" 
-          class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-sm rounded shadow">
-    🗑 Clear Chat
-  </button>
+<!-- Chat History Page (hidden by default) -->
+<div id="chatHistoryPage" class="hidden">
+    <div class="history-container p-4 max-w-3xl mx-auto">
+        <!-- Header with title and Clear History button -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Chat History</h2>
+            <button id="clearHistoryBtn"
+                    class="px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm rounded shadow transition duration-200">
+                🗑 Clear History
+            </button>
+        </div>
+
+        <!-- Chat messages container -->
+        <div id="chatHistory" class="space-y-2 overflow-y-auto max-h-[70vh] border p-2 rounded bg-gray-50 dark:bg-gray-800">
+            <!-- Messages will be inserted here dynamically -->
+        </div>
+
+        <button id="backToChatBtn"
+                class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow">
+            ← Back to Chat
+        </button>
+    </div>
+</div>
+
+<!-- Main Chat Header -->
+<div class="flex justify-between items-center mb-2 px-2 gap-2">
+    <h2 class="text-lg font-semibold">Chat</h2>
+    <div class="flex gap-2">
+        <button id="historyBtn" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded">
+            Chat History
+        </button>
+        <button id="clearChatBtn"
+                class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm font-medium rounded shadow transition duration-200"
+                title="Start a new chat">
+            🆕 New Chat
+        </button>
+    </div>
 </div>
 
                         <div class="chat-messages" id="chatMessages">
@@ -1488,57 +1519,47 @@ async init() {
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
 
-    // Load chat history from backend on page load
-    app.apiCall("/get_chat_history", "GET")
-        .then(data => {
-            if (data.status === "success") {
-                data.history.forEach(item => {
-                    if(item.user) this.addMessage(item.user, "user");
-                    if(item.bot) this.addMessage(item.bot, "bot");
-                });
-            }
-        })
-        .catch(() => {
-            app.showNotification("Failed to load history", "error");
-        });
+    // --- Load chat history on page load ---
+    try {
+        const data = await app.apiCall("/get_chat_history", "GET");
+        if (data.status === "success") {
+            data.history.forEach(item => {
+                if(item.user) this.addMessage(item.user, "user");
+                if(item.bot) this.addMessage(item.bot, "bot");
+            });
+        }
+    } catch {
+        app.showNotification("Failed to load history", "error");
+    }
 
-    // Auto-resize textarea
+    // --- Auto-resize textarea ---
     chatInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
 
-    // Send message
+    // --- Send message ---
     chatForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const message = chatInput.value.trim();
         if (!message) return;
 
-        // Add user message
         this.addMessage(message, 'user');
         chatInput.value = '';
         chatInput.style.height = 'auto';
 
-        // Show thinking indicator
         const thinkingDiv = this.addThinkingIndicator();
-
         try {
-            // Send message to backend
             const response = await app.apiCall(`/ask`, 'POST', { message });
-            const botResponse = response.reply;
-
-            // Remove thinking indicator
             thinkingDiv.remove();
-
-            // ✅ Add bot response with Markdown rendering
-            this.addMessage(botResponse, 'bot');
-        } catch (error) {
+            this.addMessage(response.reply, 'bot');
+        } catch {
             thinkingDiv.remove();
-            this.addMessage('Sorry, I encountered an error. Please try again.', 'bot');
+            this.addMessage('Sorry, an error occurred. Please try again.', 'bot');
         }
     });
 
-    // Edit listener for user messages
+    // --- Edit user messages ---
     chatMessages.addEventListener('click', (e) => {
         if (e.target.classList.contains('edit-btn')) {
             const messageDiv = e.target.closest('.message');
@@ -1549,22 +1570,19 @@ async init() {
             const newText = prompt('Edit your message:', oldText);
             if (!newText) return;
 
-            // Update UI immediately
             messageText.innerText = newText;
 
-            // Send edited message to backend
             app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
                 .then(data => {
-                // Remove everything after the edited user message
-                let next = messageDiv.nextElementSibling;
-                while (next) {
-                    const toRemove = next;
-                    next = next.nextElementSibling;
-                    toRemove.remove();
-                }
-                    // Add the fresh bot reply as new continuation
-                this.addMessage(data.reply, 'bot');
-
+                    // Remove all messages after this one
+                    let next = messageDiv.nextElementSibling;
+                    while (next) {
+                        const toRemove = next;
+                        next = next.nextElementSibling;
+                        toRemove.remove();
+                    }
+                    // Add fresh bot reply
+                    this.addMessage(data.reply, 'bot');
                 })
                 .catch(() => {
                     app.showNotification("Edit failed. Please try again.", "error");
@@ -1572,23 +1590,103 @@ async init() {
         }
     });
 
-    // Clear chat button listener
-    document.getElementById("clearChatBtn").addEventListener("click", () => {
-        if (!confirm("Are you sure you want to clear the chat?")) return;
+    // --- Clear / New Chat button ---
+    document.getElementById("clearChatBtn").addEventListener("click", async () => {
+        if (!confirm("Start a new chat? All previous messages will be cleared.")) return;
 
-        app.apiCall("/clear_chat", "POST", {})
-            .then(data => {
-                if (data.status === "success") {
-                    document.getElementById("chatMessages").innerHTML = "";
-                    app.showNotification("Chat history cleared!", "success");
-                } else {
-                    app.showNotification("Failed to clear history", "error");
+        try {
+            // Clear backend chat log (resets with greeting)
+            const data = await app.apiCall("/clear_chat", "POST");
+            if (data.status === "success") {
+                chatMessages.innerHTML = ""; // clear frontend
+                app.showNotification("New chat started!", "success");
+
+                // Reload initial greeting from backend
+                const history = await app.apiCall("/get_chat_history", "GET");
+                if (history.status === "success") {
+                    history.history.forEach(item => {
+                        if(item.bot) this.addMessage(item.bot, "bot");
+                    });
                 }
-            })
-            .catch(() => {
-                app.showNotification("Clear chat failed!", "error");
-            });
+            } else {
+                app.showNotification("Failed to start new chat.", "error");
+            }
+        } catch {
+            app.showNotification("Failed to start new chat.", "error");
+        }
     });
+    // --- Toggle to Chat History page ---
+document.getElementById("historyBtn").addEventListener("click", () => {
+    document.getElementById("chatContainer").classList.add("hidden"); // hide main chat
+    document.getElementById("chatHistoryPage").classList.remove("hidden"); // show history
+    loadChatHistory(); // load messages dynamically
+});
+
+    // --- Back to Chat page ---
+    document.getElementById("backToChatBtn").addEventListener("click", () => {
+        document.getElementById("chatHistoryPage").classList.add("hidden"); // hide history
+        document.getElementById("chatContainer").classList.remove("hidden"); // show main chat
+    });
+    // --- Load chat history dynamically ---
+async function loadChatHistory() {
+    const chatHistoryDiv = document.getElementById("chatHistory");
+    chatHistoryDiv.innerHTML = ""; // clear old messages
+
+    try {
+        const response = await app.apiCall("/get_chat_history", "GET");
+        if (response.status === "success") {
+            response.history.forEach(item => {
+                if (item.user) {
+                    chatHistoryDiv.innerHTML += `
+                        <div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2">
+                            <div class="font-semibold text-blue-800 dark:text-blue-200">User:</div>
+                            <div>${item.user}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
+                        </div>
+                    `;
+                }
+                if (item.bot) {
+                    chatHistoryDiv.innerHTML += `
+                        <div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2">
+                            <div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div>
+                            <div>${item.bot}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
+                        </div>
+                    `;
+                }
+            });
+        }
+    } catch {
+        chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
+    }
+}
+
+// --- Event listeners for History page buttons ---
+document.getElementById("historyBtn").addEventListener("click", () => {
+    document.getElementById("chatContainer").classList.add("hidden");
+    document.getElementById("chatHistoryPage").classList.remove("hidden");
+    loadChatHistory();
+});
+
+document.getElementById("backToChatBtn").addEventListener("click", () => {
+    document.getElementById("chatHistoryPage").classList.add("hidden");
+    document.getElementById("chatContainer").classList.remove("hidden");
+});
+
+document.getElementById("clearHistoryBtn").addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to clear all chat history?")) return;
+
+    try {
+        const response = await app.apiCall("/clear_chat_history", "POST");
+        if (response.status === "success") {
+            document.getElementById("chatHistory").innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
+        } else {
+            app.showNotification("Failed to clear chat history.", "error");
+        }
+    } catch {
+        app.showNotification("Failed to clear chat history.", "error");
+    }
+});
 
 }
 
