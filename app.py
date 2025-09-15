@@ -1,8 +1,60 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import google.generativeai as genai
 import os, json, datetime
 from google_trans_new import google_translator
 from flask_cors import CORS
+
+# Base directory of your app
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# JSON files
+LOG_FILE = os.path.join(BASE_DIR, "chat_log.json")
+USER_DATA_FILE = os.path.join(BASE_DIR, "user_data.json")
+APPOINTMENTS_FILE = os.path.join(BASE_DIR, "appointments.json")
+
+# Ensure files exist
+for file_path, default_data in [
+    (LOG_FILE, []),
+    (USER_DATA_FILE, {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}),
+    (APPOINTMENTS_FILE, {})
+]:
+    if not os.path.exists(file_path):
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(default_data, f)
+
+APPOINTMENTS_FILE = os.path.join(BASE_DIR, "appointments.json")
+if not os.path.exists(APPOINTMENTS_FILE):
+    with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
+        json.dump({}, f)
+
+# Doctor data with all major branches
+DOCTORS = {
+    "Cardiology": {
+        "Dr. A. Sharma": ["09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"],
+        "Dr. B. Mehta": ["10:00 AM", "01:00 PM", "03:00 PM"]
+    },
+    "Neurology": {
+        "Dr. C. Reddy": ["09:30 AM", "11:30 AM", "02:30 PM", "05:00 PM"],
+        "Dr. D. Gupta": ["10:30 AM", "12:30 PM", "03:30 PM"]
+    },
+    "Orthopedics": {
+        "Dr. E. Patel": ["09:00 AM", "11:00 AM", "01:00 PM", "03:00 PM"],
+        "Dr. F. Nair": ["10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM"]
+    },
+    "Dermatology": {
+        "Dr. G. Khan": ["09:30 AM", "11:30 AM", "01:30 PM", "03:30 PM"],
+        "Dr. H. Das": ["10:30 AM", "12:30 PM", "02:30 PM", "04:30 PM"]
+    },
+    "Pediatrics": {
+        "Dr. I. Singh": ["09:00 AM", "10:30 AM", "12:00 PM", "02:00 PM"],
+        "Dr. J. Verma": ["11:00 AM", "01:00 PM", "03:00 PM", "05:00 PM"]
+    },
+    "General Medicine": {
+        "Dr. K. Roy": ["09:00 AM", "11:00 AM", "01:00 PM", "03:00 PM"],
+        "Dr. L. Menon": ["10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM"]
+    }
+}
+
 
 # Initialize translator
 translator = google_translator()
@@ -382,6 +434,10 @@ def set_language():
     session["lang"] = lang
     return jsonify({"status": "success", "message": f"Language set to {lang}"})
 
+@app.route("/appointments")
+def appointments():
+    return render_template("appointments.html", doctors=DOCTORS)
+
 @app.route("/get_chat_history", methods=["GET"])
 def get_chat_history():
     history = safe_load_json(LOG_FILE, [])
@@ -450,6 +506,78 @@ def get_weather_tip():
     except Exception as e:
         print(f"Error fetching weather data: {e}")
         return jsonify({"tip": tips['default']}), 500
+# ---------------------------
+# Appointments Section
+# ---------------------------
+
+# Ensure the appointments file exists
+APPOINTMENTS_FILE = os.path.join(BASE_DIR, "appointments.json")
+if not os.path.exists(APPOINTMENTS_FILE):
+    with open(APPOINTMENTS_FILE, "w", encoding="utf-8") as f:
+        json.dump({}, f)
+
+# Show appointments page
+@app.route("/appointments")
+def appointments():
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    return render_template("appointments.html", appointments=data, doctors=DOCTORS)
+
+# Save appointment (HTML form submission)
+@app.route("/save_appointment_form", methods=["POST"])
+def save_appointment_form():
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    appointment_id = str(len(data) + 1)
+    appointment = {
+        "department": request.form.get("department", ""),
+        "doctor": request.form.get("doctor", ""),
+        "issue": request.form.get("issue", ""),
+        "date": request.form.get("date", ""),
+        "time": request.form.get("time", "")
+    }
+    data[appointment_id] = appointment
+    safe_dump_json(APPOINTMENTS_FILE, data)
+    return redirect(url_for("appointments"))
+
+# Edit appointment (HTML form submission)
+@app.route("/appointments/edit/<appointment_id>", methods=["POST"])
+def edit_appointment(appointment_id):
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    if appointment_id in data:
+        data[appointment_id] = {
+            "department": request.form.get("department", ""),
+            "doctor": request.form.get("doctor", ""),
+            "issue": request.form.get("issue", ""),
+            "date": request.form.get("date", ""),
+            "time": request.form.get("time", "")
+        }
+        safe_dump_json(APPOINTMENTS_FILE, data)
+    return redirect(url_for("appointments"))
+
+# Cancel appointment
+@app.route("/appointments/cancel/<appointment_id>", methods=["POST"])
+def cancel_appointment(appointment_id):
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    if appointment_id in data:
+        del data[appointment_id]
+        safe_dump_json(APPOINTMENTS_FILE, data)
+    return redirect(url_for("appointments"))
+
+@app.route("/get_appointments", methods=["GET"])
+def get_appointments():
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    appointments_list = list(data.values())  # Convert dict to list for JS
+    return jsonify({"appointments": appointments_list})
+
+# Check available slots (AJAX call)
+@app.route("/available_slots/<department>/<doctor>/<date>")
+def available_slots(department, doctor, date):
+    all_slots = DOCTORS.get(department, {}).get(doctor, [])
+    booked_slots = []
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    for _, app in data.items():
+        if app.get("doctor") == doctor and app.get("date") == date:
+            booked_slots.append(app.get("time"))
+    return jsonify({"all_slots": all_slots, "booked_slots": booked_slots})
 
 # ---------------------------
 # Run

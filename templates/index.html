@@ -2320,23 +2320,34 @@ class AppointmentsPage {
     }
 
     async init() {
-        await app.loadData();
-        this.renderAppointments();
+        // Load appointments from backend
+        await this.loadAppointments();
 
-        // ✅ Prevent duplicate binding
+        // Form submission
         const form = document.getElementById('appointmentForm');
         if (!form.dataset.bound) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                await this.saveAppointment();
+                const appointmentData = {
+                    title: document.getElementById('apptTitle').value,
+                    date: document.getElementById('apptDate').value,
+                    time: document.getElementById('apptTime').value
+                };
+                if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
+                    app.showNotification('Please fill in all fields.', 'error');
+                    return;
+                }
+                await this.saveAppointment(appointmentData);
+                form.reset();
+                await this.loadAppointments();
             });
             form.dataset.bound = "true";
         }
 
-        // ✅ Event delegation for edit/delete
+        // Edit/Delete event delegation
         const container = document.getElementById('appointmentsList');
         if (!container.dataset.bound) {
-            container.addEventListener('click', (e) => {
+            container.addEventListener('click', async (e) => {
                 const item = e.target.closest('.data-item');
                 if (!item) return;
                 const index = parseInt(item.dataset.index);
@@ -2345,10 +2356,23 @@ class AppointmentsPage {
                     this.editAppointment(index);
                 }
                 if (e.target.closest('.delete-btn')) {
-                    this.deleteAppointment(index);
+                    await this.deleteAppointment(index);
+                    await this.loadAppointments();
                 }
             });
             container.dataset.bound = "true";
+        }
+    }
+
+    async loadAppointments() {
+        try {
+            const response = await fetch('/get_appointments');
+            const result = await response.json();
+            app.data.appointments = result.appointments || [];
+            this.renderAppointments();
+        } catch (err) {
+            console.error('Error loading appointments:', err);
+            app.showNotification('Failed to load appointments.', 'error');
         }
     }
 
@@ -2356,7 +2380,7 @@ class AppointmentsPage {
         const container = document.getElementById('appointmentsList');
         container.innerHTML = '';
 
-        if (app.data.appointments.length === 0) {
+        if (!app.data.appointments || app.data.appointments.length === 0) {
             container.innerHTML = '<p class="text-center text-gray-500">No appointments scheduled yet.</p>';
             return;
         }
@@ -2364,7 +2388,7 @@ class AppointmentsPage {
         app.data.appointments.forEach((appt, index) => {
             const apptDiv = document.createElement('div');
             apptDiv.className = 'data-item';
-            apptDiv.dataset.index = index; // ✅ needed for delegation
+            apptDiv.dataset.index = index;
 
             apptDiv.innerHTML = `
                 <div class="data-item-content">
@@ -2384,21 +2408,34 @@ class AppointmentsPage {
         });
     }
 
-    async saveAppointment() {
-        const appointmentData = {
-            title: document.getElementById('apptTitle').value,
-            date: document.getElementById('apptDate').value,
-            time: document.getElementById('apptTime').value
-        };
-
-        if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
-            app.showNotification('Please fill in all fields.', 'error');
-            return;
+    async saveAppointment(appointmentData) {
+        try {
+            const response = await fetch('/save_appointment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(appointmentData)
+            });
+            const result = await response.json();
+            if (result.status === 'success') app.showNotification(result.message, 'success');
+        } catch (err) {
+            console.error('Error saving appointment:', err);
+            app.showNotification('Failed to save appointment.', 'error');
         }
+    }
 
-        await app.saveAppointment(appointmentData);
-        document.getElementById('appointmentForm').reset();
-        this.renderAppointments();
+    async updateAppointment(index, updatedData) {
+        try {
+            const response = await fetch(`/update_appointment/${index}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+            const result = await response.json();
+            if (result.status === 'success') app.showNotification(result.message, 'success');
+        } catch (err) {
+            console.error('Error updating appointment:', err);
+            app.showNotification('Failed to update appointment.', 'error');
+        }
     }
 
     async editAppointment(index) {
@@ -2407,10 +2444,10 @@ class AppointmentsPage {
         document.getElementById('apptDate').value = appointment.date;
         document.getElementById('apptTime').value = appointment.time;
 
-        // Change form to update mode
         const form = document.getElementById('appointmentForm');
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.textContent = 'Update Appointment';
+
         submitBtn.onclick = async (e) => {
             e.preventDefault();
             const updatedData = {
@@ -2418,10 +2455,10 @@ class AppointmentsPage {
                 date: document.getElementById('apptDate').value,
                 time: document.getElementById('apptTime').value
             };
-            await app.updateAppointment(index, updatedData);
+            await this.updateAppointment(index, updatedData);
             form.reset();
             submitBtn.textContent = 'Add Appointment';
-            this.renderAppointments();
+            await this.loadAppointments();
         };
     }
 
@@ -2431,13 +2468,20 @@ class AppointmentsPage {
             'Are you sure you want to delete this appointment?',
             async (confirmed) => {
                 if (confirmed) {
-                    await app.deleteAppointment(index);
-                    this.renderAppointments();
+                    try {
+                        const response = await fetch(`/delete_appointment/${index}`, { method: 'DELETE' });
+                        const result = await response.json();
+                        if (result.status === 'success') app.showNotification(result.message, 'success');
+                    } catch (err) {
+                        console.error('Error deleting appointment:', err);
+                        app.showNotification('Failed to delete appointment.', 'error');
+                    }
                 }
             }
         );
     }
 }
+
 // --- Wellness Page ---
 class WellnessPage {
     render() {
