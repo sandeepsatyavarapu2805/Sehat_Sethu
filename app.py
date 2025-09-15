@@ -398,32 +398,39 @@ def delete_emergency_contact(index):
         return jsonify({"status": "success", "message": "Emergency contact deleted."})
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
+@app.route("/get_appointments")
+def get_appointments():
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    # convert dict to list for JS
+    appointments = list(data.values())
+    return jsonify({"appointments": appointments})
+
 @app.route("/save_appointment", methods=["POST"])
 def save_appointment():
-    data = load_user_data()
+    data = safe_load_json(APPOINTMENTS_FILE, {})
     appointment = request.json
-    if "appointments" not in data:
-        data["appointments"] = []
-    data["appointments"].append(appointment)
-    save_user_data(data)
+    key = str(len(data))
+    data[key] = appointment
+    safe_dump_json(APPOINTMENTS_FILE, data)
     return jsonify({"status": "success", "message": "Appointment added!"})
 
 @app.route("/update_appointment/<int:index>", methods=["PUT"])
 def update_appointment(index):
-    data = load_user_data()
-    updated_appointment = request.json
-    if 0 <= index < len(data.get("appointments", [])):
-        data["appointments"][index] = updated_appointment
-        save_user_data(data)
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    key = str(index)
+    if key in data:
+        data[key] = request.json
+        safe_dump_json(APPOINTMENTS_FILE, data)
         return jsonify({"status": "success", "message": "Appointment updated."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
 @app.route("/delete_appointment/<int:index>", methods=["DELETE"])
 def delete_appointment(index):
-    data = load_user_data()
-    if 0 <= index < len(data.get("appointments", [])):
-        data["appointments"].pop(index)
-        save_user_data(data)
+    data = safe_load_json(APPOINTMENTS_FILE, {})
+    key = str(index)
+    if key in data:
+        del data[key]
+        safe_dump_json(APPOINTMENTS_FILE, data)
         return jsonify({"status": "success", "message": "Appointment deleted."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
@@ -561,12 +568,6 @@ def cancel_appointment(appointment_id):
         del data[appointment_id]
         safe_dump_json(APPOINTMENTS_FILE, data)
     return redirect(url_for("appointments"))
-
-@app.route("/get_appointments", methods=["GET"])
-def get_appointments():
-    data = safe_load_json(APPOINTMENTS_FILE, {})
-    appointments_list = list(data.values())  # Convert dict to list for JS
-    return jsonify({"appointments": appointments_list})
 
 # Check available slots (AJAX call)
 @app.route("/available_slots/<department>/<doctor>/<date>")

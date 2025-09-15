@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointments</title>
+</head>
+<body>
+    <!-- This is where your appointments page will render -->
+    <div id="app"></div>
+
+    <!-- Include your JS file -->
+    <script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
+    
+    <script>
+        // Initialize your appointments page
+        document.addEventListener("DOMContentLoaded", async () => {
+            const appointmentsPage = new AppointmentsPage();
+            document.getElementById("app").innerHTML = appointmentsPage.render();
+            await appointmentsPage.init();
+        });
+    </script>
+</body>
+</html>
