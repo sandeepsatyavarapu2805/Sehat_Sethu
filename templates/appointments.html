@@ -3,21 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <title>Appointments</title>
+    <!-- CSS links here -->
 </head>
 <body>
-    <!-- This is where your appointments page will render -->
-    <div id="app"></div>
+    <h1>Book an Appointment</h1>
 
-    <!-- Include your JS file -->
-    <script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
-    
-    <script>
-        // Initialize your appointments page
-        document.addEventListener("DOMContentLoaded", async () => {
-            const appointmentsPage = new AppointmentsPage();
-            document.getElementById("app").innerHTML = appointmentsPage.render();
-            await appointmentsPage.init();
-        });
+    <form id="appointmentForm">
+        <div class="form-group">
+            <label>Department</label>
+            <select id="departmentSelect" class="form-input">
+                <option value="">Select Department</option>
+                {% for dept in doctors %}
+                    <option value="{{ dept }}">{{ dept }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Doctor</label>
+            <select id="doctorSelect" class="form-input">
+                <option value="">Select Doctor</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="apptDate" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label>Time</label>
+            <select id="timeSelect" class="form-input">
+                <option value="">Select Time</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Appointment</button>
+    </form>
+
+    <h2>Your Appointments</h2>
+    <div id="appointmentsList"></div>
+
+    <!-- Pass Flask doctors data to JS -->
+    <script type="text/javascript">
+        // Correct way: use the Jinja filter within the template syntax
+        const DOCTORS = JSON.parse('{{ doctors | tojson }}');
     </script>
+
+    <!-- Include JS -->
+    <script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
 </body>
 </html>

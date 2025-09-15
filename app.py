@@ -522,8 +522,8 @@ if not os.path.exists(APPOINTMENTS_FILE):
 # Show appointments page
 @app.route("/appointments")
 def appointments():
-    data = safe_load_json(APPOINTMENTS_FILE, {})
-    return render_template("appointments.html", appointments=data, doctors=DOCTORS)
+    # Remove the unused variable entirely
+    return render_template("appointments.html", doctors=DOCTORS)
 
 # Save appointment (HTML form submission)
 @app.route("/save_appointment_form", methods=["POST"])
