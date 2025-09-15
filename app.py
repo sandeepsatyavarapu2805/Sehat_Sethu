@@ -441,10 +441,6 @@ def set_language():
     session["lang"] = lang
     return jsonify({"status": "success", "message": f"Language set to {lang}"})
 
-@app.route("/appointments")
-def appointments():
-    return render_template("appointments.html", doctors=DOCTORS)
-
 @app.route("/get_chat_history", methods=["GET"])
 def get_chat_history():
     history = safe_load_json(LOG_FILE, [])
