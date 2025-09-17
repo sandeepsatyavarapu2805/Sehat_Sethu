@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Appointments</title>
-    <!-- CSS links here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <h1>Book an Appointment</h1>
 
-    <form id="appointmentForm">
+    <!-- Appointment Form -->
+    <form id="appointmentForm" method="POST" action="{{ url_for('save_appointment_form') }}">
         <div class="form-group">
             <label>Department</label>
-            <select id="departmentSelect" class="form-input">
+            <select id="departmentSelect" name="department" class="form-input" required>
                 <option value="">Select Department</option>
                 {% for dept in doctors %}
                     <option value="{{ dept }}">{{ dept }}</option>
@@ -21,36 +22,58 @@
 
         <div class="form-group">
             <label>Doctor</label>
-            <select id="doctorSelect" class="form-input">
+            <select id="doctorSelect" name="doctor" class="form-input" required>
                 <option value="">Select Doctor</option>
             </select>
         </div>
 
         <div class="form-group">
             <label>Date</label>
-            <input type="date" id="apptDate" class="form-input">
+            <input type="date" id="apptDate" name="date" class="form-input" required>
         </div>
 
         <div class="form-group">
             <label>Time</label>
-            <select id="timeSelect" class="form-input">
+            <select id="timeSelect" name="time" class="form-input" required>
                 <option value="">Select Time</option>
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Add Appointment</button>
+        <div class="form-group">
+            <label>Issue</label>
+            <input type="text" name="issue" class="form-input" placeholder="Describe your issue" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Book Appointment</button>
     </form>
 
+    <hr>
+
     <h2>Your Appointments</h2>
-    <div id="appointmentsList"></div>
+    <div id="appointmentsList">
+        {% if appointments %}
+            {% for id, app in appointments.items() %}
+                <div class="appointment-item">
+                    <strong>{{ app.department }} - {{ app.doctor }}</strong><br>
+                    Date: {{ app.date }} | Time: {{ app.time }}<br>
+                    Issue: {{ app.issue }}<br>
+                    <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
+                    </form>
+                </div>
+                <hr>
+            {% endfor %}
+        {% else %}
+            <p>No appointments booked yet.</p>
+        {% endif %}
+    </div>
 
     <!-- Pass Flask doctors data to JS -->
     <script type="text/javascript">
-        // Correct way: use the Jinja filter within the template syntax
-        const DOCTORS = JSON.parse('{{ doctors | tojson }}');
+        const DOCTORS = {{ doctors | tojson | safe }};
     </script>
 
-    <!-- Include JS -->
+    <!-- JS -->
     <script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
 </body>
 </html>
