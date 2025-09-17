@@ -228,14 +228,19 @@ def ask():
         user_lower = user_input_en.lower()
 
         # --- Emergency check (real-life, specific guidance) ---
-        emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
+        emergency_keywords = [
+            "chest pain", "shortness of breath", "accident", "bleeding", "heart attack",
+            "unconscious", "stroke", "seizure", "poison", "severe burn", "heavy bleeding"
+        ]
         if any(word in user_lower for word in emergency_keywords):
             prompt = (
-                "You are a medical emergency assistant. The user mentioned an emergency. "
-                "Provide a clear, urgent response with specific actions. "
-                "Include: 1) Immediate action, 2) Call 108, 3) What to do while waiting. "
-                "Be direct, compassionate, and practical. Keep it concise but complete.\n"
-                f"User emergency: {user_input_en}"
+                "Act as a medical emergency assistant for the general public (India).\n"
+                "Write a short, urgent, practical response with three sections:\n"
+                "1) Immediate actions (clear bullet points, no medical jargon).\n"
+                "2) Call 108 now (ambulance) and why.\n"
+                "3) While waiting: simple safety steps, what to prepare (medications, records, unlocked door).\n"
+                "Keep it concise and compassionate. Do not give diagnoses or drug dosing.\n\n"
+                f"User described: {user_input_en}"
             )
             try:
                 response = model.generate_content(prompt)
@@ -243,71 +248,138 @@ def ask():
             except Exception as e:
                 print(f"Emergency generation error: {e}")
                 emergency_message = (
-                    "⚠️ This sounds urgent. Call 108 now for an ambulance. "
-                    "If you can, have someone stay with you, keep your phone nearby, unlock the door, "
-                    "and bring any important medical records or medicines. Seek immediate care."
+                    "⚠️ This may be an emergency. Call 108 now for an ambulance.\n\n"
+                    "Immediate actions:\n"
+                    "- Stay with the person. Keep them safe and calm.\n"
+                    "- If bleeding: apply firm pressure with a clean cloth.\n"
+                    "- If unconscious but breathing: place in recovery position.\n\n"
+                    "While waiting for help:\n"
+                    "- Keep phone nearby, unlock the door, and have ID/medicines ready.\n"
+                    "- Do not give food, drink, or medicine unless told by a professional."
                 )
             if lang == "te":
                 emergency_message = translate_to_telugu(emergency_message)
             return jsonify({"reply": emergency_message})
 
-        # --- Mental health check ---
-        elif any(word in user_lower for word in ["stress", "anxious", "depressed", "sad", "low mood"]):
+        # --- Mental health support (non-crisis) ---
+        if any(word in user_lower for word in ["stress", "anxious", "depressed", "sad", "low mood", "overwhelmed", "panic"]):
             prompt = (
-                "You are HealthBot, a friendly AI assistant. The user is stressed or anxious. "
-                "Provide 3 practical mental health tips (1–2 sentences each). "
-                "Do not repeat previous tips. Include this disclaimer at the end: "
-                "'This is general advice, not a substitute for professional help.'\n"
+                "You are HealthBot. The user feels stressed/anxious/low mood.\n"
+                "Provide exactly 3 practical tips (1-2 sentences each), grounded in everyday actions (breathing, routine, social support, sleep, activity).\n"
+                "Avoid repeating tips within this conversation.\n"
+                "End with: 'This is general guidance, not a substitute for professional care.'\n\n"
                 f"User input: {user_input_en}"
             )
-            response = model.generate_content(prompt)
-            bot_text = response.text
+            try:
+                response = model.generate_content(prompt)
+                bot_text = response.text
+            except Exception as e:
+                print(f"Mental health generation error: {e}")
+                bot_text = (
+                    "• Try a slow-breathing routine: inhale 4s, hold 4s, exhale 6s for 3–5 minutes.\n"
+                    "• Set one small task you can complete today (e.g., a short walk or tidying a corner).\n"
+                    "• Talk to someone you trust and keep a regular sleep schedule.\n\n"
+                    "This is general guidance, not a substitute for professional care."
+                )
 
-        # --- Nutrition and lifestyle check ---
-        elif any(word in user_lower for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
+        # --- Nutrition and lifestyle ---
+        elif any(word in user_lower for word in ["diet", "food", "nutrition", "exercise", "workout", "diabetic", "diabetes"]):
             prompt = (
-                "You are HealthBot. The user asked about nutrition or lifestyle. "
-                "Provide 3 practical everyday tips with a brief disclaimer.\n"
+                "You are HealthBot. The user asked about nutrition/lifestyle.\n"
+                "Give 3 concise, practical tips for everyday life (food choices, hydration, activity, consistency).\n"
+                "End with a short disclaimer that this is general guidance.\n\n"
                 f"User input: {user_input_en}"
             )
-            response = model.generate_content(prompt)
-            bot_text = response.text
+            try:
+                response = model.generate_content(prompt)
+                bot_text = response.text
+            except Exception as e:
+                print(f"Nutrition generation error: {e}")
+                bot_text = (
+                    "• Aim for half your plate vegetables, a quarter protein, and a quarter whole grains.\n"
+                    "• Hydrate regularly and limit sugary drinks; choose water most of the time.\n"
+                    "• Do at least 30 minutes of moderate activity most days.\n\n"
+                    "General guidance only; consult a professional for personalized advice."
+                )
 
         # --- Quiz or tip ---
         elif "quiz" in user_lower or "tip" in user_lower:
             prompt = (
-                "You are HealthBot. Provide a new health quiz question or a short health tip. "
-                "Keep it short, engaging, and educational.\n"
-                f"User input: {user_input_en}"
+                "You are HealthBot. Provide a fresh health quiz question OR a short health tip.\n"
+                "Keep it engaging, factual, and under 50 words."
             )
-            response = model.generate_content(prompt)
-            bot_text = response.text
+            try:
+                response = model.generate_content(prompt)
+                bot_text = response.text
+            except Exception as e:
+                print(f"Quiz/tip generation error: {e}")
+                bot_text = "Tip: A 10-minute walk after meals can help control blood sugar and improve digestion."
 
         # --- Medicine info ---
-        elif any(word in user_lower for word in ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]):
-            disclaimer = (
-                "⚠️ I provide general medicine info only. "
-                "I cannot give personal dosage or prescriptions. Always consult a doctor."
+        elif any(word in user_lower for word in ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen", "antibiotic"]):
+            prompt = (
+                "You are HealthBot. Provide general, non-prescriptive medicine information in 5 short sections:\n"
+                "1) What it is commonly used for\n"
+                "2) Common side effects\n"
+                "3) Safety warnings (who should avoid, allergies, interactions in general terms)\n"
+                "4) When to stop and seek medical care\n"
+                "5) General storage/usage notes (no dosages).\n"
+                "Do NOT provide doses or personalize treatment.\n\n"
+                f"User question: {user_input_en}"
             )
-            formatted_input = f"{disclaimer}\n\nUser question: {user_input_en}"
-            response = model.generate_content(formatted_input)
-            bot_text = response.text
+            try:
+                response = model.generate_content(prompt)
+                bot_text = response.text
+            except Exception as e:
+                print(f"Medicine info generation error: {e}")
+                bot_text = (
+                    "General info: I can share typical uses, common side effects, and safety notes, but not dosing.\n"
+                    "- Uses: pain, fever, or as directed by a doctor (depends on the medicine).\n"
+                    "- Side effects: usually mild; stop if rash, swelling, or breathing trouble.\n"
+                    "- Safety: avoid if allergic; be careful with liver/kidney problems and other medicines.\n"
+                    "- Seek care: severe reactions, worsening symptoms, or no improvement.\n"
+                    "- Storage: keep in a cool, dry place away from children."
+                )
 
         # --- Symptom check ---
-        elif ("symptom" in user_lower) or any(sym in user_lower for sym in ["fever", "headache", "cough", "nausea", "fatigue"]):
-            disclaimer = (
-                "⚠️ General information only. Not a substitute for medical advice. "
-                "See a doctor if symptoms persist or worsen."
+        elif ("symptom" in user_lower) or any(sym in user_lower for sym in ["fever", "headache", "cough", "nausea", "fatigue", "vomit", "pain", "sore throat"]):
+            prompt = (
+                "You are HealthBot. Provide a brief, structured response for common symptoms.\n"
+                "Include: (A) Simple at-home care steps; (B) What to monitor; (C) Red flags that need in-person care; (D) 3 follow-up questions to better understand.\n"
+                "Avoid diagnosis and dosing. Keep it practical and plain language.\n\n"
+                f"User symptoms: {user_input_en}"
             )
-            formatted_input = f"{disclaimer}\n\nUser symptoms: {user_input_en}"
-            response = model.generate_content(formatted_input)
-            bot_text = response.text
+            try:
+                response = model.generate_content(prompt)
+                bot_text = response.text
+            except Exception as e:
+                print(f"Symptom generation error: {e}")
+                bot_text = (
+                    "At-home: rest, hydrate, and use light meals; track temperature and symptoms.\n"
+                    "Monitor: duration, severity, new symptoms.\n"
+                    "Red flags: trouble breathing, persistent high fever, severe pain, confusion, dehydration.\n"
+                    "Questions: When did it start? Any other symptoms? Any chronic conditions or new medicines?"
+                )
 
         # --- Default chat ---
         else:
-            formatted_input = f"System instruction:\n{system_instruction}\n\nUser: {user_input_en}"
-            response = model.generate_content(formatted_input)
-            bot_text = response.text
+            prompt = (
+                "You are HealthBot, a friendly non-clinical health assistant.\n"
+                "Provide practical, real-world advice without diagnosing.\n"
+                "Structure: (1) Simple tips; (2) When to seek help; (3) Next steps or questions for the user.\n\n"
+                f"System instruction:\n{system_instruction}\n\nUser: {user_input_en}"
+            )
+            try:
+                response = model.generate_content(prompt)
+                bot_text = response.text
+            except Exception as e:
+                print(f"Default generation error: {e}")
+                bot_text = (
+                    "Here are some general tips based on what you shared.\n"
+                    "- Start with simple, consistent habits.\n"
+                    "- Watch how your body responds and adjust.\n"
+                    "Seek help if symptoms persist or worsen."
+                )
 
         # Translate back if Telugu
         if lang == "te":

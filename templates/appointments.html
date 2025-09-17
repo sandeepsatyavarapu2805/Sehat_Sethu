@@ -10,8 +10,9 @@
 
     <!-- Appointment Form -->
     <form id="appointmentForm" method="POST" action="{{ url_for('save_appointment_form') }}">
+        {% if form is defined and form.csrf_token is defined %}{{ form.csrf_token }}{% elif csrf_token_string is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token_string }}">{% endif %}
         <div class="form-group">
-            <label>Department</label>
+            <label for="departmentSelect">Department</label>
             <select id="departmentSelect" name="department" class="form-input" required>
                 <option value="">Select Department</option>
                 {% for dept in doctors %}
@@ -21,31 +22,35 @@
         </div>
 
         <div class="form-group">
-            <label>Doctor</label>
+            <label for="doctorSelect">Doctor</label>
             <select id="doctorSelect" name="doctor" class="form-input" required>
                 <option value="">Select Doctor</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="apptDate" name="date" class="form-input" required>
+            <label for="apptDate">Date</label>
+            <input type="date" id="apptDate" name="date" class="form-input" required min="{{ today_iso|default('', true) }}">
         </div>
 
         <div class="form-group">
-            <label>Time</label>
-            <select id="timeSelect" name="time" class="form-input" required>
+            <label for="timeSelect">Time</label>
+            <select id="timeSelect" name="time" class="form-input" required disabled>
                 <option value="">Select Time</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label>Issue</label>
-            <input type="text" name="issue" class="form-input" placeholder="Describe your issue" required>
+            <label for="issueInput">Issue</label>
+            <input type="text" id="issueInput" name="issue" class="form-input" placeholder="Describe your issue" required>
         </div>
 
         <button type="submit" class="btn btn-primary">Book Appointment</button>
     </form>
+
+    <noscript>
+        <p class="noscript-warning">JavaScript is required to select a doctor and time. Please enable JavaScript or contact support to book manually.</p>
+    </noscript>
 
     <hr>
 
@@ -57,7 +62,8 @@
                     <strong>{{ app.department }} - {{ app.doctor }}</strong><br>
                     Date: {{ app.date }} | Time: {{ app.time }}<br>
                     Issue: {{ app.issue }}<br>
-                    <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=id) }}" style="display:inline;">
+                    <form method="POST" action="{{ url_for('cancel_appointment', appointment_id=id) }}" class="inline-form">
+                        {% if form is defined and form.csrf_token is defined %}{{ form.csrf_token }}{% elif csrf_token_string is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token_string }}">{% endif %}
                         <button type="submit" class="btn btn-danger btn-sm">Cancel</button>
                     </form>
                 </div>
@@ -70,10 +76,10 @@
 
     <!-- Pass Flask doctors data to JS -->
     <script type="text/javascript">
-        const DOCTORS = {{ doctors | tojson | safe }};
+        const DOCTORS = {{ doctors | tojson }};
     </script>
 
     <!-- JS -->
-    <script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/appointments.js') }}" defer></script>
 </body>
 </html>
