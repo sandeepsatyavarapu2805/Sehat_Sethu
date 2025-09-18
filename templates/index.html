@@ -2364,17 +2364,20 @@ class AppointmentsPage {
         }
     }
 
-    async loadAppointments() {
-        try {
-            const response = await fetch('/get_appointments');
-            const result = await response.json();
-            app.data.appointments = result.appointments || [];
-            this.renderAppointments();
-        } catch (err) {
-            console.error('Error loading appointments:', err);
-            app.showNotification('Failed to load appointments.', 'error');
-        }
+async loadAppointments() {
+    try {
+        // ✅ Pull everything (profile, meds, appointments, etc.)
+        const response = await fetch('/get_user_data');
+        const result = await response.json();
+
+        // ✅ Extract appointments
+        app.data.appointments = result.appointments || [];
+        this.renderAppointments();
+    } catch (err) {
+        console.error('Error loading appointments:', err);
+        app.showNotification('Failed to load appointments.', 'error');
     }
+}
 
     renderAppointments() {
         const container = document.getElementById('appointmentsList');
