@@ -11,7 +11,7 @@ translator = google_translator()
 
 # Initialize Flask
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")  # Needed for session
+app.secret_key = os.getenv("FLASK_SECRET_KEY")  # Needed for session
 CORS(app)  # Allow all origins
 
 # Google API Key
@@ -169,8 +169,12 @@ def ask():
             emergency_message = (
                 "⚠️ Emergency detected!\n"
                 "Please call 108 immediately for an ambulance.\n"
-                "If possible, go to the nearest hospital right away.\n"
-                "Do not wait — seek help immediately!"
+                "You are HealthBot, a friendly AI assistant. "
+                "The user is in am emergency situation "
+                "Provide **3 practical emergency tips**, each 1-2 sentences. "
+                "Do not repeat previous tips. "
+                "And give the user tips to decrease the emergency"
+                "'This is general advice, not a substitute for professional help.'"
             )
             if lang == "te":
                 try:
@@ -252,12 +256,12 @@ def ask():
             return jsonify({"reply": bot_text})
         
         # Medicine info check
-        medicine_keywords = ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]
+        medicine_keywords = ["medicine", "drug", "tablet", "capsule", "syrup", "injection", "dose"]
         if any(word.lower() in user_input_en.lower() for word in medicine_keywords):
             disclaimer = (
                 "⚠️ I can share general information about medicines, "
                 "like their usual uses, side effects, and precautions. "
-                "This is **not personal medical advice**. Please talk to a doctor or pharmacist "
+                "This is **full information, side effects and uses of the medicine with caution**. Please talk to a doctor or pharmacist "
                 "before taking anything."
             )
             formatted_input = (
@@ -273,10 +277,14 @@ def ask():
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
         # Symptom checker
-        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
+        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue","symptom", "pain", "ache", "rash", "dizziness", "weakness", "cold", "flu", "vomiting"]):
             disclaimer = (
-                 "⚠️ I can share **general information about possible causes and safe self-care**. "
-                "This is not medical advice. Please see a doctor if your symptoms are severe or don’t improve."
+                "You are HealthBot, a friendly AI assistant. "
+                "The user is feeling something wrong with his body like stressed "
+                "Provide **5 practical diseases or infection he is suffering from according **, each 2-3 sentences. "
+                "Do not repeat previous tips. "
+                "Add a friendly tone and include a disclaimer: "
+                "'This is general advice, not a substitute for professional help.'"
             )
             formatted_input = (
                 f"{disclaimer}\n\n"
