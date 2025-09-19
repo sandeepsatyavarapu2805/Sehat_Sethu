@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, jsonify, session
 import google.generativeai as genai
 import os, json, datetime
-import base64
 from google_trans_new import google_translator
 from flask_cors import CORS
 import traceback
+import speech_recognition as sr
+from pydub import AudioSegment
+import tempfile
 
 # Initialize translator
 translator = google_translator()
@@ -200,13 +202,6 @@ def ask():
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-            
-        if lang == "te":
-            try:
-                    bot_text = translator.translate(bot_text, lang_tgt='te')
-            except Exception as e:
-                    pass  # Use English if translation fails
-            return jsonify({"reply": bot_text})
         
         # Nutrition and lifestyle check
         if any(word.lower() in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
@@ -224,13 +219,6 @@ def ask():
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-            
-        if lang == "te":
-            try:
-                    bot_text = translator.translate(bot_text, lang_tgt='te')
-            except Exception as e:
-                    pass
-            return jsonify({"reply": bot_text})
 
         # Quiz and tips check
         if "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
@@ -247,13 +235,6 @@ def ask():
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-            
-        if lang == "te":
-            try:
-                    bot_text = translator.translate(bot_text, lang_tgt='te')
-            except Exception as e:
-                    pass
-            return jsonify({"reply": bot_text})
         
         # Medicine info check
         medicine_keywords = ["medicine", "drug", "tablet", "capsule", "syrup", "injection", "dose"]
@@ -586,6 +567,89 @@ def image_to_text():
     except Exception as e:
         print(f"/image_to_text error: {e}")
         return jsonify({"error": "Failed to process image"}), 500
+
+@app.route("/image_identify", methods=["POST"])
+def image_identify():
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image provided"}), 400
+        file = request.files['image']
+        content = file.read()
+        if not content:
+            return jsonify({"error": "Empty file"}), 400
+
+        parts = [{"mime_type": file.mimetype or "image/jpeg", "data": content}]
+        prompt = (
+            "Describe concisely what is visible in this image. "
+            "List main objects, the setting (indoor/outdoor), and any noteworthy details. "
+            "Return plain text only, no advice or safety instructions."
+        )
+
+        try:
+            response = vision_model.generate_content([
+                {"text": prompt},
+                {"inline_data": parts[0]}
+            ])
+            description = (response.text or "").strip()
+        except Exception as e:
+            print(f"Vision API error (identify): {e}")
+            description = ""
+
+        return jsonify({"description": description or "No description available."})
+    except Exception as e:
+        print(f"/image_identify error: {e}")
+        return jsonify({"error": "Failed to identify image"}), 500
+
+@app.route("/audio_to_text", methods=["POST"])
+def audio_to_text():
+    """Accepts an audio file and returns recognized text (uses Google Web Speech via SpeechRecognition)."""
+    try:
+        if 'audio' not in request.files:
+            return jsonify({"error": "No audio file provided"}), 400
+
+        file = request.files['audio']
+        if file.filename == "":
+            return jsonify({"error": "Empty filename"}), 400
+
+        # Save incoming file to a temp file
+        with tempfile.NamedTemporaryFile(suffix=os.path.splitext(file.filename)[1], delete=False) as tmp_in:
+            tmp_in.write(file.read())
+            tmp_in.flush()
+            in_path = tmp_in.name
+
+        # Convert to WAV for SpeechRecognition if necessary
+        wav_path = in_path + ".wav"
+        try:
+            audio = AudioSegment.from_file(in_path)
+            audio.export(wav_path, format="wav")
+        except Exception as e:
+            print(f"Audio conversion error: {e}")
+            return jsonify({"error": "Failed to convert audio"}), 500
+
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(wav_path) as source:
+            audio_data = recognizer.record(source)
+
+        try:
+            # This uses Google Web Speech - no API key required but has quotas.
+            text = recognizer.recognize_google(audio_data)
+        except sr.UnknownValueError:
+            text = ""
+        except Exception as e:
+            print(f"Speech recognition error: {e}")
+            text = ""
+
+        # Cleanup temp files
+        try:
+            os.remove(in_path)
+            os.remove(wav_path)
+        except:
+            pass
+
+        return jsonify({"text": text})
+    except Exception as e:
+        print(f"/audio_to_text error: {e}")
+        return jsonify({"error": "Failed to process audio"}), 500
 
 # ---------------------------
 # Run

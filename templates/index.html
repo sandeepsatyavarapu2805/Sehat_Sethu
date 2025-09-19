@@ -1038,6 +1038,7 @@
     </style>
 </head>
 <body class="dark-theme">
+    
     <!-- Sidebar -->
     <button class="sidebar-toggle" id="sidebarToggle">
             <i class="fas fa-bars"></i>
@@ -1050,6 +1051,34 @@
                 <h1>Sehat Sethu</h1>
             </div>
         </div>
+
+        <div id="utilityControls" class="flex items-center gap-3 ml-auto">
+  <select id="langSelect" class="form-input">
+    <option value="en">English</option>
+    <option value="te">తెలుగు</option>
+  </select>
+  <button id="setLangBtn" class="btn btn-sm">Set Language</button>
+  <button id="weatherTipBtn" class="btn btn-sm">Get Weather Tip</button>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3 class="card-title">Image Tools</h3></div>
+  <input type="file" id="imageUpload" accept="image/*">
+  <div class="mt-2">
+    <button id="ocrBtn" class="btn btn-sm">Extract Text</button>
+    <button id="identifyBtn" class="btn btn-sm">Identify Image</button>
+  </div>
+  <pre id="imageResult" class="mt-2"></pre>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3 class="card-title">Voice → Text</h3></div>
+  <input type="file" id="audioUpload" accept="audio/*">
+  <div class="mt-2">
+    <button id="audioToTextBtn" class="btn btn-sm">Convert to Text</button>
+  </div>
+  <pre id="audioResult" class="mt-2"></pre>
+</div>
         
         <ul class="sidebar-menu">
             <li><a href="#" class="sidebar-item active" data-page="chat">
@@ -1417,6 +1446,28 @@
                 app.currentPage = pageId;
             }
         }
+
+        // Language selection
+document.getElementById('setLangBtn').addEventListener('click', async () => {
+  const lang = document.getElementById('langSelect').value;
+  await fetch('/set_language', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({language: lang})
+  });
+  app.showNotification(`Language set to ${lang}`, 'success');
+});
+
+// Weather tip
+document.getElementById('weatherTipBtn').addEventListener('click', async () => {
+  try {
+    const res = await fetch('/get_weather_tip');
+    const data = await res.json();
+    alert(data.tip || 'No tip available');
+  } catch (e) {
+    app.showNotification('Failed to fetch weather tip', 'error');
+  }
+});
 
 // Base URL for API calls
 const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real Render URL
@@ -2666,6 +2717,38 @@ class WellnessPage {
     const tip = await app.getWeatherTip();
     document.getElementById("wellnessTipText").textContent = tip;
 });
+
+async function uploadImageAndCall(endpoint) {
+  const fileInput = document.getElementById('imageUpload');
+  if (!fileInput.files.length) { app.showNotification('Select an image first', 'error'); return; }
+  const form = new FormData();
+  form.append('image', fileInput.files[0]);
+  try {
+    const res = await fetch(endpoint, { method: 'POST', body: form });
+    const data = await res.json();
+    document.getElementById('imageResult').textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    app.showNotification('Image request failed', 'error');
+  }
+}
+
+document.getElementById('ocrBtn').addEventListener('click', () => uploadImageAndCall('/image_to_text'));
+document.getElementById('identifyBtn').addEventListener('click', () => uploadImageAndCall('/image_identify'));
+
+document.getElementById('audioToTextBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('audioUpload');
+  if (!fileInput.files.length) { app.showNotification('Select an audio file first', 'error'); return; }
+  const form = new FormData();
+  form.append('audio', fileInput.files[0]);
+  try {
+    const res = await fetch('/audio_to_text', { method: 'POST', body: form });
+    const data = await res.json();
+    document.getElementById('audioResult').textContent = data.text || JSON.stringify(data, null, 2);
+  } catch (e) {
+    app.showNotification('Audio request failed', 'error');
+  }
+});
+
     </script>
     <script>
 document.addEventListener("DOMContentLoaded", function () {
