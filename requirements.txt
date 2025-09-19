@@ -1,4 +1,6 @@
-Flask
+flask
 flask-cors
 google-generativeai
 google-trans-new
+speechrecognition
+pydub
