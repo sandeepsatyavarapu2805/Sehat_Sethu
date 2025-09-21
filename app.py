@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory
 import google.generativeai as genai
 import os, json, datetime
+import base64
 from google_trans_new import google_translator
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -132,7 +133,6 @@ def create_system_instruction(user_data):
         "You are HealthBot, a friendly, helpful, and empathetic AI health assistant. "
         "Your main purpose is to provide **general health and wellness information**, tips, and motivation. "
         "You can discuss workout routines, nutrition, and general well-being. "
-        "**Never give specific medical diagnoses, treatments, or remedies.** "
         "Always start your response with a clear and prominent disclaimer stating that you are not a medical professional. "
         "When a user asks for advice on a health issue, provide a structured, multi-point response that includes:\n"
         "1. **A list of non-medical, at-home measures** they can take (e.g., rest, hydration, stress reduction). Use bullet points to make this information easy to read.\n"
@@ -299,7 +299,7 @@ def ask():
         # Symptom checker
         elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
             disclaimer = (
-                    "You are HealthBot, a friendly AI assistant. "
+                "You are HealthBot, a friendly AI assistant. "
                 "The user is asking about an medicine. "
                 "Provide **uses , information of the diseases regarding the symptoms** based on the input, each 1-2 sentences. "
                 "Do not repeat previous information. "

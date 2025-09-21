@@ -1038,7 +1038,6 @@
     </style>
 </head>
 <body class="dark-theme">
-    
     <!-- Sidebar -->
     <button class="sidebar-toggle" id="sidebarToggle">
             <i class="fas fa-bars"></i>
@@ -1051,34 +1050,6 @@
                 <h1>Sehat Sethu</h1>
             </div>
         </div>
-
-        <div id="utilityControls" class="flex items-center gap-3 ml-auto">
-  <select id="langSelect" class="form-input">
-    <option value="en">English</option>
-    <option value="te">తెలుగు</option>
-  </select>
-  <button id="setLangBtn" class="btn btn-sm">Set Language</button>
-  <button id="weatherTipBtn" class="btn btn-sm">Get Weather Tip</button>
-</div>
-
-<div class="card">
-  <div class="card-header"><h3 class="card-title">Image Tools</h3></div>
-  <input type="file" id="imageUpload" accept="image/*">
-  <div class="mt-2">
-    <button id="ocrBtn" class="btn btn-sm">Extract Text</button>
-    <button id="identifyBtn" class="btn btn-sm">Identify Image</button>
-  </div>
-  <pre id="imageResult" class="mt-2"></pre>
-</div>
-
-<div class="card">
-  <div class="card-header"><h3 class="card-title">Voice → Text</h3></div>
-  <input type="file" id="audioUpload" accept="audio/*">
-  <div class="mt-2">
-    <button id="audioToTextBtn" class="btn btn-sm">Convert to Text</button>
-  </div>
-  <pre id="audioResult" class="mt-2"></pre>
-</div>
         
         <ul class="sidebar-menu">
             <li><a href="#" class="sidebar-item active" data-page="chat">
@@ -1447,28 +1418,6 @@
             }
         }
 
-        // Language selection
-document.getElementById('setLangBtn').addEventListener('click', async () => {
-  const lang = document.getElementById('langSelect').value;
-  await fetch('/set_language', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({language: lang})
-  });
-  app.showNotification(`Language set to ${lang}`, 'success');
-});
-
-// Weather tip
-document.getElementById('weatherTipBtn').addEventListener('click', async () => {
-  try {
-    const res = await fetch('/get_weather_tip');
-    const data = await res.json();
-    alert(data.tip || 'No tip available');
-  } catch (e) {
-    app.showNotification('Failed to fetch weather tip', 'error');
-  }
-});
-
 // Base URL for API calls
 const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real Render URL
 
@@ -1507,11 +1456,11 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
   <h2 class="text-lg font-semibold">Chat</h2>
   <div class="flex gap-2">
     <button id="historyBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition">
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
         📜 Chat History
     </button>
     <button id="clearChatBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition"
+            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition"
             title="Start a new chat">
         🆕 New Chat
     </button>
@@ -1523,6 +1472,12 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
                         <div class="chat-input-container">
                             <form class="chat-input-form" id="chatForm">
                                 <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
+                                <button type="button" class="chat-send-btn" id="voiceBtn" title="Start voice input">
+                                    <i class="fas fa-microphone"></i>
+                                </button>
+                                <button type="button" class="chat-send-btn" id="imageBtn" title="Upload image for text extraction">
+                                    <i class="fas fa-image"></i>
+                                </button>
                                 <button type="submit" class="chat-send-btn" id="chatSendBtn">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
@@ -1567,6 +1522,143 @@ async init() {
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const imageBtn = document.getElementById('imageBtn');
+    // Hidden file input for image selection
+    let imageInput = document.getElementById('imageInput');
+    if (!imageInput) {
+        imageInput = document.createElement('input');
+        imageInput.type = 'file';
+        imageInput.accept = 'image/*';
+        imageInput.id = 'imageInput';
+        imageInput.style.display = 'none';
+        document.body.appendChild(imageInput);
+    }
+
+    // --- Voice input (Web Speech API) ---
+    try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            if (voiceBtn) {
+                voiceBtn.disabled = true;
+                voiceBtn.title = 'Voice input not supported in this browser';
+            }
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+
+            let isListening = false;
+            let interim = '';
+            let finalTranscript = '';
+
+            const setListeningUi = (listening) => {
+                if (!voiceBtn) return;
+                const icon = voiceBtn.querySelector('i');
+                if (listening) {
+                    voiceBtn.style.background = 'linear-gradient(135deg, #ef4444, #f59e0b)';
+                    voiceBtn.title = 'Listening... click to stop';
+                    if (icon) icon.className = 'fas fa-microphone-slash';
+                } else {
+                    voiceBtn.style.background = '';
+                    voiceBtn.title = 'Start voice input';
+                    if (icon) icon.className = 'fas fa-microphone';
+                }
+            };
+
+            if (voiceBtn && !voiceBtn.dataset.bound) {
+                voiceBtn.addEventListener('click', () => {
+                    if (!isListening) {
+                        finalTranscript = '';
+                        interim = '';
+                        try { recognition.start(); } catch (_) {}
+                    } else {
+                        try { recognition.stop(); } catch (_) {}
+                    }
+                });
+                voiceBtn.dataset.bound = 'true';
+            }
+
+            recognition.onstart = () => {
+                isListening = true;
+                setListeningUi(true);
+            };
+
+            recognition.onerror = (e) => {
+                isListening = false;
+                setListeningUi(false);
+                app.showNotification('Voice input error: ' + (e.error || 'unknown'), 'error');
+            };
+
+            recognition.onresult = (event) => {
+                interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const res = event.results[i];
+                    if (res.isFinal) {
+                        finalTranscript += res[0].transcript;
+                    } else {
+                        interim += res[0].transcript;
+                    }
+                }
+                const combined = (finalTranscript + ' ' + interim).trim();
+                chatInput.value = combined;
+                // Trigger auto-resize behavior
+                chatInput.dispatchEvent(new Event('input'));
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                setListeningUi(false);
+                // Keep text in box for user to edit/send
+                if (chatInput && chatInput.value.trim()) {
+                    chatInput.focus();
+                }
+            };
+        }
+    } catch (_) {
+        if (voiceBtn) {
+            voiceBtn.disabled = true;
+            voiceBtn.title = 'Voice input unavailable';
+        }
+    }
+
+    // --- Image to Text (OCR via backend) ---
+    if (imageBtn && !imageBtn.dataset.bound) {
+        imageBtn.addEventListener('click', () => imageInput.click());
+        imageBtn.dataset.bound = 'true';
+    }
+
+    if (!imageInput.dataset.bound) imageInput.addEventListener('change', async () => {
+        const file = imageInput.files && imageInput.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            app.showNotification('Please select an image file.', 'error');
+            return;
+        }
+        const thinkingDiv = this.addThinkingIndicator();
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            thinkingDiv.remove();
+            const text = data.text || 'No text detected.';
+            // Show a small preview and the extracted text
+            const reader = new FileReader();
+            reader.onload = () => {
+                const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
+                this.addMessage(preview, 'bot');
+            };
+            reader.readAsDataURL(file);
+        } catch (e) {
+            thinkingDiv.remove();
+            this.addMessage('Sorry, I could not extract text from that image.', 'bot');
+        } finally {
+            imageInput.value = '';
+        }
+    }); imageInput.dataset.bound = 'true';
 
     // --- Load chat history on page load ---
     try {
@@ -1587,26 +1679,29 @@ async init() {
         this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
 
-    // --- Send message ---
-    chatForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const message = chatInput.value.trim();
-        if (!message) return;
+    // --- Send message (guard against double-binding) ---
+    if (chatForm && !chatForm.dataset.bound) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = chatInput.value.trim();
+            if (!message) return;
 
-        this.addMessage(message, 'user');
-        chatInput.value = '';
-        chatInput.style.height = 'auto';
+            this.addMessage(message, 'user');
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
 
-        const thinkingDiv = this.addThinkingIndicator();
-        try {
-            const response = await app.apiCall(`/ask`, 'POST', { message });
-            thinkingDiv.remove();
-            this.addMessage(response.reply, 'bot');
-        } catch {
-            thinkingDiv.remove();
-            this.addMessage('Sorry, an error occurred. Please try again.', 'bot');
-        }
-    });
+            const thinkingDiv = this.addThinkingIndicator();
+            try {
+                const response = await app.apiCall(`/ask`, 'POST', { message });
+                thinkingDiv.remove();
+                this.addMessage(response.reply, 'bot');
+            } catch {
+                thinkingDiv.remove();
+                this.addMessage('Sorry, an error occurred. Please try again.', 'bot');
+            }
+        });
+        chatForm.dataset.bound = 'true';
+    }
 
     // --- Edit user messages ---
     chatMessages.addEventListener('click', (e) => {
@@ -2348,6 +2443,35 @@ class AppointmentsPage {
                                 <label class="form-label">Time</label>
                                 <input type="time" class="form-input" id="apptTime">
                             </div>
+                            <div class="form-group">
+                                <label class="form-label">Specialty</label>
+                                <select class="form-input" id="apptSpecialty">
+                                    <option value="">Select Specialty</option>
+                                    <option>Cardiology</option>
+                                    <option>Neurology</option>
+                                    <option>Orthopedics</option>
+                                    <option>Dermatology</option>
+                                    <option>Pediatrics</option>
+                                    <option>General Medicine</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Your Location (City)</label>
+                                <input type="text" class="form-input" id="apptLocation" placeholder="e.g., Hyderabad">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Doctor</label>
+                                <select class="form-input" id="apptDoctor">
+                                    <option value="">Select a doctor</option>
+                                    <option>DR. P.VARDHAN</option>
+                                    <option>DR. SANDY_KING</option>
+                                    <option>DR. MOKSHA</option>
+                                    <option>DR. LEE</option>
+                                    <option>DR. DR.SASHANK</option>
+                                    <option>DR. DR.SAHITI</option>
+                                </select>
+                                <div id="doctorHelp" class="text-sm text-gray-400 mt-1">Choose a specialty and location to load doctors.</div>
+                            </div>
                         </div>
                         <div class="flex justify-end">
                             <button type="submit" class="btn btn-primary">Add Appointment</button>
@@ -2371,34 +2495,23 @@ class AppointmentsPage {
     }
 
     async init() {
-        // Load appointments from backend
-        await this.loadAppointments();
+        await app.loadData();
+        this.renderAppointments();
 
-        // Form submission
+        // ✅ Prevent duplicate binding
         const form = document.getElementById('appointmentForm');
         if (!form.dataset.bound) {
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const appointmentData = {
-                    title: document.getElementById('apptTitle').value,
-                    date: document.getElementById('apptDate').value,
-                    time: document.getElementById('apptTime').value
-                };
-                if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
-                    app.showNotification('Please fill in all fields.', 'error');
-                    return;
-                }
-                await this.saveAppointment(appointmentData);
-                form.reset();
-                await this.loadAppointments();
+                await this.saveAppointment();
             });
             form.dataset.bound = "true";
         }
 
-        // Edit/Delete event delegation
+        // ✅ Event delegation for edit/delete
         const container = document.getElementById('appointmentsList');
         if (!container.dataset.bound) {
-            container.addEventListener('click', async (e) => {
+            container.addEventListener('click', (e) => {
                 const item = e.target.closest('.data-item');
                 if (!item) return;
                 const index = parseInt(item.dataset.index);
@@ -2407,34 +2520,18 @@ class AppointmentsPage {
                     this.editAppointment(index);
                 }
                 if (e.target.closest('.delete-btn')) {
-                    await this.deleteAppointment(index);
-                    await this.loadAppointments();
+                    this.deleteAppointment(index);
                 }
             });
             container.dataset.bound = "true";
         }
     }
 
-async loadAppointments() {
-    try {
-        // ✅ Pull everything (profile, meds, appointments, etc.)
-        const response = await fetch('/get_user_data');
-        const result = await response.json();
-
-        // ✅ Extract appointments
-        app.data.appointments = result.appointments || [];
-        this.renderAppointments();
-    } catch (err) {
-        console.error('Error loading appointments:', err);
-        app.showNotification('Failed to load appointments.', 'error');
-    }
-}
-
     renderAppointments() {
         const container = document.getElementById('appointmentsList');
         container.innerHTML = '';
 
-        if (!app.data.appointments || app.data.appointments.length === 0) {
+        if (app.data.appointments.length === 0) {
             container.innerHTML = '<p class="text-center text-gray-500">No appointments scheduled yet.</p>';
             return;
         }
@@ -2442,7 +2539,7 @@ async loadAppointments() {
         app.data.appointments.forEach((appt, index) => {
             const apptDiv = document.createElement('div');
             apptDiv.className = 'data-item';
-            apptDiv.dataset.index = index;
+            apptDiv.dataset.index = index; // ✅ needed for delegation
 
             apptDiv.innerHTML = `
                 <div class="data-item-content">
@@ -2462,34 +2559,21 @@ async loadAppointments() {
         });
     }
 
-    async saveAppointment(appointmentData) {
-        try {
-            const response = await fetch('/save_appointment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(appointmentData)
-            });
-            const result = await response.json();
-            if (result.status === 'success') app.showNotification(result.message, 'success');
-        } catch (err) {
-            console.error('Error saving appointment:', err);
-            app.showNotification('Failed to save appointment.', 'error');
-        }
-    }
+    async saveAppointment() {
+        const appointmentData = {
+            title: document.getElementById('apptTitle').value,
+            date: document.getElementById('apptDate').value,
+            time: document.getElementById('apptTime').value
+        };
 
-    async updateAppointment(index, updatedData) {
-        try {
-            const response = await fetch(`/update_appointment/${index}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedData)
-            });
-            const result = await response.json();
-            if (result.status === 'success') app.showNotification(result.message, 'success');
-        } catch (err) {
-            console.error('Error updating appointment:', err);
-            app.showNotification('Failed to update appointment.', 'error');
+        if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
+            app.showNotification('Please fill in all fields.', 'error');
+            return;
         }
+
+        await app.saveAppointment(appointmentData);
+        document.getElementById('appointmentForm').reset();
+        this.renderAppointments();
     }
 
     async editAppointment(index) {
@@ -2498,10 +2582,10 @@ async loadAppointments() {
         document.getElementById('apptDate').value = appointment.date;
         document.getElementById('apptTime').value = appointment.time;
 
+        // Change form to update mode
         const form = document.getElementById('appointmentForm');
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.textContent = 'Update Appointment';
-
         submitBtn.onclick = async (e) => {
             e.preventDefault();
             const updatedData = {
@@ -2509,10 +2593,10 @@ async loadAppointments() {
                 date: document.getElementById('apptDate').value,
                 time: document.getElementById('apptTime').value
             };
-            await this.updateAppointment(index, updatedData);
+            await app.updateAppointment(index, updatedData);
             form.reset();
             submitBtn.textContent = 'Add Appointment';
-            await this.loadAppointments();
+            this.renderAppointments();
         };
     }
 
@@ -2522,20 +2606,13 @@ async loadAppointments() {
             'Are you sure you want to delete this appointment?',
             async (confirmed) => {
                 if (confirmed) {
-                    try {
-                        const response = await fetch(`/delete_appointment/${index}`, { method: 'DELETE' });
-                        const result = await response.json();
-                        if (result.status === 'success') app.showNotification(result.message, 'success');
-                    } catch (err) {
-                        console.error('Error deleting appointment:', err);
-                        app.showNotification('Failed to delete appointment.', 'error');
-                    }
+                    await app.deleteAppointment(index);
+                    this.renderAppointments();
                 }
             }
         );
     }
 }
-
 // --- Wellness Page ---
 class WellnessPage {
     render() {
@@ -2717,38 +2794,6 @@ class WellnessPage {
     const tip = await app.getWeatherTip();
     document.getElementById("wellnessTipText").textContent = tip;
 });
-
-async function uploadImageAndCall(endpoint) {
-  const fileInput = document.getElementById('imageUpload');
-  if (!fileInput.files.length) { app.showNotification('Select an image first', 'error'); return; }
-  const form = new FormData();
-  form.append('image', fileInput.files[0]);
-  try {
-    const res = await fetch(endpoint, { method: 'POST', body: form });
-    const data = await res.json();
-    document.getElementById('imageResult').textContent = JSON.stringify(data, null, 2);
-  } catch (e) {
-    app.showNotification('Image request failed', 'error');
-  }
-}
-
-document.getElementById('ocrBtn').addEventListener('click', () => uploadImageAndCall('/image_to_text'));
-document.getElementById('identifyBtn').addEventListener('click', () => uploadImageAndCall('/image_identify'));
-
-document.getElementById('audioToTextBtn').addEventListener('click', async () => {
-  const fileInput = document.getElementById('audioUpload');
-  if (!fileInput.files.length) { app.showNotification('Select an audio file first', 'error'); return; }
-  const form = new FormData();
-  form.append('audio', fileInput.files[0]);
-  try {
-    const res = await fetch('/audio_to_text', { method: 'POST', body: form });
-    const data = await res.json();
-    document.getElementById('audioResult').textContent = data.text || JSON.stringify(data, null, 2);
-  } catch (e) {
-    app.showNotification('Audio request failed', 'error');
-  }
-});
-
     </script>
     <script>
 document.addEventListener("DOMContentLoaded", function () {
