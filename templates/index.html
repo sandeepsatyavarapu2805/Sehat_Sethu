@@ -2429,50 +2429,36 @@ class AppointmentsPage {
                             <i class="fas fa-calendar-check"></i>
                         </div>
                     </div>
-                    <form id="appointmentForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Appointment Title</label>
-                                <input type="text" class="form-input" id="apptTitle" placeholder="e.g., Annual Checkup">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Date</label>
-                                <input type="date" class="form-input" id="apptDate">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Time</label>
-                                <input type="time" class="form-input" id="apptTime">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Specialty</label>
-                                <select class="form-input" id="apptSpecialty">
-                                    <option value="">Select Specialty</option>
-                                    <option>Cardiology</option>
-                                    <option>Neurology</option>
-                                    <option>Orthopedics</option>
-                                    <option>Dermatology</option>
-                                    <option>Pediatrics</option>
-                                    <option>General Medicine</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Your Location (City)</label>
-                                <input type="text" class="form-input" id="apptLocation" placeholder="e.g., Hyderabad">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Doctor</label>
-                                <select class="form-input" id="apptDoctor">
-                                    <option value="">Select a doctor</option>
-                                    <option>DR. P.VARDHAN</option>
-                                    <option>DR. SANDY_KING</option>
-                                    <option>DR. MOKSHA</option>
-                                    <option>DR. LEE</option>
-                                    <option>DR. DR.SASHANK</option>
-                                    <option>DR. DR.SAHITI</option>
-                                </select>
-                                <div id="doctorHelp" class="text-sm text-gray-400 mt-1">Choose a specialty and location to load doctors.</div>
-                            </div>
-                        </div>
+                    <form id="appointmentForm" class="space-y-4">
+    <!-- Specialty Dropdown -->
+    <div class="form-group">
+        <label class="form-label">Specialty</label>
+        <select id="specialtySelect" class="form-input">
+            <option value="">Select Specialty</option>
+        </select>
+    </div>
+
+    <!-- Doctor Dropdown -->
+    <div class="form-group">
+        <label class="form-label">Doctor</label>
+        <select id="doctorSelect" class="form-input" disabled>
+            <option value="">Select Doctor</option>
+        </select>
+    </div>
+
+    <!-- Time Dropdown -->
+    <div class="form-group">
+        <label class="form-label">Available Time</label>
+        <select id="timeSelect" class="form-input" disabled>
+            <option value="">Select Time</option>
+        </select>
+    </div>
+
+    <div class="flex justify-end">
+        <button type="submit" class="btn btn-primary">Book Appointment</button>
+    </div>
+</form>
+<div class="mt-6" id="appointmentsList"></div>
                         <div class="flex justify-end">
                             <button type="submit" class="btn btn-primary">Add Appointment</button>
                         </div>
@@ -2495,123 +2481,119 @@ class AppointmentsPage {
     }
 
     async init() {
-        await app.loadData();
-        this.renderAppointments();
+    const specialtySelect = document.getElementById('specialtySelect');
+    const doctorSelect = document.getElementById('doctorSelect');
+    const timeSelect = document.getElementById('timeSelect');
+    const form = document.getElementById('appointmentForm');
+    const list = document.getElementById('appointmentsList');
 
-        // ✅ Prevent duplicate binding
-        const form = document.getElementById('appointmentForm');
-        if (!form.dataset.bound) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.saveAppointment();
-            });
-            form.dataset.bound = "true";
-        }
+    let doctors = [];
 
-        // ✅ Event delegation for edit/delete
-        const container = document.getElementById('appointmentsList');
-        if (!container.dataset.bound) {
-            container.addEventListener('click', (e) => {
-                const item = e.target.closest('.data-item');
-                if (!item) return;
-                const index = parseInt(item.dataset.index);
-
-                if (e.target.closest('.edit-btn')) {
-                    this.editAppointment(index);
-                }
-                if (e.target.closest('.delete-btn')) {
-                    this.deleteAppointment(index);
-                }
-            });
-            container.dataset.bound = "true";
-        }
+    try {
+        doctors = await app.apiCall('/get_doctors');
+    } catch (err) {
+        app.showNotification('Failed to load doctors', 'error');
+        return;
     }
 
-    renderAppointments() {
-        const container = document.getElementById('appointmentsList');
-        container.innerHTML = '';
+    // Populate specialties
+    const specialties = [...new Set(doctors.map(d => d.specialty))];
+    specialties.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        specialtySelect.appendChild(opt);
+    });
 
-        if (app.data.appointments.length === 0) {
-            container.innerHTML = '<p class="text-center text-gray-500">No appointments scheduled yet.</p>';
+    // On specialty change → filter doctors
+    specialtySelect.addEventListener('change', () => {
+        doctorSelect.innerHTML = `<option value="">Select Doctor</option>`;
+        timeSelect.innerHTML = `<option value="">Select Time</option>`;
+        doctorSelect.disabled = true;
+        timeSelect.disabled = true;
+
+        if (specialtySelect.value) {
+            const filtered = doctors.filter(d => d.specialty === specialtySelect.value);
+            filtered.forEach(doc => {
+                const opt = document.createElement('option');
+                opt.value = doc.id;
+                opt.textContent = `${doc.name} (${doc.hospital}, ${doc.location})`;
+                doctorSelect.appendChild(opt);
+            });
+            doctorSelect.disabled = false;
+        }
+    });
+
+    // On doctor change → show times
+    doctorSelect.addEventListener('change', () => {
+        timeSelect.innerHTML = `<option value="">Select Time</option>`;
+        timeSelect.disabled = true;
+
+        const selected = doctors.find(d => d.id == doctorSelect.value);
+        if (selected && selected.times.length) {
+            selected.times.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t;
+                opt.textContent = t;
+                timeSelect.appendChild(opt);
+            });
+            timeSelect.disabled = false;
+        }
+    });
+
+    // On form submit → save appointment
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!specialtySelect.value || !doctorSelect.value || !timeSelect.value) {
+            app.showNotification('Please select all fields', 'warning');
             return;
         }
 
-        app.data.appointments.forEach((appt, index) => {
-            const apptDiv = document.createElement('div');
-            apptDiv.className = 'data-item';
-            apptDiv.dataset.index = index; // ✅ needed for delegation
-
-            apptDiv.innerHTML = `
-                <div class="data-item-content">
-                    <div class="data-item-title">${appt.title}</div>
-                    <div class="data-item-subtitle">Date: ${appt.date} | Time: ${appt.time}</div>
-                </div>
-                <div class="data-item-actions">
-                    <button class="btn btn-outline btn-sm edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="btn btn-danger btn-sm delete-btn">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            `;
-            container.appendChild(apptDiv);
-        });
-    }
-
-    async saveAppointment() {
         const appointmentData = {
-            title: document.getElementById('apptTitle').value,
-            date: document.getElementById('apptDate').value,
-            time: document.getElementById('apptTime').value
+            specialty: specialtySelect.value,
+            doctor_id: doctorSelect.value,
+            doctor_name: doctors.find(d => d.id == doctorSelect.value).name,
+            time: timeSelect.value,
         };
-
-        if (!appointmentData.title || !appointmentData.date || !appointmentData.time) {
-            app.showNotification('Please fill in all fields.', 'error');
-            return;
-        }
 
         await app.saveAppointment(appointmentData);
-        document.getElementById('appointmentForm').reset();
-        this.renderAppointments();
+        renderAppointments();
+        form.reset();
+        doctorSelect.disabled = true;
+        timeSelect.disabled = true;
+    });
+
+    // Helper: render booked appointments
+function renderAppointments() {
+    list.innerHTML = '';
+    if (app.data.appointments.length === 0) {
+        list.innerHTML = '<p class="text-center text-gray-500">No appointments yet.</p>';
+        return;
     }
 
-    async editAppointment(index) {
-        const appointment = app.data.appointments[index];
-        document.getElementById('apptTitle').value = appointment.title;
-        document.getElementById('apptDate').value = appointment.date;
-        document.getElementById('apptTime').value = appointment.time;
+    app.data.appointments.forEach((a, i) => {
+        const item = document.createElement('div');
+        item.className = "data-item";
+        item.innerHTML = `
+            <div class="data-item-content">
+                <h4 class="data-item-title">${a.doctor_name} (${a.specialty})</h4>
+                <p class="data-item-subtitle">Time: ${a.time}</p>
+            </div>
+            <div class="data-item-actions">
+                <button class="btn btn-danger btn-sm" data-index="${i}">Delete</button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
 
-        // Change form to update mode
-        const form = document.getElementById('appointmentForm');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.textContent = 'Update Appointment';
-        submitBtn.onclick = async (e) => {
-            e.preventDefault();
-            const updatedData = {
-                title: document.getElementById('apptTitle').value,
-                date: document.getElementById('apptDate').value,
-                time: document.getElementById('apptTime').value
-            };
-            await app.updateAppointment(index, updatedData);
-            form.reset();
-            submitBtn.textContent = 'Add Appointment';
-            this.renderAppointments();
-        };
-    }
-
-    async deleteAppointment(index) {
-        app.showModal(
-            'Delete Appointment',
-            'Are you sure you want to delete this appointment?',
-            async (confirmed) => {
-                if (confirmed) {
-                    await app.deleteAppointment(index);
-                    this.renderAppointments();
-                }
-            }
-        );
-    }
+    list.querySelectorAll('.btn-danger').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const index = e.target.dataset.index;
+            await app.deleteAppointment(index);
+            renderAppointments();
+        });
+    });
+}}
 }
 // --- Wellness Page ---
 class WellnessPage {

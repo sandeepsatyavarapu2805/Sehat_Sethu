@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory
 import google.generativeai as genai
 import os, json, datetime
-import base64
 from google_trans_new import google_translator
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -45,6 +44,18 @@ DOCTOR_DIRECTORY = [
     {"id": 7, "name": "Dr. Ananya Gupta", "specialty": "Neurology", "location": "Delhi", "hospital": "AIIMS", "phone": "+91 11 2461 0000"},
     {"id": 8, "name": "Dr. Suresh Reddy", "specialty": "Orthopedics", "location": "Hyderabad", "hospital": "Care Hospitals", "phone": "+91 40 7777 8888"},
 ]
+
+# Doctor schedules (mock data, you can later fetch from DB)
+DOCTOR_SCHEDULES = {
+    1: ["09:00 AM", "11:00 AM", "02:00 PM"],
+    2: ["10:00 AM", "01:00 PM", "04:00 PM"],
+    3: ["08:30 AM", "12:30 PM"],
+    4: ["09:15 AM", "03:15 PM"],
+    5: ["11:00 AM", "05:00 PM"],
+    6: ["09:45 AM", "01:45 PM"],
+    7: ["10:30 AM", "02:30 PM"],
+    8: ["08:00 AM", "01:00 PM"],
+}
 
 # Auto-create chat_log.json if missing
 if not os.path.exists(LOG_FILE):
@@ -159,7 +170,6 @@ chat = model.start_chat(
 @app.route("/")
 def home():
     return render_template("index.html")
-
 
 @app.route("/ask", methods=["POST"])
 def ask():
@@ -370,6 +380,14 @@ def save_message(user_input, bot_text):
 def get_user_data():
     return jsonify(load_user_data())
 
+@app.route("/get_doctors", methods=["GET"])
+def get_doctors():
+    doctors = []
+    for doc in DOCTOR_DIRECTORY:
+        doc_info = doc.copy()
+        doc_info["times"] = DOCTOR_SCHEDULES.get(doc["id"], [])
+        doctors.append(doc_info)
+    return jsonify(doctors)
 
 @app.route("/save_profile", methods=["POST"])
 def save_profile():
