@@ -1,19 +1,17 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_from_directory
 import google.generativeai as genai
 import os, json, datetime
 from google_trans_new import google_translator
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 import traceback
-import speech_recognition as sr
-from pydub import AudioSegment
-import tempfile
 
 # Initialize translator
 translator = google_translator()
 
 # Initialize Flask
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")  # Needed for session
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")  # Needed for session
 CORS(app)  # Allow all origins
 
 # Google API Key
@@ -30,6 +28,22 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 vision_model = genai.GenerativeModel("gemini-1.5-flash")
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), "chat_log.json")
+
+# Directory to store uploaded files
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Mock doctor directory
+DOCTOR_DIRECTORY = [
+    {"id": 1, "name": "Dr. Asha Varma", "specialty": "Cardiology", "location": "Hyderabad", "hospital": "Sunshine Hospitals", "phone": "+91 40 1111 2222"},
+    {"id": 2, "name": "Dr. Rohan Iyer", "specialty": "Neurology", "location": "Hyderabad", "hospital": "Yashoda Hospitals", "phone": "+91 40 3333 4444"},
+    {"id": 3, "name": "Dr. Kavya Rao", "specialty": "Orthopedics", "location": "Secunderabad", "hospital": "KIMS", "phone": "+91 40 5555 6666"},
+    {"id": 4, "name": "Dr. Manoj Menon", "specialty": "Dermatology", "location": "Bengaluru", "hospital": "Apollo Hospitals", "phone": "+91 80 1111 2222"},
+    {"id": 5, "name": "Dr. Neha Shah", "specialty": "Pediatrics", "location": "Mumbai", "hospital": "Fortis", "phone": "+91 22 1234 5678"},
+    {"id": 6, "name": "Dr. Vikram Patel", "specialty": "Cardiology", "location": "Mumbai", "hospital": "Lilavati", "phone": "+91 22 9876 5432"},
+    {"id": 7, "name": "Dr. Ananya Gupta", "specialty": "Neurology", "location": "Delhi", "hospital": "AIIMS", "phone": "+91 11 2461 0000"},
+    {"id": 8, "name": "Dr. Suresh Reddy", "specialty": "Orthopedics", "location": "Hyderabad", "hospital": "Care Hospitals", "phone": "+91 40 7777 8888"},
+]
 
 # Auto-create chat_log.json if missing
 if not os.path.exists(LOG_FILE):
@@ -146,12 +160,14 @@ chat = model.start_chat(
 def home():
     return render_template("index.html")
 
+
 @app.route("/ask", methods=["POST"])
 def ask():
     try:
         user_input = request.json.get("message", "").strip()
         incoming_edit_id = request.json.get("edit_id")
         edit_id = str(incoming_edit_id) if incoming_edit_id else None
+
 
         current_user_data = load_user_data()
         system_instruction = create_system_instruction(current_user_data)
@@ -172,10 +188,10 @@ def ask():
                 "⚠️ Emergency detected!\n"
                 "Please call 108 immediately for an ambulance.\n"
                 "You are HealthBot, a friendly AI assistant. "
-                "The user is in am emergency situation "
-                "Provide **3 practical emergency tips**, each 1-2 sentences. "
+                "The user is in an emergency. "
+                "Provide **3 emergency situation tips** based on the input, each 1-2 sentences. "
                 "Do not repeat previous tips. "
-                "And give the user tips to decrease the emergency"
+                "Add a friendly tone and include a disclaimer: "
                 "'This is general advice, not a substitute for professional help.'"
             )
             if lang == "te":
@@ -190,7 +206,7 @@ def ask():
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
                 "The user is feeling stressed or anxious. "
-                "Provide **3 practical mental health tips**, each 1-2 sentences. "
+                "Provide **3 practical mental health tips** based on the input, each 1-2 sentences. "
                 "Do not repeat previous tips. "
                 "Add a friendly tone and include a disclaimer: "
                 "'This is general advice, not a substitute for professional help.'"
@@ -202,6 +218,13 @@ def ask():
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+        if lang == "te":
+            try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                    pass  # Use English if translation fails
+            return jsonify({"reply": bot_text})
         
         # Nutrition and lifestyle check
         if any(word.lower() in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
@@ -219,6 +242,13 @@ def ask():
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+        if lang == "te":
+            try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                    pass
+            return jsonify({"reply": bot_text})
 
         # Quiz and tips check
         if "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
@@ -235,20 +265,29 @@ def ask():
             except Exception as e:
                 print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+        if lang == "te":
+            try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                    pass
+            return jsonify({"reply": bot_text})
         
         # Medicine info check
-        medicine_keywords = ["medicine", "drug", "tablet", "capsule", "syrup", "injection", "dose"]
+        medicine_keywords = ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]
         if any(word.lower() in user_input_en.lower() for word in medicine_keywords):
             disclaimer = (
-                "⚠️ I can share general information about medicines, "
-                "like their usual uses, side effects, and precautions. "
-                "This is **full information, side effects and uses of the medicine with caution**. Please talk to a doctor or pharmacist "
-                "before taking anything."
+                "You are HealthBot, a friendly AI assistant. "
+                "The user is asking about an medicine. "
+                "Provide **uses , information of the medicine**, each 1-2 sentences. "
+                "Do not repeat previous information. "
+                "Add a friendly tone and include a disclaimer: "
+                "'This is general advice, not a substitute for professional help.'"
             )
             formatted_input = (
                 f"{disclaimer}\n\n"
                 f"User question: {user_input_en}\n"
-                "Answer in clear, everyday language."
+                "Instructions: Provide general info about the medicine, including uses, common dosage ranges, side effects, and precautions."
             )
             try:
                 response = chat.send_message(formatted_input)
@@ -258,19 +297,19 @@ def ask():
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
         # Symptom checker
-        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue","symptom", "pain", "ache", "rash", "dizziness", "weakness", "cold", "flu", "vomiting"]):
+        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
             disclaimer = (
-                "You are HealthBot, a friendly AI assistant. "
-                "The user is feeling something wrong with his body like stressed "
-                "Provide **5 practical diseases or infection he is suffering from according **, each 2-3 sentences. "
-                "Do not repeat previous tips. "
+                    "You are HealthBot, a friendly AI assistant. "
+                "The user is asking about an medicine. "
+                "Provide **uses , information of the diseases regarding the symptoms** based on the input, each 1-2 sentences. "
+                "Do not repeat previous information. "
                 "Add a friendly tone and include a disclaimer: "
                 "'This is general advice, not a substitute for professional help.'"
             )
             formatted_input = (
                 f"{disclaimer}\n\n"
                 f"User symptoms: {user_input_en}\n"
-                "Explain possible common causes and simple home care in a friendly way."
+                "Instructions: Suggest possible general causes and safe home remedies."
             )
             try:
                 response = chat.send_message(formatted_input)
@@ -482,6 +521,11 @@ def get_chat_history():
     filtered_history = filtered_history[-50:]
     return jsonify({"status": "success", "history": filtered_history})
 
+@app.route('/uploads/<path:filename>', methods=["GET"])
+def serve_uploaded_file(filename):
+    """Serve files saved in the uploads directory."""
+    return send_from_directory(UPLOAD_DIR, filename, as_attachment=False)
+
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
     """Clear chat history and start new chat."""
@@ -528,6 +572,42 @@ def get_weather_tip():
         return jsonify({"tip": tips['default']}), 500
 
 
+
+@app.route("/find_doctors", methods=["GET"])
+def find_doctors():
+    """Find doctors by specialty and optional location query params.
+    Query params:
+      - specialty: string (required)
+      - location: string (optional, fallback to profile location if present)
+    """
+    try:
+        specialty = (request.args.get("specialty") or "").strip().lower()
+        location = (request.args.get("location") or "").strip().lower()
+
+        if not specialty:
+            return jsonify({"status": "error", "message": "specialty is required"}), 400
+
+        # Fallback to user profile location if not provided
+        if not location:
+            user = load_user_data()
+            profile_loc = (user.get("profile", {}).get("location") or user.get("profile", {}).get("city") or "").strip().lower()
+            location = profile_loc
+
+        matches = []
+        for doc in DOCTOR_DIRECTORY:
+            if doc["specialty"].lower().startswith(specialty):
+                if location:
+                    if location in doc["location"].lower():
+                        matches.append(doc)
+                else:
+                    matches.append(doc)
+
+        return jsonify({"status": "success", "doctors": matches})
+    except Exception as e:
+        print(f"/find_doctors error: {e}")
+        return jsonify({"status": "error", "message": "Failed to find doctors"}), 500
+
+
 # ---------------------------
 # OCR: Image to text
 # ---------------------------
@@ -538,7 +618,15 @@ def image_to_text():
             return jsonify({"error": "No image provided"}), 400
 
         file = request.files['image']
+        # Persist the uploaded file to disk
+        original_filename = secure_filename(file.filename or "uploaded_image")
+        timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        base, ext = os.path.splitext(original_filename)
+        safe_filename = f"{base}_{timestamp_str}{ext or '.bin'}"
+        saved_path = os.path.join(UPLOAD_DIR, safe_filename)
         content = file.read()
+        with open(saved_path, "wb") as out_f:
+            out_f.write(content)
         if not content:
             return jsonify({"error": "Empty file"}), 400
 
@@ -563,93 +651,12 @@ def image_to_text():
             print(f"Vision API error: {e}")
             extracted = ""
 
-        return jsonify({"text": extracted or ""})
+        # Public URL path for the saved file (served by /uploads/<filename>)
+        file_location = f"/uploads/{safe_filename}"
+        return jsonify({"text": extracted or "", "location": file_location})
     except Exception as e:
         print(f"/image_to_text error: {e}")
         return jsonify({"error": "Failed to process image"}), 500
-
-@app.route("/image_identify", methods=["POST"])
-def image_identify():
-    try:
-        if 'image' not in request.files:
-            return jsonify({"error": "No image provided"}), 400
-        file = request.files['image']
-        content = file.read()
-        if not content:
-            return jsonify({"error": "Empty file"}), 400
-
-        parts = [{"mime_type": file.mimetype or "image/jpeg", "data": content}]
-        prompt = (
-            "Describe concisely what is visible in this image. "
-            "List main objects, the setting (indoor/outdoor), and any noteworthy details. "
-            "Return plain text only, no advice or safety instructions."
-        )
-
-        try:
-            response = vision_model.generate_content([
-                {"text": prompt},
-                {"inline_data": parts[0]}
-            ])
-            description = (response.text or "").strip()
-        except Exception as e:
-            print(f"Vision API error (identify): {e}")
-            description = ""
-
-        return jsonify({"description": description or "No description available."})
-    except Exception as e:
-        print(f"/image_identify error: {e}")
-        return jsonify({"error": "Failed to identify image"}), 500
-
-@app.route("/audio_to_text", methods=["POST"])
-def audio_to_text():
-    """Accepts an audio file and returns recognized text (uses Google Web Speech via SpeechRecognition)."""
-    try:
-        if 'audio' not in request.files:
-            return jsonify({"error": "No audio file provided"}), 400
-
-        file = request.files['audio']
-        if file.filename == "":
-            return jsonify({"error": "Empty filename"}), 400
-
-        # Save incoming file to a temp file
-        with tempfile.NamedTemporaryFile(suffix=os.path.splitext(file.filename)[1], delete=False) as tmp_in:
-            tmp_in.write(file.read())
-            tmp_in.flush()
-            in_path = tmp_in.name
-
-        # Convert to WAV for SpeechRecognition if necessary
-        wav_path = in_path + ".wav"
-        try:
-            audio = AudioSegment.from_file(in_path)
-            audio.export(wav_path, format="wav")
-        except Exception as e:
-            print(f"Audio conversion error: {e}")
-            return jsonify({"error": "Failed to convert audio"}), 500
-
-        recognizer = sr.Recognizer()
-        with sr.AudioFile(wav_path) as source:
-            audio_data = recognizer.record(source)
-
-        try:
-            # This uses Google Web Speech - no API key required but has quotas.
-            text = recognizer.recognize_google(audio_data)
-        except sr.UnknownValueError:
-            text = ""
-        except Exception as e:
-            print(f"Speech recognition error: {e}")
-            text = ""
-
-        # Cleanup temp files
-        try:
-            os.remove(in_path)
-            os.remove(wav_path)
-        except:
-            pass
-
-        return jsonify({"text": text})
-    except Exception as e:
-        print(f"/audio_to_text error: {e}")
-        return jsonify({"error": "Failed to process audio"}), 500
 
 # ---------------------------
 # Run
