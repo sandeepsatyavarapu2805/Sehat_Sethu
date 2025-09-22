@@ -5,47 +5,65 @@ from google_trans_new import google_translator
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
-import uuid
-import re
 
-# ---------------------------
-# Configuration
-# ---------------------------
-# Use a single, consistent filename for user data
-USER_DATA_FILE = "user_data.json"
-# Directory to store uploaded files
-UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
-# File for chat logs
-LOG_FILE = os.path.join(os.path.dirname(__file__), "chat_log.json")
+# --- Unified data files & helpers (replace older USERDATAFILE / load_userdata/save_userdata) ---
+import uuid  # used for appointments
 
-# Create directories if they don't exist
+BASE_DIR = os.path.dirname(__file__)
+USER_DATA_FILE = os.path.join(BASE_DIR, "user_data.json")
+LOG_FILE = os.path.join(BASE_DIR, "chat_log.json")
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+def load_user_data():
+    """Load user data from single JSON file (fallback to defaults)."""
+    if os.path.exists(USER_DATA_FILE):
+        try:
+            with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            pass
+    # standardized keys used across the app
+    return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
+
+def save_user_data(data):
+    """Save user data to single JSON file."""
+    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+# ensure chat log exists
 if not os.path.exists(LOG_FILE):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         json.dump([], f)
 
+# Initialize translator
+translator = google_translator()
+
 # Initialize Flask
 app = Flask(__name__)
-# Needed for session
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")
-# Allow all origins for development
-CORS(app)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")  # Needed for session
+CORS(app)  # Allow all origins
 
 # Google API Key
 API_KEY = os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise ValueError("⚠️ GOOGLE_API_KEY is not set.")
 
-# Initialize Generative AI
+# Weather API mock key
+WEATHER_API_KEY = "your_weather_api_key"
+
+# Configure Generative AI
 genai.configure(api_key=API_KEY)
-# Using Gemini 1.5 Flash for chat and vision tasks
 model = genai.GenerativeModel("gemini-1.5-flash")
 vision_model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Initialize translator
-translator = google_translator()
+LOG_FILE = os.path.join(os.path.dirname(__file__), "chat_log.json")
 
-# Mock doctor directory and schedules
+# Directory to store uploaded files
+UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Mock doctor directory
 DOCTOR_DIRECTORY = [
     {"id": 1, "name": "Dr. Asha Varma", "specialty": "Cardiology", "location": "Hyderabad", "hospital": "Sunshine Hospitals", "phone": "+91 40 1111 2222"},
     {"id": 2, "name": "Dr. Rohan Iyer", "specialty": "Neurology", "location": "Hyderabad", "hospital": "Yashoda Hospitals", "phone": "+91 40 3333 4444"},
@@ -57,6 +75,7 @@ DOCTOR_DIRECTORY = [
     {"id": 8, "name": "Dr. Suresh Reddy", "specialty": "Orthopedics", "location": "Hyderabad", "hospital": "Care Hospitals", "phone": "+91 40 7777 8888"},
 ]
 
+# Doctor schedules (mock data, you can later fetch from DB)
 DOCTOR_SCHEDULES = {
     1: ["09:00 AM", "11:00 AM", "02:00 PM"],
     2: ["10:00 AM", "01:00 PM", "04:00 PM"],
@@ -68,23 +87,13 @@ DOCTOR_SCHEDULES = {
     8: ["08:00 AM", "01:00 PM"],
 }
 
-# ---------------------------
-# Helpers
-# ---------------------------
-def load_user_data():
-    """Load user data from JSON file."""
-    if os.path.exists(USER_DATA_FILE):
-        try:
-            with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
-            return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
-    return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
+# Auto-create chat_log.json if missing
+if not os.path.exists(LOG_FILE):
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump([], f)
 
-def save_user_data(data):
-    """Save user data to JSON file."""
-    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
+USER_DATA_FILE = "user_data.json"
+
 
 def update_log(edit_id: str, user_input: str, bot_text: str):
     """Update or append chat log entries."""
@@ -117,36 +126,30 @@ def update_log(edit_id: str, user_input: str, bot_text: str):
     with open(LOG_FILE, "w", encoding="utf-8") as f:
         json.dump(chat_history, f, ensure_ascii=False, indent=2)
 
-def save_message(user_input, bot_text):
-    """Append a new message to the chat log."""
-    try:
-        with open(LOG_FILE, "r", encoding="utf-8") as f:
-            history = json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        history = []
 
-    history.append({
-        "id": str(uuid.uuid4()),  # Use UUID for a unique ID
-        "user": user_input,
-        "bot": bot_text,
-        "timestamp": datetime.datetime.now().isoformat()
-    })
+def load_user_data():
+    """Load user data from JSON file."""
+    if os.path.exists(USER_DATA_FILE):
+        try:
+            with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
+    return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
 
-    with open(LOG_FILE, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
+
+def save_user_data(data):
+    """Save user data to JSON file."""
+    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+
 
 def create_system_instruction(user_data):
     """Generate personalized system instruction for AI."""
     profile_text = ""
     if user_data.get('profile'):
         profile = user_data['profile']
-        profile_details = [
-            f"Name - {profile.get('name', 'N/A')}",
-            f"Date of Birth - {profile.get('dob', 'N/A')}",
-            f"Gender - {profile.get('gender', 'N/A')}",
-            f"Blood Group - {profile.get('blood_group', 'N/A')}",
-            f"Known Conditions - {profile.get('conditions', 'N/A')}"
-        ]
+        profile_details = [f"Name - {profile.get('name', 'N/A')}", f"Date of Birth - {profile.get('dob', 'N/A')}", f"Gender - {profile.get('gender', 'N/A')}", f"Blood Group - {profile.get('blood_group', 'N/A')}", f"Known Conditions - {profile.get('conditions', 'N/A')}"]
         for key, value in profile.items():
             if key not in ['name', 'dob', 'gender', 'blood_group', 'conditions']:
                 profile_details.append(f"{key} - {value}")
@@ -179,23 +182,15 @@ def create_system_instruction(user_data):
     )
     return instruction
 
-# Helper to find appointment by its UUID
-def find_appointment_index_by_id(appointments, appt_id):
-    for idx, appt in enumerate(appointments):
-        if appt.get("id") == appt_id:
-            return idx
-    return None
 
-# Initialize Chat with system instruction
-def get_chat_model():
-    user_data = load_user_data()
-    system_instruction = create_system_instruction(user_data)
-    return model.start_chat(
-        history=[
-            {"role": "user", "parts": [system_instruction]},
-            {"role": "model", "parts": ["I understand my purpose. I'm ready to help!"]}
-        ]
-    )
+# Initialize Chat
+user_data = load_user_data()
+chat = model.start_chat(
+    history=[
+        {"role": "user", "parts": [create_system_instruction(user_data)]},
+        {"role": "model", "parts": ["I understand my purpose. I'm ready to help!"]}
+    ]
+)
 
 # ---------------------------
 # Routes
@@ -210,45 +205,47 @@ def ask():
         user_input = request.json.get("message", "").strip()
         incoming_edit_id = request.json.get("edit_id")
         edit_id = str(incoming_edit_id) if incoming_edit_id else None
-        
-        # Reload chat model with updated user data for each request
-        chat = get_chat_model()
+
+        # Load latest user data and system instruction
+        current_user_data = load_user_data()
+        system_instruction = create_system_instruction(current_user_data)
+
         lang = session.get("lang", "en")
-        
-        # Translate input if not English
-        if lang != "en":
-            try:
-                user_input_en = translator.translate(user_input, lang_tgt='en')
-            except Exception as e:
-                print(f"Translation error: {e}")
-                user_input_en = user_input
-        else:
-            user_input_en = user_input
 
-        bot_text = ""
-        user_input_lower = user_input_en.lower()
+        # Translate input to English if session language is Telugu
+        try:
+            user_input_en = translator.translate(user_input, lang_tgt='en') if (lang == "te" and user_input) else user_input
+        except Exception as e:
+            print(f"Translation error (to en): {e}")
+            traceback.print_exc()
+            user_input_en = user_input  # fallback
 
-        # Emergency keywords
+        # Emergency check (immediate return)
         emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
-        if any(re.search(r'\b' + word + r'\b', user_input_lower) for word in emergency_keywords):
-            prompt = (
+        if any(word in user_input_en.lower() for word in emergency_keywords):
+            emergency_message = (
+                "⚠️ Emergency detected!\n"
+                "Please call 108 immediately for an ambulance.\n"
                 "You are HealthBot, a friendly AI assistant. "
-                "The user is in an emergency situation. "
-                "Provide **3 immediate emergency tips** based on the input, each 1-2 sentences. "
+                "The user is in an emergency. "
+                "Provide **3 emergency situation tips** based on the input, each 1-2 sentences. "
                 "Do not repeat previous tips. "
                 "Add a friendly tone and include a disclaimer: "
                 "'This is general advice, not a substitute for professional help.'"
             )
-            bot_text = "⚠️ Emergency detected! Please call 108 immediately for an ambulance. "
-            try:
-                response = chat.send_message(prompt + f"\nUser input: {user_input_en}")
-                bot_text += response.text
-            except Exception as e:
-                print(f"AI response error: {e}")
-                bot_text += " I'm sorry, I'm having trouble providing more details right now. Please seek immediate professional help."
-        
-        # Mental health keywords
-        elif any(re.search(r'\b' + word + r'\b', user_input_lower) for word in ["stress", "anxious", "depressed", "sad", "low mood"]):
+            if lang == "te":
+                try:
+                    emergency_message = translator.translate(emergency_message, lang_tgt='te')
+                except Exception as e:
+                    print(f"Emergency translation error: {e}")
+                    traceback.print_exc()
+            return jsonify({"reply": emergency_message})
+
+        bot_text = ""
+        # Priority-ordered checks (mutually exclusive via elif)
+        # 1) Mental health
+        mental_keywords = ["stress", "anxious", "depressed", "sad", "low mood"]
+        if any(k in user_input_en.lower() for k in mental_keywords):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
                 "The user is feeling stressed or anxious. "
@@ -260,13 +257,14 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text
+                bot_text = response.text or "Sorry — I couldn't generate a response right now."
             except Exception as e:
-                print(f"AI response error: {e}")
+                print(f"AI response error (mental): {e}")
+                traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-        
-        # Nutrition and lifestyle keywords
-        elif any(re.search(r'\b' + word + r'\b', user_input_lower) for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
+
+        # 2) Nutrition & lifestyle
+        elif any(word in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
                 "The user asked about nutrition or healthy lifestyle. "
@@ -277,13 +275,14 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text
+                bot_text = response.text or "Sorry — I couldn't generate a response right now."
             except Exception as e:
-                print(f"AI response error: {e}")
+                print(f"AI response error (nutrition): {e}")
+                traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
-        # Quiz and tips keywords
-        elif "quiz" in user_input_lower or "tip" in user_input_lower:
+        # 3) Quiz or tips request
+        elif "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
             prompt = (
                 "You are HealthBot. Provide a **new health quiz question or tip** for the user. "
                 "Keep it engaging, educational, and safe. "
@@ -293,64 +292,67 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text
+                bot_text = response.text or "Sorry — I couldn't generate a response right now."
             except Exception as e:
-                print(f"AI response error: {e}")
+                print(f"AI response error (quiz/tip): {e}")
+                traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-        
-        # Medicine info keywords
-        elif any(re.search(r'\b' + word + r'\b', user_input_lower) for word in ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]):
+
+        # 4) Medicine info
+        elif any(word in user_input_en.lower() for word in ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
                 "The user is asking about a medicine. "
-                "Provide general information about the medicine, including uses, common dosage ranges, side effects, and precautions. "
-                "Do not repeat previous information. "
-                "Add a friendly tone and include a disclaimer: "
-                "'This is general information, not a substitute for professional medical advice. Always consult a doctor or pharmacist before taking any medication.'"
+                "Provide general information about the medicine: common uses, typical dosage ranges (if applicable), common side effects, and precautions. "
+                "Keep answers concise (1-2 sentences per item) and include the disclaimer: 'This is general advice, not a substitute for professional help.'"
                 f"\nUser question: {user_input_en}"
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text
+                bot_text = response.text or "Sorry — I couldn't generate a response right now."
             except Exception as e:
-                print(f"AI response error: {e}")
+                print(f"AI response error (medicine): {e}")
+                traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
-        # Symptom checker keywords
-        elif any(re.search(r'\b' + word + r'\b', user_input_lower) for word in ["symptom", "fever", "headache", "cough", "nausea", "fatigue"]):
+        # 5) Symptom checker
+        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever", "headache", "cough", "nausea", "fatigue"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
-                "The user is asking about symptoms. "
-                "Provide general information about possible causes and safe home remedies based on the symptoms. "
-                "Do not make a definitive diagnosis. "
-                "Add a friendly tone and include a disclaimer: "
-                "'This is general information, not a substitute for professional medical advice. If symptoms persist, consult a doctor.'"
+                "The user described symptoms and wants possible causes and safe home remedies. "
+                "Provide a short list of possible general causes (not diagnoses) and safe at-home measures they can try. "
+                "Add the disclaimer: 'This is general advice, not a substitute for professional help.'"
                 f"\nUser symptoms: {user_input_en}"
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text
+                bot_text = response.text or "Sorry — I couldn't generate a response right now."
             except Exception as e:
-                print(f"AI response error: {e}")
+                print(f"AI response error (symptoms): {e}")
+                traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-        
-        # Default chat
+
+        # 6) Default fallback chat — use system instruction
         else:
+            formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
             try:
-                response = chat.send_message(user_input_en)
-                bot_text = response.text
+                response = chat.send_message(formatted_input)
+                bot_text = response.text or "Sorry — I couldn't generate a response right now."
             except Exception as e:
-                print(f"AI response error: {e}")
+                print(f"AI response error (default): {e}")
+                traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
-        # Translate back to Telugu if needed
-        if lang != "en":
+        # Translate bot_text to Telugu if needed (done once at end)
+        if lang == "te":
             try:
-                bot_text = translator.translate(bot_text, lang_tgt=lang)
+                bot_text = translator.translate(bot_text, lang_tgt='te')
             except Exception as e:
-                print(f"Translation error: {e}")
-                # Keep English text if translation fails
+                print(f"Translation error (to te): {e}")
+                traceback.print_exc()
+                # keep English if translation fails
 
+        # Log the conversation (edit or new message)
         if edit_id:
             update_log(edit_id, user_input, bot_text)
         else:
@@ -360,8 +362,26 @@ def ask():
 
     except Exception as e:
         print(f"Error in ask route: {e}")
-        print(traceback.format_exc())
+        traceback.print_exc()
         return jsonify({"reply": "I'm sorry, I'm experiencing technical difficulties. Please try again later."}), 500
+    
+def save_message(user_input, bot_text):
+    try:
+        with open(LOG_FILE, "r", encoding="utf-8") as f:
+            history = json.load(f)
+    except:
+        history = []
+
+    history.append({
+        "id": str(datetime.datetime.now().timestamp()),
+        "user": user_input,
+        "bot": bot_text,
+        "timestamp": datetime.datetime.now().isoformat()
+    })
+
+    with open(LOG_FILE, "w", encoding="utf-8") as f:
+        json.dump(history, f, ensure_ascii=False, indent=2)
+
 
 @app.route("/get_user_data", methods=["GET"])
 def get_user_data():
@@ -384,8 +404,10 @@ def save_profile():
     save_user_data(data)
     return jsonify({"status": "success", "message": "Profile saved!"})
 
+
 @app.route("/save_medication", methods=["POST"])
 def save_medication():
+    """Adds a new medication."""
     data = load_user_data()
     medication = request.json
     if "medications" not in data:
@@ -394,8 +416,10 @@ def save_medication():
     save_user_data(data)
     return jsonify({"status": "success", "message": "Medication added!"})
 
+
 @app.route("/update_medication/<int:index>", methods=["PUT"])
 def update_medication(index):
+    """Updates an existing medication by its index."""
     data = load_user_data()
     updated_medication = request.json
     if 0 <= index < len(data.get("medications", [])):
@@ -404,8 +428,10 @@ def update_medication(index):
         return jsonify({"status": "success", "message": "Medication updated."})
     return jsonify({"status": "error", "message": "Medication not found."}), 404
 
+
 @app.route("/delete_medication/<int:index>", methods=["DELETE"])
 def delete_medication(index):
+    """Deletes a medication by its index."""
     data = load_user_data()
     if 0 <= index < len(data.get("medications", [])):
         data["medications"].pop(index)
@@ -413,8 +439,10 @@ def delete_medication(index):
         return jsonify({"status": "success", "message": "Medication deleted."})
     return jsonify({"status": "error", "message": "Medication not found."}), 404
 
+
 @app.route("/save_emergency_contact", methods=["POST"])
 def save_emergency_contact():
+    """Adds a new emergency contact, including custom fields."""
     data = load_user_data()
     contact = request.json
     if "emergency_contacts" not in data:
@@ -423,8 +451,10 @@ def save_emergency_contact():
     save_user_data(data)
     return jsonify({"status": "success", "message": "Emergency contact added!"})
 
+
 @app.route("/update_emergency_contact/<int:index>", methods=["PUT"])
 def update_emergency_contact(index):
+    """Updates an existing emergency contact by its index."""
     data = load_user_data()
     updated_contact = request.json
     if 0 <= index < len(data.get("emergency_contacts", [])):
@@ -433,8 +463,10 @@ def update_emergency_contact(index):
         return jsonify({"status": "success", "message": "Emergency contact updated."})
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
+
 @app.route("/delete_emergency_contact/<int:index>", methods=["DELETE"])
 def delete_emergency_contact(index):
+    """Deletes an emergency contact by its index."""
     data = load_user_data()
     if 0 <= index < len(data.get("emergency_contacts", [])):
         data["emergency_contacts"].pop(index)
@@ -442,16 +474,22 @@ def delete_emergency_contact(index):
         return jsonify({"status": "success", "message": "Emergency contact deleted."})
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
+def find_appointment_index_by_id(appointments, appt_id):
+    for idx, appt in enumerate(appointments):
+        if "id" in appt and appt["id"] == appt_id:
+            return idx
+    return None
+
 @app.route("/save_appointment", methods=["POST"])
 def save_appointment():
     data = load_user_data()
-    appointment = request.json
+    appointment = request.json or {}
     if "appointments" not in data:
         data["appointments"] = []
     appointment["id"] = str(uuid.uuid4())
     data["appointments"].append(appointment)
     save_user_data(data)
-    return jsonify({"status": "success", "message": "Appointment added!", "appointment": appointment})
+    return jsonify({"status": "success", "message": "Appointment added!"})
 
 @app.route("/update_appointment/<appt_id>", methods=["PUT"])
 def update_appointment(appt_id):
@@ -459,8 +497,8 @@ def update_appointment(appt_id):
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
     if idx is not None:
-        updated_appointment = request.json
-        updated_appointment["id"] = appt_id
+        updated_appointment = request.json or {}
+        updated_appointment["id"] = appt_id  # Preserve id
         appointments[idx] = updated_appointment
         save_user_data(data)
         return jsonify({"status": "success", "message": "Appointment updated."})
@@ -477,8 +515,10 @@ def delete_appointment(appt_id):
         return jsonify({"status": "success", "message": "Appointment deleted."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
+
 @app.route("/set_language", methods=["POST"])
 def set_language():
+    """Set the language preference for the session."""
     lang = request.json.get("language", "en")
     session["lang"] = lang
     return jsonify({"status": "success", "message": f"Language set to {lang}"})
@@ -488,13 +528,15 @@ def get_chat_history():
     try:
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             history = json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
+    except:
         history = []
 
     greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
-    if not history or not any(h.get("bot", "").strip() == greeting.strip() for h in history):
-        history.insert(0, {
-            "id": str(uuid.uuid4()),
+
+    # Append greeting only if no messages or no existing greeting
+    if len(history) == 0 or not any(h.get("bot") == greeting for h in history):
+        history.append({
+            "id": str(datetime.datetime.now().timestamp()),
             "user": "",
             "bot": greeting,
             "timestamp": datetime.datetime.now().isoformat()
@@ -502,41 +544,43 @@ def get_chat_history():
         with open(LOG_FILE, "w", encoding="utf-8") as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
 
+    # Filter the chats from last 5 days
     five_days_ago = datetime.datetime.now() - datetime.timedelta(days=5)
-    filtered_history = [
-        h for h in history 
-        if "timestamp" in h and datetime.datetime.fromisoformat(h["timestamp"]) >= five_days_ago
-    ]
+    filtered_history = [h for h in history if "timestamp" in h and datetime.datetime.fromisoformat(h["timestamp"]) >= five_days_ago]
     
+    # Limit to last 50 messages
     filtered_history = filtered_history[-50:]
     return jsonify({"status": "success", "history": filtered_history})
 
 @app.route('/uploads/<path:filename>', methods=["GET"])
 def serve_uploaded_file(filename):
+    """Serve files saved in the uploads directory."""
     return send_from_directory(UPLOAD_DIR, filename, as_attachment=False)
 
 @app.route("/clear_chat", methods=["POST"])
 def clear_chat():
+    """Clear chat history and start new chat."""
     try:
         greeting = "Hello! I'm Sehat Sethu, your personal health assistant. I can help you manage your health profile, medications, appointments, and more. How can I assist you today?"
         
         history = [{
-            "id": str(uuid.uuid4()),
+            "id": str(datetime.datetime.now().timestamp()),
             "user": "",
             "bot": greeting,
             "timestamp": datetime.datetime.now().isoformat()
         }]
-        
+
         with open(LOG_FILE, "w", encoding="utf-8") as f:
             json.dump(history, f, ensure_ascii=False, indent=2)
-            
+
         return jsonify({"status": "success", "message": "Chat cleared"})
+
     except Exception as e:
-        print(f"Error clearing chat: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route("/get_weather_tip", methods=["GET"])
 def get_weather_tip():
+    """Fetches weather data for a location and provides a relevant health tip."""
     tips = {
         'Clear': "It's a beautiful day! Go for a walk and get some natural sunlight. It's great for your mood and Vitamin D.",
         'Clouds': "A cloudy day is perfect for an indoor workout. Try some light stretches or yoga to stay active.",
@@ -547,6 +591,9 @@ def get_weather_tip():
     }
 
     try:
+        # Mocking a real weather API call for a simple example.
+        # In a real app, you would use a service like OpenWeatherMap
+        # and get the user's location.
         mock_weather_data = {'weather': [{'main': 'Clear'}]}
         condition = mock_weather_data['weather'][0]['main']
         tip = tips.get(condition, tips['default'])
@@ -557,6 +604,11 @@ def get_weather_tip():
 
 @app.route("/find_doctors", methods=["GET"])
 def find_doctors():
+    """Find doctors by specialty and optional location query params.
+    Query params:
+      - specialty: string (required)
+      - location: string (optional, fallback to profile location if present)
+    """
     try:
         specialty = (request.args.get("specialty") or "").strip().lower()
         location = (request.args.get("location") or "").strip().lower()
@@ -564,6 +616,7 @@ def find_doctors():
         if not specialty:
             return jsonify({"status": "error", "message": "specialty is required"}), 400
 
+        # Fallback to user profile location if not provided
         if not location:
             user = load_user_data()
             profile_loc = (user.get("profile", {}).get("location") or user.get("profile", {}).get("city") or "").strip().lower()
@@ -571,19 +624,18 @@ def find_doctors():
 
         matches = []
         for doc in DOCTOR_DIRECTORY:
-            doc_specialty = doc["specialty"].lower()
-            doc_location = doc["location"].lower()
-            
-            if doc_specialty.startswith(specialty):
-                if location and location in doc_location:
-                    matches.append(doc)
-                elif not location:
+            if doc["specialty"].lower().startswith(specialty):
+                if location:
+                    if location in doc["location"].lower():
+                        matches.append(doc)
+                else:
                     matches.append(doc)
 
         return jsonify({"status": "success", "doctors": matches})
     except Exception as e:
         print(f"/find_doctors error: {e}")
         return jsonify({"status": "error", "message": "Failed to find doctors"}), 500
+
 
 # ---------------------------
 # OCR: Image to text
@@ -595,19 +647,19 @@ def image_to_text():
             return jsonify({"error": "No image provided"}), 400
 
         file = request.files['image']
+        # Persist the uploaded file to disk
         original_filename = secure_filename(file.filename or "uploaded_image")
         timestamp_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         base, ext = os.path.splitext(original_filename)
         safe_filename = f"{base}_{timestamp_str}{ext or '.bin'}"
         saved_path = os.path.join(UPLOAD_DIR, safe_filename)
         content = file.read()
-        
+        with open(saved_path, "wb") as out_f:
+            out_f.write(content)
         if not content:
             return jsonify({"error": "Empty file"}), 400
 
-        with open(saved_path, "wb") as out_f:
-            out_f.write(content)
-
+        # Gemini expects inline data parts for images
         parts = [
             {"mime_type": file.mimetype or "image/jpeg", "data": content}
         ]
@@ -628,15 +680,21 @@ def image_to_text():
             print(f"Vision API error: {e}")
             extracted = ""
 
+        # Public URL path for the saved file (served by /uploads/<filename>)
         file_location = f"/uploads/{safe_filename}"
         return jsonify({"text": extracted or "", "location": file_location})
     except Exception as e:
         print(f"/image_to_text error: {e}")
         return jsonify({"error": "Failed to process image"}), 500
+    
+@app.route("/clear_chat_history", methods=["POST"])
+def clear_chat_history():
+    # reuse the same behavior as /clear_chat
+    return clear_chat()
 
 # ---------------------------
 # Run
 # ---------------------------
 if __name__ == "__main__":
-    flask_port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=flask_port, debug=False)
+    Flask_port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=Flask_port, debug=False)
