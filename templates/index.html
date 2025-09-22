@@ -1229,35 +1229,16 @@
             }
 
             // Save emergency contact
-// In index.html, find the saveEmergencyContact function and replace it with this:
-async saveEmergencyContact() {
-    // Collect all data from the form inputs
-    const contactData = {};
-    document.querySelectorAll('#emergencyContactForm .form-input, #emergencyContactForm .custom-field-input').forEach(input => {
-        if (input.name && input.value) {
-            contactData[input.name] = input.value;
-        }
-    });
+            async saveEmergencyContact(contactData) {
+                try {
+                    await this.apiCall('/save_emergency_contact', 'POST', contactData);
+                    this.data.emergency_contacts.push(contactData);
+                    this.showNotification('Emergency contact added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving emergency contact:', error);
+                }
+            }
 
-    if (Object.keys(contactData).length === 0) {
-        app.showNotification('Please fill in at least one field.', 'error');
-        return;
-    }
-
-    try {
-        const data = await app.apiCall('/add_emergency_contact', 'POST', contactData);
-        if (data.status === 'success') {
-            app.showNotification('Emergency contact saved!', 'success');
-            app.loadData(); // Reload data to show the new contact
-            app.closeModal();
-        } else {
-            throw new Error(data.message || 'Failed to save contact');
-        }
-    } catch (error) {
-        console.error('Save emergency contact failed:', error);
-        app.showNotification('Failed to save contact. Please check your data.', 'error');
-    }
-}
             // Update emergency contact
             async updateEmergencyContact(index, contactData) {
                 try {
@@ -1450,6 +1431,13 @@ const BASE_URL = "";
         class ChatPage {
             render() {
                 return `
+                    <div class="chat-container" id="chatContainer">
+
+        <!-- Chat messages container -->
+        <div id="chatHistory" class="space-y-2 overflow-y-auto max-h-[70vh] border p-2 rounded bg-gray-50 dark:bg-gray-800">
+            <!-- Messages will be inserted here dynamically -->
+        </div>
+
 <!-- Main Chat Header -->
 <div class="flex justify-between items-center mb-2 px-2 gap-2">
   <h2 class="text-lg font-semibold">Chat</h2>
