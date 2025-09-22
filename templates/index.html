@@ -1229,16 +1229,35 @@
             }
 
             // Save emergency contact
-            async saveEmergencyContact(contactData) {
-                try {
-                    await this.apiCall('/save_emergency_contact', 'POST', contactData);
-                    this.data.emergency_contacts.push(contactData);
-                    this.showNotification('Emergency contact added successfully!', 'success');
-                } catch (error) {
-                    console.error('Error saving emergency contact:', error);
-                }
-            }
+// In index.html, find the saveEmergencyContact function and replace it with this:
+async saveEmergencyContact() {
+    // Collect all data from the form inputs
+    const contactData = {};
+    document.querySelectorAll('#emergencyContactForm .form-input, #emergencyContactForm .custom-field-input').forEach(input => {
+        if (input.name && input.value) {
+            contactData[input.name] = input.value;
+        }
+    });
 
+    if (Object.keys(contactData).length === 0) {
+        app.showNotification('Please fill in at least one field.', 'error');
+        return;
+    }
+
+    try {
+        const data = await app.apiCall('/add_emergency_contact', 'POST', contactData);
+        if (data.status === 'success') {
+            app.showNotification('Emergency contact saved!', 'success');
+            app.loadData(); // Reload data to show the new contact
+            app.closeModal();
+        } else {
+            throw new Error(data.message || 'Failed to save contact');
+        }
+    } catch (error) {
+        console.error('Save emergency contact failed:', error);
+        app.showNotification('Failed to save contact. Please check your data.', 'error');
+    }
+}
             // Update emergency contact
             async updateEmergencyContact(index, contactData) {
                 try {
@@ -1431,32 +1450,6 @@ const BASE_URL = "";
         class ChatPage {
             render() {
                 return `
-                    <div class="chat-container" id="chatContainer">
-
-<!-- Chat History Page (hidden by default) -->
-<div id="chatHistoryPage" class="hidden">
-    <div class="history-container p-4 max-w-3xl mx-auto">
-        <!-- Header with title and Clear History button -->
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Chat History</h2>
-            <button id="clearHistoryBtn"
-                    class="px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm rounded shadow transition duration-200">
-                🗑 Clear History
-            </button>
-        </div>
-
-        <!-- Chat messages container -->
-        <div id="chatHistory" class="space-y-2 overflow-y-auto max-h-[70vh] border p-2 rounded bg-gray-50 dark:bg-gray-800">
-            <!-- Messages will be inserted here dynamically -->
-        </div>
-
-        <button id="backToChatBtn"
-                class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow">
-            ← Back to Chat
-        </button>
-    </div>
-</div>
-
 <!-- Main Chat Header -->
 <div class="flex justify-between items-center mb-2 px-2 gap-2">
   <h2 class="text-lg font-semibold">Chat</h2>
@@ -1466,18 +1459,6 @@ const BASE_URL = "";
             title="Open Wellspring view">
         🌐 Wellspring
     </button>
-    <button id="historyBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
-        📜 Chat History
-    </button>
-    <button id="clearChatBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition"
-            title="Start a new chat">
-        🆕 New Chat
-    </button>
-  </div>
-</div>
-
                         <div class="chat-messages" id="chatMessages"></div>
 
                         <div class="chat-input-container">
@@ -1671,19 +1652,6 @@ async init() {
         }
     }); imageInput.dataset.bound = 'true';
 
-    // --- Load chat history on page load ---
-    try {
-        const data = await app.apiCall("/get_chat_history", "GET");
-        if (data.status === "success") {
-            data.history.forEach(item => {
-                if(item.user) this.addMessage(item.user, "user");
-                if(item.bot) this.addMessage(item.bot, "bot");
-            });
-        }
-    } catch {
-        app.showNotification("Failed to load history", "error");
-    }
-
     // --- Auto-resize textarea ---
     chatInput.addEventListener('input', function() {
         this.style.height = 'auto';
@@ -1744,64 +1712,7 @@ async init() {
                 });
         }
     });
-
-
-    // --- Back to Chat page ---
-    document.getElementById("backToChatBtn").addEventListener("click", () => {
-        document.getElementById("chatHistoryPage").classList.add("hidden"); // hide history
-        document.getElementById("chatContainer").classList.remove("hidden"); // show main chat
-    });
-    // --- Load chat history dynamically ---
-async function loadChatHistory() {
-    const chatHistoryDiv = document.getElementById("chatHistory");
-    chatHistoryDiv.innerHTML = ""; // clear old messages
-
-    try {
-        const response = await app.apiCall("/get_chat_history", "GET");
-        if (response.status === "success") {
-            response.history.forEach(item => {
-                if (item.user) {
-                    chatHistoryDiv.innerHTML += `
-                        <div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2">
-                            <div class="font-semibold text-blue-800 dark:text-blue-200">User:</div>
-                            <div>${item.user}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
-                        </div>
-                    `;
-                }
-                if (item.bot) {
-                    chatHistoryDiv.innerHTML += `
-                        <div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2">
-                            <div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div>
-                            <div>${item.bot}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
-                        </div>
-                    `;
-                }
-            });
-        }
-    } catch {
-        chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
-    }
 }
-
-document.getElementById("clearHistoryBtn").addEventListener("click", async () => {
-    if (!confirm("Are you sure you want to clear all chat history?")) return;
-
-    try {
-        const response = await app.apiCall("/clear_chat_history", "POST");
-        if (response.status === "success") {
-            document.getElementById("chatHistory").innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
-        } else {
-            app.showNotification("Failed to clear chat history.", "error");
-        }
-    } catch {
-        app.showNotification("Failed to clear chat history.", "error");
-    }
-});
-
-}
-
             addThinkingIndicator() {
                 const chatMessages = document.getElementById('chatMessages');
                 const thinkingDiv = document.createElement('div');
