@@ -713,6 +713,7 @@
 
         .thinking-dot:nth-child(1) { animation-delay: -0.32s; }
         .thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+        .thinking-dot:nth-child(3) { animation-delay: 0s; }
 
         @keyframes pulse {
             0%, 80%, 100% { transform: scale(0); }
@@ -969,8 +970,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .slide-in-right {
@@ -978,1845 +986,1375 @@
         }
 
         @keyframes slideInRight {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+            from {
+                transform: translateX(100%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
         }
 
         /* --- Utility Classes --- */
-        .hidden { display: none !important; }
-        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-        .text-center { text-align: center; }
-        .text-left { text-align: left; }
-        .text-right { text-align: right; }
-        .font-bold { font-weight: 700; }
-        .font-semibold { font-weight: 600; }
-        .font-medium { font-weight: 500; }
-        .text-sm { font-size: 0.875rem; }
-        .text-lg { font-size: 1.125rem; }
-        .text-xl { font-size: 1.25rem; }
-        .text-2xl { font-size: 1.5rem; }
-        .text-3xl { font-size: 1.875rem; }
-        .mb-0 { margin-bottom: 0; }
-        .mb-1 { margin-bottom: 0.25rem; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .mt-0 { margin-top: 0; }
-        .mt-1 { margin-top: 0.25rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-6 { margin-top: 1.5rem; }
-        .p-0 { padding: 0; }
-        .p-1 { padding: 0.25rem; }
-        .p-2 { padding: 0.5rem; }
-        .p-4 { padding: 1rem; }
-        .p-6 { padding: 1.5rem; }
-        .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-        .px-4 { padding-left: 1rem; padding-right: 1rem; }
-        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .rounded { border-radius: 0.25rem; }
-        .rounded-lg { border-radius: 0.5rem; }
-        .rounded-xl { border-radius: 0.75rem; }
-        .rounded-2xl { border-radius: 1rem; }
-        .shadow-sm { box-shadow: var(--shadow-sm); }
-        .shadow-md { box-shadow: var(--shadow-md); }
-        .shadow-lg { box-shadow: var(--shadow-lg); }
-        .shadow-xl { box-shadow: var(--shadow-xl); }
-        .w-full { width: 100%; }
-        .h-full { height: 100%; }
-        .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-2 { gap: 0.5rem; }
-        .gap-4 { gap: 1rem; }
-        .gap-6 { gap: 1.5rem; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .hidden {
+            display: none !important;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .font-bold {
+            font-weight: 700;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .font-medium {
+            font-weight: 500;
+        }
+
+        .text-sm {
+            font-size: 0.875rem;
+        }
+
+        .text-lg {
+            font-size: 1.125rem;
+        }
+
+        .text-xl {
+            font-size: 1.25rem;
+        }
+
+        .text-2xl {
+            font-size: 1.5rem;
+        }
+
+        .text-3xl {
+            font-size: 1.875rem;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.25rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+
+        .mt-0 {
+            margin-top: 0;
+        }
+
+        .mt-1 {
+            margin-top: 0.25rem;
+        }
+
+        .mt-2 {
+            margin-top: 0.5rem;
+        }
+
+        .mt-4 {
+            margin-top: 1rem;
+        }
+
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+
+        .p-0 {
+            padding: 0;
+        }
+
+        .p-1 {
+            padding: 0.25rem;
+        }
+
+        .p-2 {
+            padding: 0.5rem;
+        }
+
+        .p-4 {
+            padding: 1rem;
+        }
+
+        .p-6 {
+            padding: 1.5rem;
+        }
+
+        .px-2 {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .py-2 {
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .py-4 {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .gap-4 {
+            gap: 1rem;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .h-full {
+            height: 100%;
+        }
+
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+
+        .rounded-full {
+            border-radius: 9999px;
+        }
+
+        .shadow {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .transition {
+            transition-property: all;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
     </style>
 </head>
-<body class="dark-theme">
-    <!-- Sidebar -->
-    <button class="sidebar-toggle" id="sidebarToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-    
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <div class="sidebar-header .logo img">SS</div>
-                <h1>Sehat Sethu</h1>
-            </div>
-        </div>
-        
-        <ul class="sidebar-menu">
-            <li><a href="#" class="sidebar-item active" data-page="chat">
-                <i class="fas fa-comments"></i>
-                <span>Chat Assistant</span>
-            </a></li>
-            <li><a href="#" class="sidebar-item" data-page="profile">
-                <i class="fas fa-user-circle"></i>
-                <span>Profile</span>
-            </a></li>
-            <li><a href="#" class="sidebar-item" data-page="medications">
-                <i class="fas fa-pills"></i>
-                <span>Medications</span>
-            </a></li>
-            <li><a href="#" class="sidebar-item" data-page="emergency">
-                <i class="fas fa-first-aid"></i>
-                <span>Emergency Contacts</span>
-            </a></li>
-            <li><a href="#" class="sidebar-item" data-page="appointments">
-                <i class="fas fa-calendar-check"></i>
-                <span>Appointments</span>
-            </a></li>
-            <li><a href="#" class="sidebar-item" data-page="wellness">
-                <i class="fas fa-heartbeat"></i>
-                <span>Wellness Tips</span>
-            </a></li>
-        </ul>
-        
-        <div class="wellness-tips">
-            <h4>Daily Wellness Tip</h4>
-            <p id="wellnessTipText">Loading your personalized tip...</p>
-        </div>
-    </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="content-header">
-            <h1 class="content-title" id="pageTitle">Chat Assistant</h1>
-            <div class="theme-toggle-container">
-                <i class="fas fa-sun"></i>
-                <label class="theme-toggle">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="theme-slider"></span>
-                </label>
-                <i class="fas fa-moon"></i>
-            </div>
-        </div>
-        
-        <div class="content-body" id="contentBody">
-            <!-- Dynamic content will be loaded here -->
-        </div>
-    </div>
+<body class="bg-gray-100 dark-theme-toggle">
 
-    <!-- Notification Container -->
-    <div id="notificationContainer"></div>
-
-    <!-- Modal Container -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="modal">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Confirm Action</h3>
-                <button class="modal-close" id="modalClose">
-                    <i class="fas fa-times"></i>
+    <div class="flex">
+        <aside class="sidebar bg-white shadow-lg flex-shrink-0">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="/static/logo.png" alt="Logo" class="w-10 h-10">
+                    <h1 class="font-bold text-xl text-gray-900 dark:text-gray-100">Sehat Sethu</h1>
+                </div>
+                <button id="sidebar-toggle" class="sidebar-toggle text-gray-600 dark:text-gray-400 focus:outline-none">
+                    <i class="fas fa-bars"></i>
                 </button>
             </div>
-            <div class="modal-body" id="modalBody">
-                <p id="modalMessage">Are you sure you want to perform this action?</p>
+            <nav class="sidebar-menu">
+                <ul>
+                    <li><a href="#dashboard-section" class="sidebar-item active" data-section="dashboard-section"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a href="#chat-section" class="sidebar-item" data-section="chat-section"><i class="fas fa-comment-dots"></i> <span>Chat</span></a></li>
+                    <li><a href="#medication-section" class="sidebar-item" data-section="medication-section"><i class="fas fa-pills"></i> <span>Medication</span></a></li>
+                    <li><a href="#appointments-section" class="sidebar-item" data-section="appointments-section"><i class="fas fa-calendar-alt"></i> <span>Appointments</span></a></li>
+                    <li><a href="#emergency-section" class="sidebar-item" data-section="emergency-section"><i class="fas fa-phone-volume"></i> <span>Emergency Contacts</span></a></li>
+                    <li><a href="#profile-section" class="sidebar-item" data-section="profile-section"><i class="fas fa-user-circle"></i> <span>My Profile</span></a></li>
+                    <li><a href="#doctors-section" class="sidebar-item" data-section="doctors-section"><i class="fas fa-user-md"></i> <span>Find Doctors</span></a></li>
+                </ul>
+            </nav>
+            <div class="wellness-tips">
+                <h4>Wellness Tip of the Day</h4>
+                <p>Stay hydrated! Drinking enough water can boost your energy and improve your focus.</p>
             </div>
-            <div class="modal-footer" id="modalFooter">
-                <button class="btn btn-outline" id="modalCancel">Cancel</button>
-                <button class="btn btn-danger" id="modalConfirm">Confirm</button>
-            </div>
-        </div>
-    </div>
+        </aside>
 
-    <script>
-        // --- Global State Management ---
-        class AppState {
-            constructor() {
-                this.data = {
-                    profile: {},
-                    medications: [],
-                    emergency_contacts: [],
-                    appointments: []
-                };
-                this.currentPage = 'chat';
-                this.isSidebarCollapsed = false;
-                this.isDarkTheme = true;
-                this.notificationId = 0;
-            }
+        <main class="main-content flex-grow transition-all duration-300">
+            <header class="content-header bg-white shadow-sm flex items-center justify-between p-4 sticky top-0 z-10">
+                <h2 id="section-title" class="content-title text-2xl font-bold text-gray-800">Dashboard</h2>
+                <div class="theme-toggle-container">
+                    <label class="theme-toggle">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="theme-slider"></span>
+                    </label>
+                    <i class="fas fa-sun text-yellow-500 text-xl"></i>
+                    <i class="fas fa-moon text-blue-700 text-xl"></i>
+                </div>
+            </header>
 
-            // API Communication
-            async apiCall(endpoint, method = 'GET', data = null) {
-                try {
-                    const options = {
-                        method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                        }
-                    };
-                    
-                    if (data) {
-                        options.body = JSON.stringify(data);
-                    }
+            <div class="content-body p-6">
+                <section id="dashboard-section" class="dashboard-section section active">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="card p-6 rounded-xl shadow-lg">
+                            <div class="card-header border-b border-gray-200 pb-4 mb-4">
+                                <h3 class="card-title text-xl font-semibold text-gray-800">Your Profile</h3>
+                                <div class="card-icon bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div class="card-body text-gray-600">
+                                <p id="profile-name">Name: N/A</p>
+                                <p id="profile-dob">Date of Birth: N/A</p>
+                                <p id="profile-gender">Gender: N/A</p>
+                                <p id="profile-blood-group">Blood Group: N/A</p>
+                            </div>
+                            <div class="card-footer mt-4 text-right">
+                                <button id="edit-profile-btn" class="btn btn-outline btn-sm">Edit Profile</button>
+                            </div>
+                        </div>
 
-                    const response = await fetch(`${BASE_URL}${endpoint}`, options);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    return await response.json();
-                } catch (error) {
-                    console.error('API call failed:', error);
-                    this.showNotification('Network error. Please try again.', 'error');
-                    throw error;
-                }
-            }
+                        <div class="card p-6 rounded-xl shadow-lg">
+                            <div class="card-header border-b border-gray-200 pb-4 mb-4">
+                                <h3 class="card-title text-xl font-semibold text-gray-800">Upcoming Appointments</h3>
+                                <div class="card-icon bg-green-500 text-white rounded-full w-12 h-12 flex items-center justify-center">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                            </div>
+                            <div class="card-body text-gray-600">
+                                <ul id="upcoming-appointments-list" class="list-disc pl-5">
+                                    </ul>
+                                <p id="no-appointments" class="text-gray-500 italic">No upcoming appointments.</p>
+                            </div>
+                            <div class="card-footer mt-4 text-right">
+                                <button id="add-appointment-btn" class="btn btn-primary btn-sm">Add Appointment</button>
+                            </div>
+                        </div>
 
-            // Load user data from backend
-            async loadData() {
-                try {
-                    const data = await this.apiCall('/get_user_data');
-                    this.data = data;
-                    console.log('Data loaded successfully');
-                } catch (error) {
-                    console.error('Error loading data:', error);
-                }
-            }
-
-            // Save profile data
-            async saveProfile(profileData) {
-                try {
-                    await this.apiCall('/save_profile', 'POST', profileData);
-                    this.data.profile = profileData;
-                    this.showNotification('Profile saved successfully!', 'success');
-                } catch (error) {
-                    console.error('Error saving profile:', error);
-                }
-            }
-
-            // Save medication
-            async saveMedication(medicationData) {
-                try {
-                    await this.apiCall('/save_medication', 'POST', medicationData);
-                    this.data.medications.push(medicationData);
-                    this.showNotification('Medication added successfully!', 'success');
-                } catch (error) {
-                    console.error('Error saving medication:', error);
-                }
-            }
-
-            // Update medication
-            async updateMedication(index, medicationData) {
-                try {
-                    await this.apiCall(`/update_medication/${index}`, 'PUT', medicationData);
-                    this.data.medications[index] = medicationData;
-                    this.showNotification('Medication updated successfully!', 'success');
-                } catch (error) {
-                    console.error('Error updating medication:', error);
-                }
-            }
-
-            // Delete medication
-            async deleteMedication(index) {
-                try {
-                    await this.apiCall(`/delete_medication/${index}`, 'DELETE');
-                    this.data.medications.splice(index, 1);
-                    this.showNotification('Medication deleted successfully!', 'success');
-                } catch (error) {
-                    console.error('Error deleting medication:', error);
-                }
-            }
-
-// Save emergency contact — send to backend, then reload authoritative list
-async saveEmergencyContact(contactData) {
-    try {
-        const res = await this.apiCall('/save_emergency_contact', 'POST', contactData);
-        // Refresh full data from server so UI is authoritative and no duplicates occur
-        await this.loadData();
-        this.showNotification('Emergency contact added successfully!', 'success');
-        return res;
-    } catch (error) {
-        console.error('Error saving emergency contact:', error);
-        throw error;
-    }
-}
-
-            // Update emergency contact
-            async updateEmergencyContact(index, contactData) {
-                try {
-                    await this.apiCall(`/update_emergency_contact/${index}`, 'PUT', contactData);
-                    this.data.emergency_contacts[index] = contactData;
-                    this.showNotification('Emergency contact updated successfully!', 'success');
-                } catch (error) {
-                    console.error('Error updating emergency contact:', error);
-                }
-            }
-
-            // Delete emergency contact
-            async deleteEmergencyContact(index) {
-                try {
-                    await this.apiCall(`/delete_emergency_contact/${index}`, 'DELETE');
-                    this.data.emergency_contacts.splice(index, 1);
-                    this.showNotification('Emergency contact deleted successfully!', 'success');
-                } catch (error) {
-                    console.error('Error deleting emergency contact:', error);
-                }
-            }
-
-// Save appointment
-async saveAppointment(appointmentData) {
-    try {
-        const res = await this.apiCall('/save_appointment', 'POST', appointmentData);
-        // reload authoritative data (backend returns canonical list or id)
-        await this.loadData();
-        this.showNotification('Appointment added successfully!', 'success');
-        return res;
-    } catch (error) {
-        console.error('Error saving appointment:', error);
-        throw error;
-    }
-}
-
-// Update appointment
-async updateAppointment(id, appointmentData) {
-    try {
-        await this.apiCall(`/update_appointment/${id}`, 'PUT', appointmentData);
-        await this.loadData();
-        this.showNotification('Appointment updated successfully!', 'success');
-    } catch (error) {
-        console.error('Error updating appointment:', error);
-        throw error;
-    }
-}
-
-// Delete appointment
-async deleteAppointment(id) {
-    try {
-        await this.apiCall(`/delete_appointment/${id}`, 'DELETE');
-        await this.loadData();
-        this.showNotification('Appointment deleted successfully!', 'success');
-    } catch (error) {
-        console.error('Error deleting appointment:', error);
-        throw error;
-    }
-}
-
-            // Get weather tip
-            async getWeatherTip() {
-                try {
-                    const response = await this.apiCall('/get_weather_tip');
-                    return response.tip;
-                } catch (error) {
-                    console.error('Error getting weather tip:', error);
-                    return "Remember to stay hydrated and maintain a balanced diet for optimal health!";
-                }
-            }
-
-            // Theme management
-            setTheme(isDark) {
-                this.isDarkTheme = isDark;
-                document.body.classList.toggle('dark-theme', isDark);
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            }
-
-            // Notification system
-            showNotification(message, type = 'success', duration = 5000) {
-                const container = document.getElementById('notificationContainer');
-                const notification = document.createElement('div');
-                const id = ++this.notificationId;
-                
-                notification.className = `notification ${type}`;
-                notification.innerHTML = `
-                    <div class="notification-header">
-                        <h4 class="notification-title">${type.charAt(0).toUpperCase() + type.slice(1)}</h4>
-                        <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <div class="card p-6 rounded-xl shadow-lg">
+                            <div class="card-header border-b border-gray-200 pb-4 mb-4">
+                                <h3 class="card-title text-xl font-semibold text-gray-800">Emergency Contacts</h3>
+                                <div class="card-icon bg-red-500 text-white rounded-full w-12 h-12 flex items-center justify-center">
+                                    <i class="fas fa-first-aid"></i>
+                                </div>
+                            </div>
+                            <div class="card-body text-gray-600">
+                                <ul id="emergency-contacts-list" class="list-disc pl-5">
+                                    </ul>
+                                <p id="no-contacts" class="text-gray-500 italic">No emergency contacts saved.</p>
+                            </div>
+                            <div class="card-footer mt-4 text-right">
+                                <button id="add-contact-btn" class="btn btn-primary btn-sm">Add Contact</button>
+                            </div>
+                        </div>
                     </div>
-                    <p class="notification-message">${message}</p>
-                `;
-                
-                container.appendChild(notification);
-                
-                // Trigger animation
-                setTimeout(() => notification.classList.add('show'), 100);
-                
-                // Auto remove
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.classList.remove('show');
-                        setTimeout(() => notification.remove(), 300);
-                    }
-                }, duration);
-            }
+                    <div class="bmi-calculator">
+                        <h3 class="text-2xl font-bold mb-4">BMI Calculator</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="weight" class="form-label text-white">Weight (kg)</label>
+                                <input type="number" id="weight" class="form-input" placeholder="e.g., 70">
+                            </div>
+                            <div class="form-group">
+                                <label for="height" class="form-label text-white">Height (cm)</label>
+                                <input type="number" id="height" class="form-input" placeholder="e.g., 175">
+                            </div>
+                        </div>
+                        <button id="calculate-bmi-btn" class="btn btn-secondary mt-4 w-full">Calculate BMI</button>
+                        <div id="bmi-result-card" class="bmi-result hidden mt-6">
+                            <p>Your BMI is: <span id="bmi-value" class="font-bold"></span></p>
+                            <p class="bmi-category"><span id="bmi-category"></span></p>
+                        </div>
+                    </div>
+                </section>
 
-            // Modal system
-            showModal(title, message, onConfirm = null, confirmText = 'Confirm', cancelText = 'Cancel') {
-                const modal = document.getElementById('modalOverlay');
-                const modalTitle = document.getElementById('modalTitle');
-                const modalMessage = document.getElementById('modalMessage');
-                const modalConfirm = document.getElementById('modalConfirm');
-                const modalCancel = document.getElementById('modalCancel');
-                
-                modalTitle.textContent = title;
-                modalMessage.textContent = message;
-                modalConfirm.textContent = confirmText;
-                modalCancel.textContent = cancelText;
-                
-                modal.classList.add('show');
-                
-                // Remove existing listeners
-                const newConfirm = modalConfirm.cloneNode(true);
-                const newCancel = modalCancel.cloneNode(true);
-                modalConfirm.parentNode.replaceChild(newConfirm, modalConfirm);
-                modalCancel.parentNode.replaceChild(newCancel, modalCancel);
-                
-                // Add new listeners
-                newConfirm.addEventListener('click', () => {
-                    modal.classList.remove('show');
-                    if (onConfirm) onConfirm(true);
-                });
-                
-                newCancel.addEventListener('click', () => {
-                    modal.classList.remove('show');
-                    if (onConfirm) onConfirm(false);
-                });
-            }
-        }
-
-        // Initialize app state
-        const app = new AppState();
-
-        // --- Page Management ---
-        class PageManager {
-            constructor() {
-                this.pages = {
-                    chat: new ChatPage(),
-                    profile: new ProfilePage(),
-                    medications: new MedicationsPage(),
-                    emergency: new EmergencyPage(),
-                    appointments: new AppointmentsPage(),
-                    wellness: new WellnessPage()
-                };
-            }
-
-            async loadPage(pageId) {
-                // Update active sidebar item
-                document.querySelectorAll('.sidebar-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
-
-                // Update page title
-                const titles = {
-                    chat: 'Chat Assistant',
-                    profile: 'Profile Management',
-                    medications: 'Medication Tracker',
-                    emergency: 'Emergency Contacts',
-                    appointments: 'Appointments',
-                    wellness: 'Wellness Tips'
-                };
-                document.getElementById('pageTitle').textContent = titles[pageId] || 'Sehat Sethu';
-
-                // Load page content
-                const contentBody = document.getElementById('contentBody');
-                contentBody.innerHTML = this.pages[pageId].render();
-                
-                // Initialize page
-                await this.pages[pageId].init();
-                
-                app.currentPage = pageId;
-            }
-        }
-
-// Base URL for API calls
-const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real Render URL
-
-        // --- Chat Page ---
-        class ChatPage {
-            render() {
-                return `
-                    <div class="chat-container" id="chatContainer">
-
-<!-- Chat History Page (hidden by default) -->
-<div id="chatHistoryPage" class="hidden">
-    <div class="history-container p-4 max-w-3xl mx-auto">
-        <!-- Header with title and Clear History button -->
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">Chat History</h2>
-            <button id="clearHistoryBtn"
-                    class="px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm rounded shadow transition duration-200">
-                🗑 Clear History
-            </button>
-        </div>
-
-        <!-- Chat messages container -->
-        <div id="chatHistory" class="space-y-2 overflow-y-auto max-h-[70vh] border p-2 rounded bg-gray-50 dark:bg-gray-800">
-            <!-- Messages will be inserted here dynamically -->
-        </div>
-
-        <button id="backToChatBtn"
-                class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow">
-            ← Back to Chat
-        </button>
-    </div>
-</div>
-
-<!-- Main Chat Header -->
-<div class="flex justify-between items-center mb-2 px-2 gap-2">
-  <h2 class="text-lg font-semibold">Chat</h2>
-  <div class="flex gap-2">
-    <button id="historyBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
-        📜 Chat History
-    </button>
-    <button id="clearChatBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition"
-            title="Start a new chat">
-        🆕 New Chat
-    </button>
-  </div>
-</div>
-
-                        <div class="chat-messages" id="chatMessages"></div>
-
+                <section id="chat-section" class="chat-section section hidden">
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages">
+                            </div>
                         <div class="chat-input-container">
-                            <form class="chat-input-form" id="chatForm">
-                                <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
-                                <button type="button" class="chat-send-btn" id="voiceBtn" title="Start voice input">
-                                    <i class="fas fa-microphone"></i>
-                                </button>
-                                <button type="button" class="chat-send-btn" id="imageBtn" title="Upload image for text extraction">
-                                    <i class="fas fa-image"></i>
-                                </button>
-                                <button type="submit" class="chat-send-btn" id="chatSendBtn">
+                            <form id="chat-form" class="chat-input-form">
+                                <textarea id="chat-input" class="chat-input" placeholder="Type your medical query..." rows="1" required></textarea>
+                                <button type="submit" id="chat-send-btn" class="chat-send-btn">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </form>
                         </div>
                     </div>
-                `;
-            }
+                </section>
 
-addMessage(text, sender, timestamp = null) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    const id = Date.now(); // unique ID
-
-    messageDiv.className = `message ${sender}`;
-    messageDiv.dataset.id = id;
-
-    // ✅ If bot → render Markdown
-    const parsedText = sender === 'bot' ? marked.parse(text) : text;
-
-    // ✅ Use backend timestamp if provided, otherwise fallback to now
-    const timeString = timestamp
-        ? new Date(timestamp).toLocaleString()
-        : new Date().toLocaleTimeString();
-
-    messageDiv.innerHTML = `
-        <div class="message-avatar">
-            <i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i>
-        </div>
-        <div class="message-content">
-            <div class="message-text">${parsedText}</div>
-            <div class="message-time">${timeString}</div>
-            ${sender === 'user' ? `<button class="edit-btn">✎ Edit</button>` : ''}
-        </div>
-    `;
-
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-async init() {
-    // Guard: prevent double-initialization when the page is re-rendered
-    if (this.bound) return;
-    this.bound = true;
-
-    const chatForm = document.getElementById('chatForm');
-    const chatInput = document.getElementById('chatInput');
-    const chatMessages = document.getElementById('chatMessages');
-    const voiceBtn = document.getElementById('voiceBtn');
-    const imageBtn = document.getElementById('imageBtn');
-
-    // Hidden file input for image selection (create if missing)
-    let imageInput = document.getElementById('imageInput');
-    if (!imageInput) {
-        imageInput = document.createElement('input');
-        imageInput.type = 'file';
-        imageInput.accept = 'image/*';
-        imageInput.id = 'imageInput';
-        imageInput.style.display = 'none';
-        document.body.appendChild(imageInput);
-    }
-
-    // Voice input binding (guarded)
-    try {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            if (voiceBtn) {
-                voiceBtn.disabled = true;
-                voiceBtn.title = 'Voice input not supported in this browser';
-            }
-        } else {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'en-US';
-            recognition.interimResults = true;
-            recognition.continuous = false;
-
-            let isListening = false;
-            let interim = '';
-            let finalTranscript = '';
-
-            const setListeningUi = (listening) => {
-                if (!voiceBtn) return;
-                const icon = voiceBtn.querySelector('i');
-                if (listening) {
-                    voiceBtn.style.background = 'linear-gradient(135deg, #ef4444, #f59e0b)';
-                    voiceBtn.title = 'Listening... click to stop';
-                    if (icon) icon.className = 'fas fa-microphone-slash';
-                } else {
-                    voiceBtn.style.background = '';
-                    voiceBtn.title = 'Start voice input';
-                    if (icon) icon.className = 'fas fa-microphone';
-                }
-            };
-
-            if (voiceBtn && !voiceBtn.dataset.bound) {
-                voiceBtn.addEventListener('click', () => {
-                    if (!isListening) {
-                        finalTranscript = '';
-                        interim = '';
-                        try { recognition.start(); } catch (_) {}
-                    } else {
-                        try { recognition.stop(); } catch (_) {}
-                    }
-                });
-                voiceBtn.dataset.bound = 'true';
-            }
-
-            recognition.onstart = () => {
-                isListening = true;
-                setListeningUi(true);
-            };
-
-            recognition.onerror = (e) => {
-                isListening = false;
-                setListeningUi(false);
-                app.showNotification('Voice input error: ' + (e.error || 'unknown'), 'error');
-            };
-
-            recognition.onresult = (event) => {
-                interim = '';
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const res = event.results[i];
-                    if (res.isFinal) {
-                        finalTranscript += res[0].transcript;
-                    } else {
-                        interim += res[0].transcript;
-                    }
-                }
-                const combined = (finalTranscript + ' ' + interim).trim();
-                if (chatInput) {
-                    chatInput.value = combined;
-                    chatInput.dispatchEvent(new Event('input'));
-                }
-            };
-
-            recognition.onend = () => {
-                isListening = false;
-                setListeningUi(false);
-                if (chatInput && chatInput.value.trim()) chatInput.focus();
-            };
-        }
-    } catch (_) {
-        if (voiceBtn) {
-            voiceBtn.disabled = true;
-            voiceBtn.title = 'Voice input unavailable';
-        }
-    }
-
-    // Image upload binding (guarded)
-    if (imageBtn && !imageBtn.dataset.bound) {
-        imageBtn.addEventListener('click', () => imageInput.click());
-        imageBtn.dataset.bound = 'true';
-    }
-    if (!imageInput.dataset.bound) {
-        imageInput.addEventListener('change', async () => {
-            const file = imageInput.files && imageInput.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
-                app.showNotification('Please select an image file.', 'error');
-                imageInput.value = '';
-                return;
-            }
-            const thinkingDiv = this.addThinkingIndicator();
-            try {
-                const formData = new FormData();
-                formData.append('image', file);
-                const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                thinkingDiv.remove();
-                const text = data.text || 'No text detected.';
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
-                    this.addMessage(preview, 'bot');
-                };
-                reader.readAsDataURL(file);
-            } catch (e) {
-                thinkingDiv.remove();
-                this.addMessage('Sorry, I could not extract text from that image.', 'bot');
-            } finally {
-                imageInput.value = '';
-            }
-        });
-        imageInput.dataset.bound = 'true';
-    }
-
-    // Load chat history once (clear DOM first to avoid duplicates)
-    try {
-        if (chatMessages) chatMessages.innerHTML = '';
-        const data = await app.apiCall("/get_chat_history", "GET");
-        if (data && data.status === "success" && Array.isArray(data.history)) {
-            data.history.forEach(item => {
-                if (item.user) this.addMessage(item.user, "user", item.time || item.timestamp || null);
-                if (item.bot) this.addMessage(item.bot, "bot", item.time || item.timestamp || null);
-            });
-        }
-    } catch {
-        app.showNotification("Failed to load history", "error");
-    }
-
-    // Auto-resize (guarded)
-    if (chatInput && !chatInput.dataset.boundInput) {
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
-        chatInput.dataset.boundInput = 'true';
-    }
-
-    // Submit handler (guarded)
-    if (chatForm && !chatForm.dataset.bound) {
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const message = (chatInput && chatInput.value || '').trim();
-            if (!message) return;
-
-            this.addMessage(message, 'user');
-            if (chatInput) {
-                chatInput.value = '';
-                chatInput.style.height = 'auto';
-            }
-
-            const thinkingDiv = this.addThinkingIndicator();
-            try {
-                const response = await app.apiCall(`/ask`, 'POST', { message });
-                thinkingDiv.remove();
-                this.addMessage(response.reply, 'bot');
-            } catch {
-                thinkingDiv.remove();
-                this.addMessage('Sorry, an error occurred. Please try again.', 'bot');
-            }
-        });
-        chatForm.dataset.bound = 'true';
-    }
-
-    // Edit button delegation (guarded)
-    if (chatMessages && !chatMessages.dataset.editBound) {
-        chatMessages.addEventListener('click', (e) => {
-            if (e.target.classList.contains('edit-btn')) {
-                const messageDiv = e.target.closest('.message');
-                if (!messageDiv) return;
-                const messageTextEl = messageDiv.querySelector('.message-text');
-                const oldText = messageTextEl ? messageTextEl.innerText : '';
-                const editId = messageDiv.dataset.id;
-
-                const newText = prompt('Edit your message:', oldText);
-                if (newText == null) return;
-                if (messageTextEl) messageTextEl.innerText = newText;
-
-                app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
-                    .then(data => {
-                        let next = messageDiv.nextElementSibling;
-                        while (next) {
-                            const toRemove = next;
-                            next = next.nextElementSibling;
-                            toRemove.remove();
-                        }
-                        if (data && data.reply) this.addMessage(data.reply, 'bot');
-                    })
-                    .catch(() => {
-                        app.showNotification("Edit failed. Please try again.", "error");
-                    });
-            }
-        });
-        chatMessages.dataset.editBound = 'true';
-    }
-
-    // Back and history buttons (guarded)
-    const backBtn = document.getElementById("backToChatBtn");
-    if (backBtn && !backBtn.dataset.bound) {
-        backBtn.addEventListener("click", () => {
-            const historyPage = document.getElementById("chatHistoryPage");
-            const chatContainer = document.getElementById("chatContainer");
-            if (historyPage) historyPage.classList.add("hidden");
-            if (chatContainer) chatContainer.classList.remove("hidden");
-        });
-        backBtn.dataset.bound = 'true';
-    }
-
-    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
-    if (clearHistoryBtn && !clearHistoryBtn.dataset.bound) {
-        clearHistoryBtn.addEventListener("click", async () => {
-            if (!confirm("Are you sure you want to clear all chat history?")) return;
-            try {
-                const response = await app.apiCall("/clear_chat_history", "POST");
-                if (response && response.status === "success") {
-                    const chatHistoryDiv = document.getElementById("chatHistory");
-                    if (chatHistoryDiv) chatHistoryDiv.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
-                    if (chatMessages) chatMessages.innerHTML = '';
-                } else {
-                    app.showNotification("Failed to clear chat history.", "error");
-                }
-            } catch {
-                app.showNotification("Failed to clear chat history.", "error");
-            }
-        });
-        clearHistoryBtn.dataset.bound = 'true';
-    }
-
-    const historyBtn = document.getElementById('historyBtn');
-    if (historyBtn && !historyBtn.dataset.bound) {
-        historyBtn.addEventListener('click', async () => {
-            const historyPage = document.getElementById("chatHistoryPage");
-            const chatContainer = document.getElementById("chatContainer");
-            if (historyPage) historyPage.classList.remove("hidden");
-            if (chatContainer) chatContainer.classList.add("hidden");
-            await loadChatHistory();
-        });
-        historyBtn.dataset.bound = 'true';
-    }
-
-    // local helper to load history (kept inside init for access)
-    async function loadChatHistory() {
-        const chatHistoryDiv = document.getElementById("chatHistory");
-        if (!chatHistoryDiv) return;
-        chatHistoryDiv.innerHTML = "";
-        try {
-            const response = await app.apiCall("/get_chat_history", "GET");
-            if (response && response.status === "success" && Array.isArray(response.history)) {
-                response.history.forEach(item => {
-                    if (item.user) {
-                        chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2"><div class="font-semibold text-blue-800 dark:text-blue-200">User:</div><div>${item.user}</div><div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div></div>`;
-                    }
-                    if (item.bot) {
-                        chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2"><div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div><div>${item.bot}</div><div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div></div>`;
-                    }
-                });
-            }
-        } catch {
-            chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
-        }
-    }
-}
-}
-        // --- Profile Page ---
-        class ProfilePage {
-            render() {
-                return `
-                    <div class="card">
+                <section id="medication-section" class="medication-section section hidden">
+                    <div class="card p-6 rounded-xl shadow-lg">
                         <div class="card-header">
-                            <h2 class="card-title">Profile Management</h2>
-                            <div class="card-icon">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
+                            <h3 class="card-title">My Medications</h3>
+                            <button id="add-medication-btn" class="btn btn-primary btn-sm">Add New</button>
                         </div>
-                        
-                        <!-- BMI Calculator -->
-                        <div class="bmi-calculator">
-                            <h3>BMI Calculator</h3>
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label class="form-label">Height (cm)</label>
-                                    <input type="number" class="form-input" id="bmiHeight" placeholder="e.g., 175">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Weight (kg)</label>
-                                    <input type="number" class="form-input" id="bmiWeight" placeholder="e.g., 70">
-                                </div>
+                        <div id="medication-list" class="data-list">
                             </div>
-                            <button class="btn btn-primary" id="calculateBmi">Calculate BMI</button>
-                            <div id="bmiResult" class="bmi-result hidden"></div>
-                        </div>
+                        <p id="no-medications" class="text-gray-500 italic text-center mt-4 hidden">No medications added yet.</p>
+                    </div>
+                </section>
 
-                        <!-- Profile Form -->
-                        <form id="profileForm" class="space-y-6">
-                            <h3 class="text-xl font-semibold text-white mb-4">Personal Information</h3>
+                <section id="appointments-section" class="appointments-section section hidden">
+                    <div class="card p-6 rounded-xl shadow-lg">
+                        <div class="card-header">
+                            <h3 class="card-title">My Appointments</h3>
+                            <button id="add-appointment-btn-full" class="btn btn-primary btn-sm">Add New</button>
+                        </div>
+                        <div id="appointment-list" class="data-list">
+                            </div>
+                        <p id="no-appointments-full" class="text-gray-500 italic text-center mt-4 hidden">No appointments added yet.</p>
+                    </div>
+                </section>
+
+                <section id="emergency-section" class="emergency-section section hidden">
+                    <div class="card p-6 rounded-xl shadow-lg">
+                        <div class="card-header">
+                            <h3 class="card-title">My Emergency Contacts</h3>
+                            <button id="add-contact-btn-full" class="btn btn-primary btn-sm">Add New</button>
+                        </div>
+                        <div id="emergency-contact-list" class="data-list">
+                            </div>
+                        <p id="no-emergency-contacts" class="text-gray-500 italic text-center mt-4 hidden">No emergency contacts added yet.</p>
+                    </div>
+                </section>
+
+                <section id="profile-section" class="profile-section section hidden">
+                    <div class="card p-6 rounded-xl shadow-lg">
+                        <h3 class="card-title mb-4">Edit Profile</h3>
+                        <form id="profile-form">
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label class="form-label">Name</label>
-                                    <input type="text" class="form-input" id="profileName" placeholder="Your Full Name">
+                                    <label for="profile-name-input" class="form-label">Full Name</label>
+                                    <input type="text" id="profile-name-input" class="form-input">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Date of Birth</label>
-                                    <input type="date" class="form-input" id="profileDob">
+                                    <label for="profile-dob-input" class="form-label">Date of Birth</label>
+                                    <input type="date" id="profile-dob-input" class="form-input">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Gender</label>
-                                    <input type="text" class="form-input" id="profileGender" placeholder="Your Gender">
+                                    <label for="profile-gender-input" class="form-label">Gender</label>
+                                    <input type="text" id="profile-gender-input" class="form-input">
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Blood Group</label>
-                                    <input type="text" class="form-input" id="profileBloodGroup" placeholder="e.g., A+">
+                                    <label for="profile-blood-group-input" class="form-label">Blood Group</label>
+                                    <input type="text" id="profile-blood-group-input" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profile-conditions-input" class="form-label">Known Conditions</label>
+                                    <input type="text" id="profile-conditions-input" class="form-input" placeholder="e.g., Diabetes, Hypertension">
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Known Conditions</label>
-                                <input type="text" class="form-input" id="profileConditions" placeholder="e.g., Diabetes, Hypertension">
-                            </div>
-                            
-                            <!-- Custom Fields -->
-                            <div class="form-group">
-                                <h3 class="text-lg font-semibold text-white mb-2">Custom Fields</h3>
-                                <div id="customFields" class="space-y-4"></div>
-                                <button type="button" class="btn btn-outline" id="addCustomField">
-                                    <i class="fas fa-plus"></i> Add Custom Field
-                                </button>
-                            </div>
-                            
-                            <div class="flex justify-end">
+                            <div class="text-right mt-6">
                                 <button type="submit" class="btn btn-primary">Save Profile</button>
                             </div>
                         </form>
                     </div>
-                `;
-            }
-
-            async init() {
-                // Load existing profile data
-                await app.loadData();
-                this.populateForm();
-
-                // BMI Calculator
-                document.getElementById('calculateBmi').addEventListener('click', () => {
-                    this.calculateBMI();
-                });
-
-                // Profile form
-                document.getElementById('profileForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await this.saveProfile();
-                });
-
-                // Add custom field
-                document.getElementById('addCustomField').addEventListener('click', () => {
-                    this.addCustomField();
-                });
-            }
-
-            populateForm() {
-                const profile = app.data.profile || {};
-                document.getElementById('profileName').value = profile.name || '';
-                document.getElementById('profileDob').value = profile.dob || '';
-                document.getElementById('profileGender').value = profile.gender || '';
-                document.getElementById('profileBloodGroup').value = profile.blood_group || '';
-                document.getElementById('profileConditions').value = profile.conditions || '';
-
-                // Load custom fields
-                const customFieldsContainer = document.getElementById('customFields');
-                customFieldsContainer.innerHTML = '';
+                </section>
                 
-                for (const [key, value] of Object.entries(profile)) {
-                    if (!['name', 'dob', 'gender', 'blood_group', 'conditions'].includes(key)) {
-                        this.addCustomField(key, value);
-                    }
-                }
-            }
-
-            calculateBMI() {
-                const height = parseFloat(document.getElementById('bmiHeight').value);
-                const weight = parseFloat(document.getElementById('bmiWeight').value);
-                const resultDiv = document.getElementById('bmiResult');
-
-                if (height > 0 && weight > 0) {
-                    const heightM = height / 100;
-                    const bmi = weight / (heightM * heightM);
-                    let category = '';
-                    let colorClass = '';
-
-                    if (bmi < 18.5) {
-                        category = 'Underweight';
-                        colorClass = 'bg-yellow-500';
-                    } else if (bmi >= 18.5 && bmi < 24.9) {
-                        category = 'Normal weight';
-                        colorClass = 'bg-green-500';
-                    } else if (bmi >= 25 && bmi < 29.9) {
-                        category = 'Overweight';
-                        colorClass = 'bg-yellow-500';
-                    } else {
-                        category = 'Obesity';
-                        colorClass = 'bg-red-500';
-                    }
-
-                    resultDiv.innerHTML = `
-                        <div class="text-center">
-                            <div class="text-2xl font-bold">BMI: ${bmi.toFixed(2)}</div>
-                            <div class="bmi-category ${colorClass} px-4 py-2 rounded-lg mt-2">${category}</div>
+                <section id="doctors-section" class="doctors-section section hidden">
+                    <div class="card p-6 rounded-xl shadow-lg">
+                        <h3 class="card-title mb-4">Find a Doctor</h3>
+                        <div class="form-group">
+                            <label for="specialty-filter" class="form-label">Filter by Specialty</label>
+                            <select id="specialty-filter" class="form-input">
+                                <option value="">All Specialties</option>
+                            </select>
                         </div>
-                    `;
-                    resultDiv.classList.remove('hidden');
-                } else {
-                    app.showNotification('Please enter valid height and weight.', 'error');
-                }
-            }
-
-            addCustomField(key = '', value = '') {
-                const container = document.getElementById('customFields');
-                const fieldDiv = document.createElement('div');
-                fieldDiv.className = 'form-grid';
-                fieldDiv.innerHTML = `
-                    <div class="form-group">
-                        <label class="form-label">Field Name</label>
-                        <input type="text" class="form-input" placeholder="e.g., Allergies" value="${key}">
+                        <div id="doctor-list" class="data-list mt-4">
+                             </div>
+                        <p id="no-doctors" class="text-gray-500 italic text-center mt-4 hidden">No doctors found.</p>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Field Value</label>
-                        <input type="text" class="form-input" placeholder="e.g., Penicillin" value="${value}">
-                    </div>
-                    <div class="form-group flex items-end">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(fieldDiv);
-            }
+                </section>
 
-            async saveProfile() {
-                const profileData = {
-                    name: document.getElementById('profileName').value,
-                    dob: document.getElementById('profileDob').value,
-                    gender: document.getElementById('profileGender').value,
-                    blood_group: document.getElementById('profileBloodGroup').value,
-                    conditions: document.getElementById('profileConditions').value
-                };
-
-                // Add custom fields
-                const customFields = document.querySelectorAll('#customFields .form-grid');
-                customFields.forEach(field => {
-                    const keyInput = field.querySelector('input:nth-of-type(1)');
-                    const valueInput = field.querySelector('input:nth-of-type(2)');
-                    if (keyInput.value && valueInput.value) {
-                        profileData[keyInput.value] = valueInput.value;
-                    }
-                });
-
-                await app.saveProfile(profileData);
-            }
-        }
-
-// --- Medications Page ---
-class MedicationsPage {
-    render() {
-        return `
-            <div class="space-y-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Add Medication</h2>
-                        <div class="card-icon">
-                            <i class="fas fa-pills"></i>
-                        </div>
-                    </div>
-                    <form id="medicationForm">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Medication Name</label>
-                                <input type="text" class="form-input" id="medName" placeholder="e.g., Metformin">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Dosage</label>
-                                <input type="text" class="form-input" id="medDosage" placeholder="e.g., 500mg">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Schedule</label>
-                                <input type="text" class="form-input" id="medSchedule" placeholder="e.g., Daily, 8am">
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button type="submit" class="btn btn-primary">Add Medication</button>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Your Medications</h2>
-                        <div class="card-icon">
-                            <i class="fas fa-list"></i>
-                        </div>
-                    </div>
-                    <div id="medicationsList" class="data-list">
-                        <!-- Medications will be loaded here -->
-                    </div>
-                </div>
             </div>
-        `;
-    }
-
-    async init() {
-        await app.loadData();
-        this.renderMedications();
-
-        // ✅ Prevent double form binding
-        const form = document.getElementById('medicationForm');
-        if (!form.dataset.bound) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.saveMedication();
-            });
-            form.dataset.bound = "true";
-        }
-
-        // ✅ Event delegation for edit/delete
-        const container = document.getElementById('medicationsList');
-        if (!container.dataset.bound) {
-            container.addEventListener('click', (e) => {
-                const item = e.target.closest('.data-item');
-                if (!item) return;
-                const index = parseInt(item.dataset.index);
-
-                if (e.target.closest('.edit-btn')) {
-                    this.editMedication(index);
-                }
-                if (e.target.closest('.delete-btn')) {
-                    this.deleteMedication(index);
-                }
-            });
-            container.dataset.bound = "true";
-        }
-    }
-
-    renderMedications() {
-        const container = document.getElementById('medicationsList');
-        container.innerHTML = '';
-
-        if (app.data.medications.length === 0) {
-            container.innerHTML = '<p class="text-center text-gray-500">No medications added yet.</p>';
-            return;
-        }
-
-        app.data.medications.forEach((med, index) => {
-            const medDiv = document.createElement('div');
-            medDiv.className = 'data-item';
-            medDiv.dataset.index = index; // ✅ needed for delegation
-
-            medDiv.innerHTML = `
-                <div class="data-item-content">
-                    <div class="data-item-title">${med.name}</div>
-                    <div class="data-item-subtitle">Dosage: ${med.dosage} | Schedule: ${med.schedule}</div>
-                </div>
-                <div class="data-item-actions">
-                    <button class="btn btn-outline btn-sm edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </button>
-                    <button class="btn btn-danger btn-sm delete-btn">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-            `;
-            container.appendChild(medDiv);
-        });
-    }
-
-    async saveMedication() {
-        const medicationData = {
-            name: document.getElementById('medName').value,
-            dosage: document.getElementById('medDosage').value,
-            schedule: document.getElementById('medSchedule').value
-        };
-
-        if (!medicationData.name || !medicationData.dosage || !medicationData.schedule) {
-            app.showNotification('Please fill in all fields.', 'error');
-            return;
-        }
-
-        await app.saveMedication(medicationData);
-        document.getElementById('medicationForm').reset();
-        this.renderMedications();
-    }
-
-    async editMedication(index) {
-        const medication = app.data.medications[index];
-        document.getElementById('medName').value = medication.name;
-        document.getElementById('medDosage').value = medication.dosage;
-        document.getElementById('medSchedule').value = medication.schedule;
-
-        // Change form to update mode
-        const form = document.getElementById('medicationForm');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.textContent = 'Update Medication';
-        submitBtn.onclick = async (e) => {
-            e.preventDefault();
-            const updatedData = {
-                name: document.getElementById('medName').value,
-                dosage: document.getElementById('medDosage').value,
-                schedule: document.getElementById('medSchedule').value
-            };
-            await app.updateMedication(index, updatedData);
-            form.reset();
-            submitBtn.textContent = 'Add Medication';
-            this.renderMedications();
-        };
-    }
-
-    async deleteMedication(index) {
-        app.showModal(
-            'Delete Medication',
-            'Are you sure you want to delete this medication?',
-            async (confirmed) => {
-                if (confirmed) {
-                    await app.deleteMedication(index);
-                    this.renderMedications();
-                }
-            }
-        );
-    }
-}
-
-class EmergencyPage {
-            render() {
-                return `
-                    <div class="space-y-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Add Emergency Contact</h2>
-                                <div class="card-icon"><i class="fas fa-first-aid"></i></div>
-                            </div>
-                            <form id="emergencyForm">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label class="form-label">Contact Name</label>
-                                        <input type="text" class="form-input" id="contactName" placeholder="e.g., Dr. Smith" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Phone Number</label>
-                                        <input type="tel" class="form-input" id="contactPhone" placeholder="e.g., +1234567890" required>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <h3 class="text-lg font-semibold mb-2">Additional Information</h3>
-                                    <div id="emergencyCustomFields" class="space-y-4"></div>
-                                    <button type="button" class="btn btn-outline mt-4" id="addEmergencyField">
-                                        <i class="fas fa-plus"></i> Add Field
-                                    </button>
-                                </div>
-                                <div class="flex justify-end">
-                                    <button type="submit" class="btn btn-primary">Add Contact</button>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h2 class="card-title">Emergency Contacts</h2>
-                                <div class="card-icon"><i class="fas fa-list"></i></div>
-                            </div>
-                            <div id="emergencyList" class="data-list"></div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            async init() {
-                await app.loadData();
-                this.renderContacts();
-
-                // Guarded event bindings
-                const form = document.getElementById('emergencyForm');
-                if (!form.dataset.bound) {
-                    form.dataset.bound = "true";
-                    form.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        await this.saveContact();
-                    });
-                }
-
-                const addFieldBtn = document.getElementById('addEmergencyField');
-                if (!addFieldBtn.dataset.bound) {
-                    addFieldBtn.dataset.bound = 'true';
-                    addFieldBtn.addEventListener('click', () => this.addCustomField());
-                }
-
-                const container = document.getElementById('emergencyList');
-                if (!container.dataset.bound) {
-                    container.dataset.bound = 'true';
-                    container.addEventListener('click', (e) => {
-                        const item = e.target.closest('.data-item');
-                        if (!item) return;
-                        const index = parseInt(item.dataset.index, 10);
-                        if (e.target.closest('.delete-btn')) this.deleteContact(index);
-                    });
-                }
-            }
-
-            renderContacts() {
-                const container = document.getElementById('emergencyList');
-                container.innerHTML = '';
-                if (!app.data.emergency_contacts || app.data.emergency_contacts.length === 0) {
-                    container.innerHTML = '<p class="text-center text-gray-500">No emergency contacts added yet.</p>';
-                    return;
-                }
-                app.data.emergency_contacts.forEach((contact, index) => {
-                    const contactDiv = document.createElement('div');
-                    contactDiv.className = 'data-item';
-                    contactDiv.dataset.index = index;
-                    let customFieldsHtml = '';
-                    for (const [key, value] of Object.entries(contact)) {
-                        if (key !== 'name' && key !== 'phone') {
-                            customFieldsHtml += `<div class="text-sm text-gray-400"><strong>${key}:</strong> ${value}</div>`;
-                        }
-                    }
-                    contactDiv.innerHTML = `
-                        <div class="data-item-content">
-                            <div class="data-item-title">${contact.name}</div>
-                            <div class="data-item-subtitle">Phone: ${contact.phone}</div>
-                            ${customFieldsHtml}
-                        </div>
-                        <div class="data-item-actions">
-                            <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i> Delete</button>
-                        </div>
-                    `;
-                    container.appendChild(contactDiv);
-                });
-            }
-
-            addCustomField(key = '', value = '') {
-                const container = document.getElementById('emergencyCustomFields');
-                const fieldDiv = document.createElement('div');
-                fieldDiv.className = 'flex items-end gap-2'; // Use flex for better alignment
-                fieldDiv.innerHTML = `
-                    <div class="form-group flex-grow">
-                        <input type="text" class="form-input custom-key" placeholder="Field Name (e.g., Relationship)" value="${key}">
-                    </div>
-                    <div class="form-group flex-grow">
-                        <input type="text" class="form-input custom-value" placeholder="Field Value (e.g., Doctor)" value="${value}">
-                    </div>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                `;
-                container.appendChild(fieldDiv);
-            }
-
-            async saveContact() {
-                const contactData = {
-                    name: document.getElementById('contactName').value,
-                    phone: document.getElementById('contactPhone').value
-                };
-                if (!contactData.name || !contactData.phone) {
-                    app.showNotification("Please fill in name and phone number.", "error");
-                    return;
-                }
-                
-                // Correctly gather custom fields data
-                document.querySelectorAll('#emergencyCustomFields > div').forEach(fieldDiv => {
-                    const keyInput = fieldDiv.querySelector('.custom-key');
-                    const valueInput = fieldDiv.querySelector('.custom-value');
-                    if (keyInput && valueInput && keyInput.value.trim() && valueInput.value.trim()) {
-                        contactData[keyInput.value.trim()] = valueInput.value.trim();
-                    }
-                });
-
-                await app.saveEmergencyContact(contactData);
-                document.getElementById('emergencyForm').reset();
-                document.getElementById('emergencyCustomFields').innerHTML = '';
-                this.renderContacts();
-            }
-
-            async deleteContact(index) {
-                app.showModal('Delete Contact', 'Are you sure you want to delete this emergency contact?', async (confirmed) => {
-                    if (confirmed) {
-                        await app.deleteEmergencyContact(index);
-                        this.renderContacts();
-                    }
-                });
-            }
-        }
-
-// --- Appointments Page ---
-class AppointmentsPage {
-    render() {
-        return `
-            <div class="space-y-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Add Appointment</h2>
-                        <div class="card-icon">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                    </div>
-                    <form id="appointmentForm" class="space-y-4">
-    <!-- Specialty Dropdown -->
-    <div class="form-group">
-        <label class="form-label">Specialty</label>
-        <select id="specialtySelect" class="form-input">
-            <option value="">Select Specialty</option>
-        </select>
+        </main>
     </div>
 
-    <!-- Doctor Dropdown -->
-    <div class="form-group">
-        <label class="form-label">Doctor</label>
-        <select id="doctorSelect" class="form-input" disabled>
-            <option value="">Select Doctor</option>
-        </select>
+    <div id="medication-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="medication-modal-title" class="modal-title">Add Medication</h3>
+                <button class="modal-close" data-modal-target="medication-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="medication-form">
+                    <input type="hidden" id="medication-id">
+                    <div class="form-group">
+                        <label for="medication-name-input" class="form-label">Medication Name</label>
+                        <input type="text" id="medication-name-input" class="form-input" required>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="medication-dosage-input" class="form-label">Dosage</label>
+                            <input type="text" id="medication-dosage-input" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medication-frequency-input" class="form-label">Frequency</label>
+                            <input type="text" id="medication-frequency-input" class="form-input" placeholder="e.g., Twice a day" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medication-time-input" class="form-label">Time of Day</label>
+                            <input type="time" id="medication-time-input" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="medication-notes-input" class="form-label">Notes (optional)</label>
+                            <textarea id="medication-notes-input" class="form-input"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline modal-close" data-modal-target="medication-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
-    <!-- Time Dropdown -->
-    <div class="form-group">
-        <label class="form-label">Available Time</label>
-        <select id="timeSelect" class="form-input" disabled>
-            <option value="">Select Time</option>
-        </select>
+    <div id="appointment-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="appointment-modal-title" class="modal-title">Add Appointment</h3>
+                <button class="modal-close" data-modal-target="appointment-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="appointment-form">
+                    <input type="hidden" id="appointment-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="appointment-doctor-input" class="form-label">Doctor's Name</label>
+                            <input type="text" id="appointment-doctor-input" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointment-date-input" class="form-label">Date</label>
+                            <input type="date" id="appointment-date-input" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointment-time-input" class="form-label">Time</label>
+                            <input type="time" id="appointment-time-input" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointment-location-input" class="form-label">Location</label>
+                            <input type="text" id="appointment-location-input" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointment-notes-input" class="form-label">Notes (optional)</label>
+                        <textarea id="appointment-notes-input" class="form-input"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline modal-close" data-modal-target="appointment-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-
-    <div class="flex justify-end">
-        <button type="submit" class="btn btn-primary">Book Appointment</button>
-    </div>
-
     
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Your Appointments</h2>
-                        <div class="card-icon">
-                            <i class="fas fa-list"></i>
-                        </div>
-                    </div>
-                    <div id="appointmentsList" class="data-list">
-                        <!-- Appointments will be loaded here -->
-                    </div>
-                </div>
+    <div id="emergency-contact-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="emergency-contact-modal-title" class="modal-title">Add Emergency Contact</h3>
+                <button class="modal-close" data-modal-target="emergency-contact-modal">&times;</button>
             </div>
-        `;
-    }
-
-    async init() {
-    const specialtySelect = document.getElementById('specialtySelect');
-    const doctorSelect = document.getElementById('doctorSelect');
-    const timeSelect = document.getElementById('timeSelect');
-    const form = document.getElementById('appointmentForm');
-    const list = document.getElementById('appointmentsList');
-
-    let doctors = [];
-
-    try {
-        doctors = await app.apiCall('/get_doctors');
-    } catch (err) {
-        app.showNotification('Failed to load doctors', 'error');
-        return;
-    }
-
-    // Populate specialties
-    const specialties = [...new Set(doctors.map(d => d.specialty))];
-    specialties.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = s;
-        specialtySelect.appendChild(opt);
-    });
-
-    // On specialty change → filter doctors
-    specialtySelect.addEventListener('change', () => {
-        doctorSelect.innerHTML = `<option value="">Select Doctor</option>`;
-        timeSelect.innerHTML = `<option value="">Select Time</option>`;
-        doctorSelect.disabled = true;
-        timeSelect.disabled = true;
-
-        if (specialtySelect.value) {
-            const filtered = doctors.filter(d => d.specialty === specialtySelect.value);
-            filtered.forEach(doc => {
-                const opt = document.createElement('option');
-                opt.value = doc.id;
-                opt.textContent = `${doc.name} (${doc.hospital}, ${doc.location})`;
-                doctorSelect.appendChild(opt);
-            });
-            doctorSelect.disabled = false;
-        }
-    });
-
-    // On doctor change → show times
-    doctorSelect.addEventListener('change', () => {
-        timeSelect.innerHTML = `<option value="">Select Time</option>`;
-        timeSelect.disabled = true;
-
-        const selected = doctors.find(d => d.id == doctorSelect.value);
-        if (selected && selected.times.length) {
-            selected.times.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t;
-                opt.textContent = t;
-                timeSelect.appendChild(opt);
-            });
-            timeSelect.disabled = false;
-        }
-    });
-
-    // On form submit → save appointment
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!specialtySelect.value || !doctorSelect.value || !timeSelect.value) {
-            app.showNotification('Please select all fields', 'warning');
-            return;
-        }
-
-        const appointmentData = {
-            specialty: specialtySelect.value,
-            doctor_id: doctorSelect.value,
-            doctor_name: doctors.find(d => d.id == doctorSelect.value).name,
-            time: timeSelect.value,
-        };
-
-        await app.saveAppointment(appointmentData);
-        renderAppointments();
-        form.reset();
-        doctorSelect.disabled = true;
-        timeSelect.disabled = true;
-    });
-
-    // Helper: render booked appointments
-// Appointments render function (in AppointmentsPage)
-function renderAppointments() {
-    const list = document.getElementById('appointmentsList');
-    list.innerHTML = '';
-    if (app.data.appointments.length === 0) {
-        list.innerHTML = '<p class="text-center text-gray-500">No appointments yet.</p>';
-        return;
-    }
-    app.data.appointments.forEach(a => {
-        const item = document.createElement('div');
-        item.className = "data-item";
-        item.dataset.id = a.id; // Store UUID
-        item.innerHTML = `
-          <div class="data-item-content">
-            <h4 class="data-item-title">${a.doctorname} (${a.specialty})</h4>
-            <p class="data-item-subtitle">Time: ${a.time}</p>
-          </div>
-          <div class="data-item-actions">
-            <button class="btn btn-danger btn-sm delete-btn" data-id="${a.id}">Delete</button>
-          </div>
-        `;
-        list.appendChild(item);
-    });
-    // ... inside the renderAppointments function ...
-list.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.onclick = async e => {
-        const id = btn.dataset.id; // Get the UUID from the button's data attribute
-        app.showModal('Delete Appointment', 'Are you sure you want to delete this appointment?', async (confirmed) => {
-            if (confirmed) {
-                await app.deleteAppointment(id); // Send the correct UUID to the backend
-                // The page will re-render automatically because deleteAppointment reloads data
-            }
-        });
-    };
-});
-}}}
-
-// --- Wellness Page ---
-class WellnessPage {
-    render() {
-        return `
-            <div class="card text-center">
-                <div class="card-header">
-                    <h2 class="card-title">Daily Wellness Tips</h2>
-                    <div class="card-icon">
-                        <i class="fas fa-heartbeat"></i>
+            <div class="modal-body">
+                <form id="emergency-contact-form">
+                    <input type="hidden" id="contact-id">
+                    <div class="form-group">
+                        <label for="contact-name-input" class="form-label">Name</label>
+                        <input type="text" id="contact-name-input" class="form-input" required>
                     </div>
-                </div>
-                <div class="p-8">
-                    <div id="wellnessTipDisplay" class="text-lg font-bold font-sans mb-6 text-blue-900 dark:text-blue-300">
-                        Loading your personalized tip...
+                    <div class="form-group">
+                        <label for="contact-relationship-input" class="form-label">Relationship</label>
+                        <input type="text" id="contact-relationship-input" class="form-input" required>
                     </div>
-                    <button class="btn btn-primary" id="refreshTip">
-                        <i class="fas fa-refresh"></i> Get New Tip
-                    </button>
-                </div>
+                    <div class="form-group">
+                        <label for="contact-phone-input" class="form-label">Phone Number</label>
+                        <input type="tel" id="contact-phone-input" class="form-input" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline modal-close" data-modal-target="emergency-contact-modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
             </div>
-        `;
-    }
+        </div>
+    </div>
 
-    async init() {
-        await this.loadWellnessTip();
 
-        const refreshBtn = document.getElementById('refreshTip');
-        if (!refreshBtn.dataset.bound) {
-            refreshBtn.addEventListener('click', async () => {
-                await this.loadWellnessTip();
-            });
-            refreshBtn.dataset.bound = "true"; // ✅ Prevent duplicate binding
-        }
-    }
+    <div id="notifications-container"></div>
 
-    async loadWellnessTip() {
-        const categories = {
-            "Workout": [
-                "Do 3 sets of 15 squats 🏋️‍♂️<br>1. Stand straight.<br>2. Lower hips as if sitting.<br>3. Keep knees behind toes.<br>4. Rise back up.",
-                "Push-ups (3 sets of 10) 💪<br>1. Keep body straight.<br>2. Lower chest to the ground.<br>3. Push back up.",
-                "Plank Hold (3 sets, 30 sec each) 🤸<br>1. Keep back straight.<br>2. Engage core.<br>3. Don’t drop hips.",
-                "Jumping Jacks (3 sets of 20) 🏃‍♂️<br>1. Jump with arms overhead.<br>2. Return to standing.<br>3. Repeat quickly."
-            ],
-            "Diseases": [
-                "For Diabetes: 🍬<br>1. Walk 30 mins daily.<br>2. Eat high-fiber foods.<br>3. Avoid processed sugar.",
-                "For Hypertension: ❤️<br>1. Reduce salt intake.<br>2. Practice yoga breathing.<br>3. Sleep at least 7 hrs.",
-                "For Asthma: 🌬️<br>1. Avoid smoke/pollution.<br>2. Do breathing exercises.<br>3. Carry inhaler always.",
-                "For Arthritis: 🦵<br>1. Do gentle stretches.<br>2. Keep weight healthy.<br>3. Warm compress for relief."
-            ],
-            "Yoga": [
-                "Surya Namaskar 🌞<br>1. Stand straight.<br>2. Raise arms & bend forward.<br>3. Stretch back.<br>4. Step into plank.<br>5. Cobra pose.<br>6. Repeat.",
-                "Tree Pose 🌳<br>1. Stand on one leg.<br>2. Place other foot on thigh.<br>3. Join palms.<br>4. Hold for 30 seconds.",
-                "Child’s Pose 🧘‍♂️<br>1. Kneel on floor.<br>2. Stretch arms forward.<br>3. Rest forehead down.<br>4. Breathe deeply.",
-                "Bridge Pose 🌉<br>1. Lie on back.<br>2. Bend knees, feet flat.<br>3. Lift hips upward.<br>4. Hold for 20 sec."
-            ],
-            "Meditation": [
-                "Breathing Meditation 🌿<br>1. Sit comfortably.<br>2. Close eyes.<br>3. Inhale 4 sec, hold 4 sec, exhale 4 sec.<br>4. Repeat for 5 min.",
-                "Mindfulness 🧘<br>1. Sit quietly.<br>2. Focus on breath.<br>3. Notice thoughts without judgment.<br>4. Continue 10 min.",
-                "Body Scan Relaxation 🛌<br>1. Lie down.<br>2. Focus from head to toes.<br>3. Relax each part slowly.<br>4. Take deep breaths.",
-                "Gratitude Practice 🙏<br>1. Sit quietly.<br>2. Think of 3 things you’re grateful for.<br>3. Smile & breathe deeply."
-            ],
-            "Nutrition": [
-                "Stay hydrated 💧<br>Drink at least 2–3 liters of water daily.",
-                "Balanced diet 🍎<br>Eat fruits, veggies, protein & whole grains every day.",
-                "Limit junk food 🍔<br>Replace sugary drinks with fresh juices or water.",
-                "Eat on time ⏰<br>Have 3 main meals & 2 small snacks regularly."
-            ]
-        };
-
-        // Pick a random category
-        const categoryNames = Object.keys(categories);
-        const randomCategory = categoryNames[Math.floor(Math.random() * categoryNames.length)];
-        const tips = categories[randomCategory];
-        const randomTip = tips[Math.floor(Math.random() * tips.length)];
-
-        // ✅ Use innerHTML so <br> works
-        document.getElementById('wellnessTipDisplay').innerHTML = `${randomCategory} Tip:<br><br>${randomTip}`;
-    }
-}
-
-        // --- Initialize Application ---
-        const pageManager = new PageManager();
-
-        // Initialize page instances for global access
-        let profilePage, medicationsPage, emergencyPage, appointmentsPage, wellnessPage;
-
-        // Load first sidebar wellness tip
-        loadSidebarTip();
-
-        // Theme toggle
-        document.getElementById('themeToggle').addEventListener('change', (e) => {
-            app.setTheme(e.target.checked);
-        });
-
-        // Sidebar navigation
-        document.querySelectorAll('.sidebar-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.preventDefault();
-                pageManager.loadPage(item.dataset.page);
-            });
-        });
-
-        // Load initial data and page
-        document.addEventListener('DOMContentLoaded', async () => {
-            await app.loadData();
-            await pageManager.loadPage('chat');
-            
-            // Load wellness tip in sidebar
-            try {
-                const tip = await app.getWeatherTip();
-                document.getElementById('wellnessTipText').textContent = tip;
-            } catch (error) {
-                document.getElementById('wellnessTipText').textContent = 
-                    "Remember to stay hydrated and maintain a balanced diet for optimal health!";
-            }
-
-            // Set initial theme
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            app.setTheme(savedTheme === 'dark');
-            document.getElementById('themeToggle').checked = savedTheme === 'dark';
-
-            const sidebar = document.getElementById('sidebar');
-            const toggleButton = document.getElementById('sidebarToggle');
-
-            toggleButton.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-        });
-
-        });
-
-        async function loadSidebarTip() {
-            try {
-            const response = await fetch("/get_weather_tip");
-            const data = await response.json();
-            document.getElementById("wellnessTipText").textContent = data.tip;
-            } catch (err) {
-                console.error("Failed to load tip:", err);
-                document.getElementById("wellnessTipText").textContent = "Could not load tip.";
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", async () => {
-        // Create app state
-        window.app = new AppState();
-
-        // Create page manager
-        window.pageManager = new PageManager();
-
-        // Load the default page (chat)
-        await pageManager.loadPage("chat");
-
-        // Sidebar navigation
-        document.querySelectorAll(".sidebar-item").forEach(item => {
-        item.addEventListener("click", async (e) => {
-            e.preventDefault();
-            const pageId = item.getAttribute("data-page");
-            await pageManager.loadPage(pageId);
-        });
-        });
-
-    // Sidebar toggle
-    document.getElementById("sidebarToggle").addEventListener("click", () => {
-        document.getElementById("sidebar").classList.toggle("collapsed");
-        document.querySelector(".main-content").classList.toggle("collapsed");
-    });
-
-    // Theme toggle
-    const themeToggle = document.getElementById("themeToggle");
-    themeToggle.addEventListener("change", (e) => {
-        app.setTheme(e.target.checked);
-    });
-
-    // Apply saved theme
-    const savedTheme = localStorage.getItem("theme");
-    app.setTheme(savedTheme === "dark");
-    themeToggle.checked = savedTheme === "dark";
-
-    // Load daily wellness tip
-    const tip = await app.getWeatherTip();
-    document.getElementById("wellnessTipText").textContent = tip;
-});
-    </script>
     <script>
-document.addEventListener("DOMContentLoaded", function () {
-  function bindOnceByCloning(id, handler) {
-    const el = document.getElementById(id);
-    if (!el) return null;
-    const clone = el.cloneNode(true);
-    el.parentNode.replaceChild(clone, el);
-    clone.addEventListener("click", handler);
-    return clone;
-  }
+        const app = {
+            data: {
+                profile: {},
+                appointments: [],
+                emergency_contacts: [],
+                medications: [],
+                chat_history: []
+            },
+            elements: {
+                // Sections
+                sections: document.querySelectorAll('.section'),
+                dashboardSection: document.getElementById('dashboard-section'),
+                medicationList: document.getElementById('medication-list'),
+                appointmentList: document.getElementById('appointment-list'),
+                emergencyContactList: document.getElementById('emergency-contact-list'),
+                doctorList: document.getElementById('doctor-list'),
+                noMedications: document.getElementById('no-medications'),
+                noAppointments: document.getElementById('no-appointments'),
+                noAppointmentsFull: document.getElementById('no-appointments-full'),
+                noContacts: document.getElementById('no-contacts'),
+                noEmergencyContacts: document.getElementById('no-emergency-contacts'),
+                noDoctors: document.getElementById('no-doctors'),
+                specialtyFilter: document.getElementById('specialty-filter'),
 
-  const chatMessages = document.getElementById("chatMessages");
+                // Navigation
+                sidebar: document.querySelector('.sidebar'),
+                sidebarToggle: document.getElementById('sidebar-toggle'),
+                sidebarItems: document.querySelectorAll('.sidebar-item'),
+                sectionTitle: document.getElementById('section-title'),
 
-  // Use "historyBtn" instead of "chatHistoryBtn" to match your HTML
-  bindOnceByCloning("historyBtn", async () => {
-    try {
-      const data = await app.apiCall("/get_chat_history", "GET");
-      if (data.status === "success") {
-        if (chatMessages) chatMessages.innerHTML = "";
-        data.history.forEach(item => {
-          if (item.user) app.addMessage(item.user, "user");
-          if (item.bot) app.addMessage(item.bot, "bot");
-        });
-      }
-    } catch (e) { console.error(e); }
-  });
+                // Modals
+                medicationModal: document.getElementById('medication-modal'),
+                appointmentModal: document.getElementById('appointment-modal'),
+                emergencyContactModal: document.getElementById('emergency-contact-modal'),
+                modalOverlays: document.querySelectorAll('.modal-overlay'),
 
-  bindOnceByCloning("clearChatBtn", async (ev) => {
-    const btn = ev.currentTarget;
-    if (btn.disabled) return;
-    btn.disabled = true;
-    try {
-      const ok = confirm("Start a new chat? All previous messages will be cleared.");
-      if (!ok) return;
-      const data = await app.apiCall("/clear_chat", "POST");
-      if (data.status === "success") {
-        if (chatMessages) chatMessages.innerHTML = "";
-        const history = await app.apiCall("/get_chat_history", "GET");
-        if (history.status === "success") {
-          history.history.forEach(item => { if (item.bot) app.addMessage(item.bot, "bot"); });
-        }
-      }
-    } catch (e) { console.error(e); }
-    finally { btn.disabled = false; }
-  });
-});
-// --- Reminder and Notification System ---
-        function checkReminders() {
-            const now = new Date();
-            const upcomingThreshold = 15 * 60 * 1000; // 15 minutes in milliseconds
+                // Forms
+                profileForm: document.getElementById('profile-form'),
+                medicationForm: document.getElementById('medication-form'),
+                appointmentForm: document.getElementById('appointment-form'),
+                emergencyContactForm: document.getElementById('emergency-contact-form'),
+                chatForm: document.getElementById('chat-form'),
 
-            // Check Medications
-            if (app.data.medications) {
-                app.data.medications.forEach(med => {
-                    // Simple parser for times like "8am", "14:30", "5:00 PM"
-                    const timeMatch = med.schedule.match(/(\d{1,2}):?(\d{2})?\s?(AM|PM)?/i);
-                    if (timeMatch) {
-                        let hours = parseInt(timeMatch[1], 10);
-                        const minutes = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
-                        const period = timeMatch[3];
+                // Inputs
+                chatInput: document.getElementById('chat-input'),
+                themeToggle: document.getElementById('theme-toggle'),
 
-                        if (period && period.toLowerCase() === 'pm' && hours < 12) {
-                            hours += 12;
-                        } else if (period && period.toLowerCase() === 'am' && hours === 12) {
-                            hours = 0; // Midnight case
+                // Buttons
+                addMedicationBtn: document.getElementById('add-medication-btn'),
+                addAppointmentBtn: document.getElementById('add-appointment-btn'),
+                addAppointmentBtnFull: document.getElementById('add-appointment-btn-full'),
+                addContactBtn: document.getElementById('add-contact-btn'),
+                addContactBtnFull: document.getElementById('add-contact-btn-full'),
+                editProfileBtn: document.getElementById('edit-profile-btn'),
+                calculateBmiBtn: document.getElementById('calculate-bmi-btn'),
+
+                // Chat
+                chatMessages: document.getElementById('chat-messages'),
+
+                // Notifications
+                notificationsContainer: document.getElementById('notifications-container'),
+            },
+
+            // --- Core Functions ---
+            async init() {
+                await this.fetchData();
+                this.renderAll();
+                this.setupEventListeners();
+                this.setupThemeToggle();
+            },
+
+            // --- Data Fetching & Rendering ---
+            async fetchData() {
+                try {
+                    const response = await fetch('/data');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.data = {
+                            profile: data.profile || {},
+                            appointments: data.appointments || [],
+                            emergency_contacts: data.emergency_contacts || [],
+                            medications: data.medications || [],
+                            chat_history: data.chat_history || [],
+                            doctors: data.doctors || []
+                        };
+                    } else {
+                        throw new Error("Failed to fetch data.");
+                    }
+                } catch (error) {
+                    console.error("Error fetching data:", error);
+                    this.showNotification("Failed to load user data.", 'error');
+                }
+            },
+
+            async saveData() {
+                try {
+                    const response = await fetch('/data', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.data)
+                    });
+                    if (!response.ok) {
+                        throw new Error("Failed to save data.");
+                    }
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    this.showNotification("Failed to save changes.", 'error');
+                }
+            },
+
+            renderAll() {
+                this.renderProfile();
+                this.renderMedications();
+                this.renderAppointments();
+                this.renderEmergencyContacts();
+                this.renderDoctors();
+                this.renderChatHistory();
+            },
+
+            // --- UI Rendering Functions ---
+            renderProfile() {
+                const p = this.data.profile;
+                document.getElementById('profile-name').textContent = `Name: ${p.name || 'N/A'}`;
+                document.getElementById('profile-dob').textContent = `Date of Birth: ${p.dob || 'N/A'}`;
+                document.getElementById('profile-gender').textContent = `Gender: ${p.gender || 'N/A'}`;
+                document.getElementById('profile-blood-group').textContent = `Blood Group: ${p.blood_group || 'N/A'}`;
+
+                // Fill profile form
+                document.getElementById('profile-name-input').value = p.name || '';
+                document.getElementById('profile-dob-input').value = p.dob || '';
+                document.getElementById('profile-gender-input').value = p.gender || '';
+                document.getElementById('profile-blood-group-input').value = p.blood_group || '';
+                document.getElementById('profile-conditions-input').value = p.conditions || '';
+            },
+
+            renderMedications() {
+                const list = this.elements.medicationList;
+                const noMedications = this.elements.noMedications;
+                list.innerHTML = '';
+                if (this.data.medications.length === 0) {
+                    noMedications.classList.remove('hidden');
+                } else {
+                    noMedications.classList.add('hidden');
+                    this.data.medications.forEach(med => {
+                        const item = document.createElement('div');
+                        item.classList.add('data-item', 'fade-in');
+                        item.innerHTML = `
+                            <div class="data-item-content">
+                                <h4 class="data-item-title">${med.name}</h4>
+                                <p class="data-item-subtitle">${med.dosage} &middot; ${med.frequency}</p>
+                            </div>
+                            <div class="data-item-actions">
+                                <button class="btn btn-outline btn-sm" onclick="app.editMedication('${med.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="app.deleteMedication('${med.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+            },
+
+            renderAppointments() {
+                const dashboardList = document.getElementById('upcoming-appointments-list');
+                const fullList = this.elements.appointmentList;
+                const noAppointmentsDashboard = document.getElementById('no-appointments');
+                const noAppointmentsFull = this.elements.noAppointmentsFull;
+
+                dashboardList.innerHTML = '';
+                fullList.innerHTML = '';
+
+                if (this.data.appointments.length === 0) {
+                    noAppointmentsDashboard.classList.remove('hidden');
+                    noAppointmentsFull.classList.remove('hidden');
+                } else {
+                    noAppointmentsDashboard.classList.add('hidden');
+                    noAppointmentsFull.classList.add('hidden');
+
+                    const now = new Date();
+                    const sortedAppointments = this.data.appointments.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+
+                    sortedAppointments.forEach(appt => {
+                        const apptDateTime = new Date(`${appt.date}T${appt.time}`);
+                        const isUpcoming = apptDateTime > now;
+
+                        // Render for Dashboard
+                        if (isUpcoming) {
+                            const dashboardItem = document.createElement('li');
+                            dashboardItem.textContent = `${appt.doctor} on ${appt.date} at ${appt.time}`;
+                            dashboardList.appendChild(dashboardItem);
                         }
 
-                        const medTime = new Date();
-                        medTime.setHours(hours, minutes, 0, 0);
-                        
-                        const timeDiff = medTime.getTime() - now.getTime();
+                        // Render for Full List
+                        const fullItem = document.createElement('div');
+                        fullItem.classList.add('data-item', 'fade-in');
+                        fullItem.innerHTML = `
+                            <div class="data-item-content">
+                                <h4 class="data-item-title">Dr. ${appt.doctor}</h4>
+                                <p class="data-item-subtitle">${appt.location || 'N/A'} &middot; ${appt.date} at ${appt.time}</p>
+                            </div>
+                            <div class="data-item-actions">
+                                <button class="btn btn-outline btn-sm" onclick="app.editAppointment('${appt.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="app.deleteAppointment('${appt.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                        fullList.appendChild(fullItem);
+                    });
+                }
+            },
 
-                        // Notify if it's within the next 15 minutes and hasn't been notified yet
-                        if (timeDiff > 0 && timeDiff <= upcomingThreshold) {
-                            const notificationKey = `med-${med.name}-${medTime.getHours()}`;
-                            if (!sessionStorage.getItem(notificationKey)) {
-                                app.showNotification(`Time for your medication: ${med.name} (${med.dosage})`, 'warning');
-                                sessionStorage.setItem(notificationKey, 'true'); // Prevents re-notifying in the same session
+            renderEmergencyContacts() {
+                const list = this.elements.emergencyContactList;
+                const noContacts = this.elements.noEmergencyContacts;
+                list.innerHTML = '';
+                if (this.data.emergency_contacts.length === 0) {
+                    noContacts.classList.remove('hidden');
+                    this.elements.noContacts.classList.remove('hidden');
+                } else {
+                    noContacts.classList.add('hidden');
+                    this.elements.noContacts.classList.add('hidden');
+                    this.data.emergency_contacts.forEach(contact => {
+                        const item = document.createElement('div');
+                        item.classList.add('data-item', 'fade-in');
+                        item.innerHTML = `
+                            <div class="data-item-content">
+                                <h4 class="data-item-title">${contact.name}</h4>
+                                <p class="data-item-subtitle">${contact.relationship} &middot; ${contact.phone}</p>
+                            </div>
+                            <div class="data-item-actions">
+                                <button class="btn btn-outline btn-sm" onclick="app.editEmergencyContact('${contact.id}')"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-danger btn-sm" onclick="app.deleteEmergencyContact('${contact.id}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+            },
+
+            renderDoctors() {
+                const list = this.elements.doctorList;
+                const filter = this.elements.specialtyFilter;
+                const noDoctors = this.elements.noDoctors;
+                list.innerHTML = '';
+
+                const specialties = new Set();
+                this.data.doctors.forEach(doc => specialties.add(doc.specialty));
+                filter.innerHTML = `<option value="">All Specialties</option>` + [...specialties].map(s => `<option value="${s}">${s}</option>`).join('');
+
+                const selectedSpecialty = filter.value;
+                const filteredDoctors = this.data.doctors.filter(doc => !selectedSpecialty || doc.specialty === selectedSpecialty);
+
+                if (filteredDoctors.length === 0) {
+                    noDoctors.classList.remove('hidden');
+                } else {
+                    noDoctors.classList.add('hidden');
+                    filteredDoctors.forEach(doc => {
+                        const item = document.createElement('div');
+                        item.classList.add('data-item', 'fade-in');
+                        item.innerHTML = `
+                            <div class="data-item-content">
+                                <h4 class="data-item-title">${doc.name}</h4>
+                                <p class="data-item-subtitle">${doc.specialty} &middot; ${doc.hospital}, ${doc.location}</p>
+                                <p class="text-sm text-gray-400 mt-2">Phone: ${doc.phone}</p>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+            },
+
+            renderChatHistory() {
+                const chatMessages = this.elements.chatMessages;
+                chatMessages.innerHTML = '';
+                this.data.chat_history.forEach(msg => {
+                    this.addMessageToChat('user', msg.user, msg.timestamp);
+                    this.addMessageToChat('bot', marked.parse(msg.bot), msg.timestamp);
+                });
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            },
+
+            addMessageToChat(sender, text, timestamp) {
+                const chatMessages = this.elements.chatMessages;
+                const messageEl = document.createElement('div');
+                messageEl.classList.add('message', sender);
+                const avatar = sender === 'user' ? 'You' : 'AI';
+                messageEl.innerHTML = `
+                    <div class="message-avatar">${avatar}</div>
+                    <div class="message-content">
+                        <div class="message-text">${text}</div>
+                        <div class="message-time">${this.formatTimestamp(timestamp)}</div>
+                    </div>
+                `;
+                chatMessages.appendChild(messageEl);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            },
+
+            // --- Event Handlers & Actions ---
+            setupEventListeners() {
+                // Sidebar Navigation
+                this.elements.sidebarItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.elements.sidebarItems.forEach(i => i.classList.remove('active'));
+                        item.classList.add('active');
+                        this.elements.sections.forEach(s => s.classList.add('hidden'));
+                        const targetSection = document.getElementById(item.dataset.section);
+                        targetSection.classList.remove('hidden');
+                        this.elements.sectionTitle.textContent = item.querySelector('span').textContent;
+                        if (item.dataset.section === 'chat-section') {
+                            this.elements.chatInput.focus();
+                        }
+                    });
+                });
+
+                // Sidebar Toggle
+                this.elements.sidebarToggle.addEventListener('click', () => {
+                    this.elements.sidebar.classList.toggle('collapsed');
+                    document.querySelector('.main-content').classList.toggle('collapsed');
+                });
+
+                // Profile
+                this.elements.editProfileBtn.addEventListener('click', () => {
+                    this.elements.sidebarItems.forEach(i => i.classList.remove('active'));
+                    document.querySelector('[data-section="profile-section"]').classList.add('active');
+                    this.elements.sections.forEach(s => s.classList.add('hidden'));
+                    this.elements.profileSection.classList.remove('hidden');
+                    this.elements.sectionTitle.textContent = 'My Profile';
+                });
+                this.elements.profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    this.data.profile = {
+                        name: document.getElementById('profile-name-input').value,
+                        dob: document.getElementById('profile-dob-input').value,
+                        gender: document.getElementById('profile-gender-input').value,
+                        blood_group: document.getElementById('profile-blood-group-input').value,
+                        conditions: document.getElementById('profile-conditions-input').value
+                    };
+                    await this.saveData();
+                    this.renderProfile();
+                    this.showNotification("Profile updated successfully!", 'success');
+                });
+
+                // Medication
+                this.elements.addMedicationBtn.addEventListener('click', () => {
+                    this.openMedicationModal();
+                });
+                this.elements.medicationForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveMedication();
+                });
+
+                // Appointment
+                this.elements.addAppointmentBtn.addEventListener('click', () => {
+                    this.openAppointmentModal();
+                });
+                this.elements.addAppointmentBtnFull.addEventListener('click', () => {
+                    this.openAppointmentModal();
+                });
+                this.elements.appointmentForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveAppointment();
+                });
+
+                // Emergency Contact
+                this.elements.addContactBtn.addEventListener('click', () => {
+                    this.openEmergencyContactModal();
+                });
+                this.elements.addContactBtnFull.addEventListener('click', () => {
+                    this.openEmergencyContactModal();
+                });
+                this.elements.emergencyContactForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await this.saveEmergencyContact();
+                });
+                
+                // Modal Close Buttons
+                document.querySelectorAll('.modal-close').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const targetId = btn.dataset.modalTarget;
+                        document.getElementById(targetId).classList.remove('show');
+                    });
+                });
+
+
+                // Chat
+                this.elements.chatForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const userInput = this.elements.chatInput.value.trim();
+                    if (userInput) {
+                        this.elements.chatInput.value = '';
+                        this.elements.chatInput.style.height = 'auto'; // Reset textarea height
+                        this.addMessageToChat('user', userInput, new Date().toISOString());
+
+                        // Simulate thinking state
+                        const thinkingEl = document.createElement('div');
+                        thinkingEl.classList.add('message', 'bot', 'thinking-indicator');
+                        thinkingEl.innerHTML = `<div class="message-avatar">AI</div><div class="message-content">AI is thinking<span class="thinking-dots"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></span></div>`;
+                        this.elements.chatMessages.appendChild(thinkingEl);
+                        this.elements.chatMessages.scrollTop = this.elements.chatMessages.scrollHeight;
+
+                        const response = await fetch('/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: userInput })
+                        });
+                        const data = await response.json();
+                        thinkingEl.remove(); // Remove thinking indicator
+                        if (data.error) {
+                            this.addMessageToChat('bot', `An error occurred: ${data.error}`, new Date().toISOString());
+                        } else {
+                            this.addMessageToChat('bot', marked.parse(data.bot_message), new Date().toISOString());
+                            this.data.chat_history.push({ user: userInput, bot: data.bot_message, timestamp: new Date().toISOString() });
+                            await this.saveData();
+                        }
+                    }
+                });
+
+                this.elements.chatInput.addEventListener('input', () => {
+                    this.elements.chatInput.style.height = 'auto';
+                    this.elements.chatInput.style.height = this.elements.chatInput.scrollHeight + 'px';
+                });
+                
+                // BMI
+                this.elements.calculateBmiBtn.addEventListener('click', () => this.calculateBmi());
+
+                // Doctor Filter
+                this.elements.specialtyFilter.addEventListener('change', () => this.renderDoctors());
+            },
+
+            // --- CRUD Operations ---
+            async saveMedication() {
+                const form = this.elements.medicationForm;
+                const id = form.querySelector('#medication-id').value;
+                const medication = {
+                    name: form.querySelector('#medication-name-input').value,
+                    dosage: form.querySelector('#medication-dosage-input').value,
+                    frequency: form.querySelector('#medication-frequency-input').value,
+                    time: form.querySelector('#medication-time-input').value,
+                    notes: form.querySelector('#medication-notes-input').value
+                };
+
+                let url = '/medications';
+                let method = 'POST';
+
+                if (id) {
+                    url = `/medications/${id}`;
+                    method = 'PUT';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(medication)
+                    });
+
+                    if (response.ok) {
+                        const savedMedication = await response.json();
+                        if (method === 'POST') {
+                            this.data.medications.push(savedMedication);
+                            this.showNotification("Medication added successfully!", 'success');
+                        } else {
+                            const index = this.data.medications.findIndex(m => m.id === id);
+                            if (index !== -1) {
+                                this.data.medications[index] = savedMedication;
+                                this.showNotification("Medication updated successfully!", 'success');
                             }
                         }
+                        this.closeModal('medication-modal');
+                        this.renderMedications();
+                    } else {
+                        throw new Error("Failed to save medication.");
                     }
+                } catch (error) {
+                    console.error("Error saving medication:", error);
+                    this.showNotification("Failed to save medication.", 'error');
+                }
+            },
+
+            editMedication(id) {
+                const medication = this.data.medications.find(m => m.id === id);
+                if (medication) {
+                    this.elements.medicationForm.querySelector('#medication-id').value = medication.id;
+                    this.elements.medicationForm.querySelector('#medication-name-input').value = medication.name;
+                    this.elements.medicationForm.querySelector('#medication-dosage-input').value = medication.dosage;
+                    this.elements.medicationForm.querySelector('#medication-frequency-input').value = medication.frequency;
+                    this.elements.medicationForm.querySelector('#medication-time-input').value = medication.time;
+                    this.elements.medicationForm.querySelector('#medication-notes-input').value = medication.notes;
+                    document.getElementById('medication-modal-title').textContent = 'Edit Medication';
+                    this.openModal('medication-modal');
+                }
+            },
+
+            async deleteMedication(id) {
+                if (!confirm("Are you sure you want to delete this medication?")) return;
+                try {
+                    const response = await fetch(`/medications/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        this.data.medications = this.data.medications.filter(m => m.id !== id);
+                        this.renderMedications();
+                        this.showNotification("Medication deleted successfully!", 'success');
+                    } else {
+                        throw new Error("Failed to delete medication.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting medication:", error);
+                    this.showNotification("Failed to delete medication.", 'error');
+                }
+            },
+
+            async saveAppointment() {
+                const form = this.elements.appointmentForm;
+                const id = form.querySelector('#appointment-id').value;
+                const appointment = {
+                    doctor: form.querySelector('#appointment-doctor-input').value,
+                    date: form.querySelector('#appointment-date-input').value,
+                    time: form.querySelector('#appointment-time-input').value,
+                    location: form.querySelector('#appointment-location-input').value,
+                    notes: form.querySelector('#appointment-notes-input').value
+                };
+
+                let url = '/appointments';
+                let method = 'POST';
+
+                if (id) {
+                    url = `/appointments/${id}`;
+                    method = 'PUT';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(appointment)
+                    });
+
+                    if (response.ok) {
+                        const savedAppointment = await response.json();
+                        if (method === 'POST') {
+                            this.data.appointments.push(savedAppointment);
+                            this.showNotification("Appointment added successfully!", 'success');
+                        } else {
+                            const index = this.data.appointments.findIndex(a => a.id === id);
+                            if (index !== -1) {
+                                this.data.appointments[index] = savedAppointment;
+                                this.showNotification("Appointment updated successfully!", 'success');
+                            }
+                        }
+                        this.closeModal('appointment-modal');
+                        this.renderAppointments();
+                    } else {
+                        throw new Error("Failed to save appointment.");
+                    }
+                } catch (error) {
+                    console.error("Error saving appointment:", error);
+                    this.showNotification("Failed to save appointment.", 'error');
+                }
+            },
+
+            editAppointment(id) {
+                const appointment = this.data.appointments.find(a => a.id === id);
+                if (appointment) {
+                    this.elements.appointmentForm.querySelector('#appointment-id').value = appointment.id;
+                    this.elements.appointmentForm.querySelector('#appointment-doctor-input').value = appointment.doctor;
+                    this.elements.appointmentForm.querySelector('#appointment-date-input').value = appointment.date;
+                    this.elements.appointmentForm.querySelector('#appointment-time-input').value = appointment.time;
+                    this.elements.appointmentForm.querySelector('#appointment-location-input').value = appointment.location;
+                    this.elements.appointmentForm.querySelector('#appointment-notes-input').value = appointment.notes;
+                    document.getElementById('appointment-modal-title').textContent = 'Edit Appointment';
+                    this.openModal('appointment-modal');
+                }
+            },
+
+            async deleteAppointment(id) {
+                if (!confirm("Are you sure you want to delete this appointment?")) return;
+                try {
+                    const response = await fetch(`/appointments/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        this.data.appointments = this.data.appointments.filter(a => a.id !== id);
+                        this.renderAppointments();
+                        this.showNotification("Appointment deleted successfully!", 'success');
+                    } else {
+                        throw new Error("Failed to delete appointment.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting appointment:", error);
+                    this.showNotification("Failed to delete appointment.", 'error');
+                }
+            },
+
+            async saveEmergencyContact() {
+                const form = this.elements.emergencyContactForm;
+                const id = form.querySelector('#contact-id').value;
+                const contact = {
+                    name: form.querySelector('#contact-name-input').value,
+                    relationship: form.querySelector('#contact-relationship-input').value,
+                    phone: form.querySelector('#contact-phone-input').value
+                };
+
+                let url = '/emergency_contacts';
+                let method = 'POST';
+
+                if (id) {
+                    url = `/emergency_contacts/${id}`;
+                    method = 'PUT';
+                }
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(contact)
+                    });
+
+                    if (response.ok) {
+                        const savedContact = await response.json();
+                        if (method === 'POST') {
+                            this.data.emergency_contacts.push(savedContact);
+                            this.showNotification("Emergency contact added successfully!", 'success');
+                        } else {
+                            const index = this.data.emergency_contacts.findIndex(c => c.id === id);
+                            if (index !== -1) {
+                                this.data.emergency_contacts[index] = savedContact;
+                                this.showNotification("Emergency contact updated successfully!", 'success');
+                            }
+                        }
+                        this.closeModal('emergency-contact-modal');
+                        this.renderEmergencyContacts();
+                    } else {
+                        throw new Error("Failed to save emergency contact.");
+                    }
+                } catch (error) {
+                    console.error("Error saving contact:", error);
+                    this.showNotification("Failed to save contact.", 'error');
+                }
+            },
+
+            editEmergencyContact(id) {
+                const contact = this.data.emergency_contacts.find(c => c.id === id);
+                if (contact) {
+                    this.elements.emergencyContactForm.querySelector('#contact-id').value = contact.id;
+                    this.elements.emergencyContactForm.querySelector('#contact-name-input').value = contact.name;
+                    this.elements.emergencyContactForm.querySelector('#contact-relationship-input').value = contact.relationship;
+                    this.elements.emergencyContactForm.querySelector('#contact-phone-input').value = contact.phone;
+                    document.getElementById('emergency-contact-modal-title').textContent = 'Edit Emergency Contact';
+                    this.openModal('emergency-contact-modal');
+                }
+            },
+
+            async deleteEmergencyContact(id) {
+                if (!confirm("Are you sure you want to delete this contact?")) return;
+                try {
+                    const response = await fetch(`/emergency_contacts/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        this.data.emergency_contacts = this.data.emergency_contacts.filter(c => c.id !== id);
+                        this.renderEmergencyContacts();
+                        this.showNotification("Emergency contact deleted successfully!", 'success');
+                    } else {
+                        throw new Error("Failed to delete contact.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting contact:", error);
+                    this.showNotification("Failed to delete contact.", 'error');
+                }
+            },
+
+            // --- Utility Functions ---
+            openMedicationModal() {
+                const form = this.elements.medicationForm;
+                form.reset();
+                form.querySelector('#medication-id').value = '';
+                document.getElementById('medication-modal-title').textContent = 'Add Medication';
+                this.openModal('medication-modal');
+            },
+            openAppointmentModal() {
+                const form = this.elements.appointmentForm;
+                form.reset();
+                form.querySelector('#appointment-id').value = '';
+                document.getElementById('appointment-modal-title').textContent = 'Add Appointment';
+                this.openModal('appointment-modal');
+            },
+            openEmergencyContactModal() {
+                const form = this.elements.emergencyContactForm;
+                form.reset();
+                form.querySelector('#contact-id').value = '';
+                document.getElementById('emergency-contact-modal-title').textContent = 'Add Emergency Contact';
+                this.openModal('emergency-contact-modal');
+            },
+
+            openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.add('show');
+            },
+
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('show');
+            },
+            
+            showNotification(message, type = 'success') {
+                const notification = document.createElement('div');
+                notification.classList.add('notification', type, 'slide-in-right');
+                notification.innerHTML = `
+                    <div class="notification-header">
+                        <h5 class="notification-title">${type.charAt(0).toUpperCase() + type.slice(1)}</h5>
+                        <button class="notification-close" onclick="this.closest('.notification').remove()">&times;</button>
+                    </div>
+                    <p class="notification-message">${message}</p>
+                `;
+                this.elements.notificationsContainer.appendChild(notification);
+                setTimeout(() => {
+                    notification.classList.remove('slide-in-right');
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => notification.remove(), 300);
+                }, 5000);
+            },
+
+            calculateBmi() {
+                const weight = parseFloat(document.getElementById('weight').value);
+                const height = parseFloat(document.getElementById('height').value);
+                const resultCard = document.getElementById('bmi-result-card');
+                const bmiValue = document.getElementById('bmi-value');
+                const bmiCategory = document.getElementById('bmi-category');
+
+                if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+                    this.showNotification("Please enter valid weight and height.", 'error');
+                    resultCard.classList.add('hidden');
+                    return;
+                }
+
+                const heightInMeters = height / 100;
+                const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2);
+                let category = '';
+
+                if (bmi < 18.5) {
+                    category = 'Underweight';
+                } else if (bmi >= 18.5 && bmi < 24.9) {
+                    category = 'Normal weight';
+                } else if (bmi >= 25 && bmi < 29.9) {
+                    category = 'Overweight';
+                } else {
+                    category = 'Obesity';
+                }
+
+                bmiValue.textContent = bmi;
+                bmiCategory.textContent = category;
+                resultCard.classList.remove('hidden');
+            },
+            
+            setupThemeToggle() {
+                const isDarkMode = localStorage.getItem('theme') === 'dark';
+                this.elements.themeToggle.checked = isDarkMode;
+                document.body.classList.toggle('dark-theme', isDarkMode);
+
+                this.elements.themeToggle.addEventListener('change', () => {
+                    const isDark = this.elements.themeToggle.checked;
+                    document.body.classList.toggle('dark-theme', isDark);
+                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
                 });
-            }
+            },
 
-            // Check Appointments
-            if (app.data.appointments) {
-                app.data.appointments.forEach(appt => {
-                     const timeMatch = appt.time.match(/(\d{1,2}):?(\d{2})?\s?(AM|PM)?/i);
-                     if (timeMatch) {
-                        let hours = parseInt(timeMatch[1], 10);
-                        const minutes = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
-                        const period = timeMatch[3];
+            formatTimestamp(timestamp) {
+                const date = new Date(timestamp);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            },
 
-                        if (period && period.toLowerCase() === 'pm' && hours < 12) hours += 12;
-                        if (period && period.toLowerCase() === 'am' && hours === 12) hours = 0;
+            checkReminders() {
+                const now = new Date();
+                const upcomingThreshold = 30 * 60 * 1000; // 30 minutes in milliseconds
 
-                        const apptTime = new Date();
-                        apptTime.setHours(hours, minutes, 0, 0);
+                // Medication reminders
+                if (this.data.medications) {
+                    this.data.medications.forEach(med => {
+                        const medTime = med.time;
+                        if (!medTime) return;
 
-                        const timeDiff = apptTime.getTime() - now.getTime();
+                        const [hours, minutes] = medTime.split(':').map(Number);
+                        const medDateTime = new Date();
+                        medDateTime.setHours(hours, minutes, 0, 0);
+
+                        const timeDiff = medDateTime.getTime() - now.getTime();
+                        
                         if (timeDiff > 0 && timeDiff <= upcomingThreshold) {
-                            const notificationKey = `appt-${appt.id}`;
-                             if (!sessionStorage.getItem(notificationKey)) {
-                                app.showNotification(`Upcoming appointment with ${appt.doctor_name} at ${appt.time}`, 'warning');
+                            const notificationKey = `med-${med.id}-${med.time}`;
+                            if (!sessionStorage.getItem(notificationKey)) {
+                                this.showNotification(`Upcoming medication: Take ${med.dosage} of ${med.name}`, 'warning');
                                 sessionStorage.setItem(notificationKey, 'true');
                             }
                         }
-                     }
-                });
+                    });
+                }
+
+                // Appointment reminders
+                if (this.data.appointments) {
+                    this.data.appointments.forEach(appt => {
+                         const timeMatch = appt.time.match(/(\d{1,2}):?(\d{2})?\s?(AM|PM)?/i);
+                         if (timeMatch) {
+                            let hours = parseInt(timeMatch[1], 10);
+                            const minutes = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
+                            const period = timeMatch[3];
+
+                            if (period && period.toLowerCase() === 'pm' && hours < 12) hours += 12;
+                            if (period && period.toLowerCase() === 'am' && hours === 12) hours = 0;
+
+                            const apptTime = new Date();
+                            apptTime.setHours(hours, minutes, 0, 0);
+
+                            const timeDiff = apptTime.getTime() - now.getTime();
+                            if (timeDiff > 0 && timeDiff <= upcomingThreshold) {
+                                const notificationKey = `appt-${appt.id}`;
+                                 if (!sessionStorage.getItem(notificationKey)) {
+                                    this.showNotification(`Upcoming appointment with ${appt.doctor} at ${appt.time}`, 'warning');
+                                    sessionStorage.setItem(notificationKey, 'true');
+                                }
+                            }
+                         }
+                    });
+                }
             }
-        }
+        };
 
         // Start checking for reminders every minute
-        setInterval(checkReminders, 60000);
-</script>
+        setInterval(() => app.checkReminders(), 60000);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
 </body>
 </html>
