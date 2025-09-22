@@ -6,20 +6,22 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
 
-import uuid
-USERDATAFILE = "userdata.json"
+USER_DATA_FILE = "user_data.json" # Use a single, consistent filename
 
-def load_userdata():
-    if os.path.exists(USERDATAFILE):
+def load_user_data():
+    """Load user data from JSON file."""
+    if os.path.exists(USER_DATA_FILE):
         try:
-            with open(USERDATAFILE, "r", encoding="utf-8") as f:
+            with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, FileNotFoundError):
-            pass
-    return {"profile": {}, "appointments": [], "emergencycontacts": [], "medications": []}
+            return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
+    return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
 
-def save_userdata(data):
-    with open(USERDATAFILE, "w", encoding="utf-8") as f:
+
+def save_user_data(data):
+    """Save user data to JSON file."""
+    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
 # Initialize translator
@@ -486,7 +488,7 @@ def delete_emergency_contact(index):
 
 @app.route("/saveappointment", methods=["POST"])
 def saveappointment():
-    data = load_userdata()
+    data = load_user_data()
     appointment = request.json
     if "appointments" not in data:
         data["appointments"] = []
@@ -494,7 +496,7 @@ def saveappointment():
     import uuid
     appointment["id"] = str(uuid.uuid4())
     data["appointments"].append(appointment)
-    save_userdata(data)
+    save_user_data(data)
     return jsonify({"status": "success", "message": "Appointment added!"})
 
 def find_appointment_index_by_id(appointments, appt_id):
@@ -506,25 +508,25 @@ def find_appointment_index_by_id(appointments, appt_id):
 
 @app.route("/updateappointment/<appt_id>", methods=["PUT"])
 def updateappointment(appt_id):
-    data = load_userdata()
+    data = load_user_data()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
     if idx is not None:
         updated_appointment = request.json
         updated_appointment["id"] = appt_id  # Preserve id
         appointments[idx] = updated_appointment
-        save_userdata(data)
+        save_user_data(data)
         return jsonify({"status": "success", "message": "Appointment updated."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
 @app.route("/deleteappointment/<appt_id>", methods=["DELETE"])
 def deleteappointment(appt_id):
-    data = load_userdata()
+    data = load_user_data()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
     if idx is not None:
         appointments.pop(idx)
-        save_userdata(data)
+        save_user_data(data)
         return jsonify({"status": "success", "message": "Appointment deleted."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
