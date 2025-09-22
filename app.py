@@ -6,35 +6,21 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
 
-# --- Unified data files & helpers (replace older USERDATAFILE / load_userdata/save_userdata) ---
-import uuid  # used for appointments
+import uuid
+USERDATAFILE = "userdata.json"
 
-BASE_DIR = os.path.dirname(__file__)
-USER_DATA_FILE = os.path.join(BASE_DIR, "user_data.json")
-LOG_FILE = os.path.join(BASE_DIR, "chat_log.json")
-UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
-os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-def load_user_data():
-    """Load user data from single JSON file (fallback to defaults)."""
-    if os.path.exists(USER_DATA_FILE):
+def load_userdata():
+    if os.path.exists(USERDATAFILE):
         try:
-            with open(USER_DATA_FILE, "r", encoding="utf-8") as f:
+            with open(USERDATAFILE, "r", encoding="utf-8") as f:
                 return json.load(f)
         except (json.JSONDecodeError, FileNotFoundError):
             pass
-    # standardized keys used across the app
-    return {"profile": {}, "appointments": [], "emergency_contacts": [], "medications": []}
+    return {"profile": {}, "appointments": [], "emergencycontacts": [], "medications": []}
 
-def save_user_data(data):
-    """Save user data to single JSON file."""
-    with open(USER_DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
-
-# ensure chat log exists
-if not os.path.exists(LOG_FILE):
-    with open(LOG_FILE, "w", encoding="utf-8") as f:
-        json.dump([], f)
+def save_userdata(data):
+    with open(USERDATAFILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
 
 # Initialize translator
 translator = google_translator()
@@ -208,21 +194,20 @@ def ask():
         incoming_edit_id = request.json.get("edit_id")
         edit_id = str(incoming_edit_id) if incoming_edit_id else None
 
-        # Load latest user data and system instruction
+
         current_user_data = load_user_data()
         system_instruction = create_system_instruction(current_user_data)
 
         lang = session.get("lang", "en")
 
-        # Translate input to English if session language is Telugu
+        # Translate input if Telugu
         try:
-            user_input_en = translator.translate(user_input, lang_tgt='en') if (lang == "te" and user_input) else user_input
+            user_input_en = translator.translate(user_input, lang_tgt='en') if lang == "te" else user_input
         except Exception as e:
-            print(f"Translation error (to en): {e}")
-            traceback.print_exc()
-            user_input_en = user_input  # fallback
+            print(f"Translation error: {e}")
+            user_input_en = user_input  # Fallback to original input
 
-        # Emergency check (immediate return)
+        # Emergency check
         emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
         if any(word in user_input_en.lower() for word in emergency_keywords):
             emergency_message = (
@@ -239,15 +224,11 @@ def ask():
                 try:
                     emergency_message = translator.translate(emergency_message, lang_tgt='te')
                 except Exception as e:
-                    print(f"Emergency translation error: {e}")
-                    traceback.print_exc()
+                    pass  # Use English if translation fails
             return jsonify({"reply": emergency_message})
 
-        bot_text = ""
-        # Priority-ordered checks (mutually exclusive via elif)
-        # 1) Mental health
-        mental_keywords = ["stress", "anxious", "depressed", "sad", "low mood"]
-        if any(k in user_input_en.lower() for k in mental_keywords):
+        # Mental health check
+        if any(word.lower() in user_input_en.lower() for word in ["stress", "anxious", "depressed", "sad", "low mood"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
                 "The user is feeling stressed or anxious. "
@@ -259,14 +240,20 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text or "Sorry — I couldn't generate a response right now."
+                bot_text = response.text
             except Exception as e:
-                print(f"AI response error (mental): {e}")
-                traceback.print_exc()
+                print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 2) Nutrition & lifestyle
-        elif any(word in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
+            
+        if lang == "te":
+            try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                    pass  # Use English if translation fails
+            return jsonify({"reply": bot_text})
+        
+        # Nutrition and lifestyle check
+        if any(word.lower() in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
                 "The user asked about nutrition or healthy lifestyle. "
@@ -277,14 +264,20 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text or "Sorry — I couldn't generate a response right now."
+                bot_text = response.text
             except Exception as e:
-                print(f"AI response error (nutrition): {e}")
-                traceback.print_exc()
+                print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+            
+        if lang == "te":
+            try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                    pass
+            return jsonify({"reply": bot_text})
 
-        # 3) Quiz or tips request
-        elif "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
+        # Quiz and tips check
+        if "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
             prompt = (
                 "You are HealthBot. Provide a **new health quiz question or tip** for the user. "
                 "Keep it engaging, educational, and safe. "
@@ -294,67 +287,81 @@ def ask():
             )
             try:
                 response = chat.send_message(prompt)
-                bot_text = response.text or "Sorry — I couldn't generate a response right now."
+                bot_text = response.text
             except Exception as e:
-                print(f"AI response error (quiz/tip): {e}")
-                traceback.print_exc()
+                print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 4) Medicine info
-        elif any(word in user_input_en.lower() for word in ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]):
-            prompt = (
+            
+        if lang == "te":
+            try:
+                    bot_text = translator.translate(bot_text, lang_tgt='te')
+            except Exception as e:
+                    pass
+            return jsonify({"reply": bot_text})
+        
+        # Medicine info check
+        medicine_keywords = ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]
+        if any(word.lower() in user_input_en.lower() for word in medicine_keywords):
+            disclaimer = (
                 "You are HealthBot, a friendly AI assistant. "
-                "The user is asking about a medicine. "
-                "Provide general information about the medicine: common uses, typical dosage ranges (if applicable), common side effects, and precautions. "
-                "Keep answers concise (1-2 sentences per item) and include the disclaimer: 'This is general advice, not a substitute for professional help.'"
-                f"\nUser question: {user_input_en}"
+                "The user is asking about an medicine. "
+                "Provide **uses , information of the medicine**, each 1-2 sentences. "
+                "Do not repeat previous information. "
+                "Add a friendly tone and include a disclaimer: "
+                "'This is general advice, not a substitute for professional help.'"
+            )
+            formatted_input = (
+                f"{disclaimer}\n\n"
+                f"User question: {user_input_en}\n"
+                "Instructions: Provide general info about the medicine, including uses, common dosage ranges, side effects, and precautions."
             )
             try:
-                response = chat.send_message(prompt)
-                bot_text = response.text or "Sorry — I couldn't generate a response right now."
+                response = chat.send_message(formatted_input)
+                bot_text = response.text
             except Exception as e:
-                print(f"AI response error (medicine): {e}")
-                traceback.print_exc()
+                print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
-        # 5) Symptom checker
-        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever", "headache", "cough", "nausea", "fatigue"]):
-            prompt = (
+        # Symptom checker
+        elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever","headache","cough","nausea","fatigue"]):
+            disclaimer = (
                 "You are HealthBot, a friendly AI assistant. "
-                "The user described symptoms and wants possible causes and safe home remedies. "
-                "Provide a short list of possible general causes (not diagnoses) and safe at-home measures they can try. "
-                "Add the disclaimer: 'This is general advice, not a substitute for professional help.'"
-                f"\nUser symptoms: {user_input_en}"
+                "The user is asking about an medicine. "
+                "Provide **uses , information of the diseases regarding the symptoms** based on the input, each 1-2 sentences. "
+                "Do not repeat previous information. "
+                "Add a friendly tone and include a disclaimer: "
+                "'This is general advice, not a substitute for professional help.'"
+            )
+            formatted_input = (
+                f"{disclaimer}\n\n"
+                f"User symptoms: {user_input_en}\n"
+                "Instructions: Suggest possible general causes and safe home remedies."
             )
             try:
-                response = chat.send_message(prompt)
-                bot_text = response.text or "Sorry — I couldn't generate a response right now."
+                response = chat.send_message(formatted_input)
+                bot_text = response.text
             except Exception as e:
-                print(f"AI response error (symptoms): {e}")
-                traceback.print_exc()
+                print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
-        # 6) Default fallback chat — use system instruction
+        # Default chat
         else:
             formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
             try:
                 response = chat.send_message(formatted_input)
-                bot_text = response.text or "Sorry — I couldn't generate a response right now."
+                bot_text = response.text
             except Exception as e:
-                print(f"AI response error (default): {e}")
-                traceback.print_exc()
+                print(f"AI response error: {e}")
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
 
-        # Translate bot_text to Telugu if needed (done once at end)
+        # Translate back to Telugu if needed
         if lang == "te":
             try:
                 bot_text = translator.translate(bot_text, lang_tgt='te')
             except Exception as e:
-                print(f"Translation error (to te): {e}")
-                traceback.print_exc()
-                # keep English if translation fails
+                print(f"Translation error: {e}")
+                # Keep English text if translation fails
 
-        # Log the conversation (edit or new message)
         if edit_id:
             update_log(edit_id, user_input, bot_text)
         else:
@@ -364,7 +371,7 @@ def ask():
 
     except Exception as e:
         print(f"Error in ask route: {e}")
-        traceback.print_exc()
+        print(traceback.format_exc())
         return jsonify({"reply": "I'm sorry, I'm experiencing technical difficulties. Please try again later."}), 500
     
 def save_message(user_input, bot_text):
@@ -479,7 +486,7 @@ def delete_emergency_contact(index):
 
 @app.route("/saveappointment", methods=["POST"])
 def saveappointment():
-    data = load_user_data()
+    data = load_userdata()
     appointment = request.json
     if "appointments" not in data:
         data["appointments"] = []
@@ -487,7 +494,7 @@ def saveappointment():
     import uuid
     appointment["id"] = str(uuid.uuid4())
     data["appointments"].append(appointment)
-    save_user_data(data)
+    save_userdata(data)
     return jsonify({"status": "success", "message": "Appointment added!"})
 
 def find_appointment_index_by_id(appointments, appt_id):
@@ -496,27 +503,28 @@ def find_appointment_index_by_id(appointments, appt_id):
             return idx
     return None
 
+
 @app.route("/updateappointment/<appt_id>", methods=["PUT"])
 def updateappointment(appt_id):
-    data = load_user_data()
+    data = load_userdata()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
     if idx is not None:
         updated_appointment = request.json
         updated_appointment["id"] = appt_id  # Preserve id
         appointments[idx] = updated_appointment
-        save_user_data(data)
+        save_userdata(data)
         return jsonify({"status": "success", "message": "Appointment updated."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
 @app.route("/deleteappointment/<appt_id>", methods=["DELETE"])
 def deleteappointment(appt_id):
-    data = load_user_data()
+    data = load_userdata()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
     if idx is not None:
         appointments.pop(idx)
-        save_user_data(data)
+        save_userdata(data)
         return jsonify({"status": "success", "message": "Appointment deleted."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 

@@ -1468,11 +1468,11 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
   <h2 class="text-lg font-semibold">Chat</h2>
   <div class="flex gap-2">
     <button id="historyBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition">
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
         📜 Chat History
     </button>
     <button id="clearChatBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition"
+            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition"
             title="Start a new chat">
         🆕 New Chat
     </button>
@@ -2250,11 +2250,11 @@ class EmergencyPage {
         this.renderContacts();
 
         // In EmergencyPage init()
-        document.getElementById('emergencyForm').addEventListener("submit", async e => {
-            e.preventDefault();
-            await this.saveContact();
-        });
-        
+    document.getElementById('emergencyForm').addEventListener("submit", async e => {
+        e.preventDefault();
+        await this.saveContact();
+    });
+
         // ✅ Prevent double binding
         const form = document.getElementById('emergencyForm');
         if (!form.dataset.bound) {
@@ -2815,31 +2815,24 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (e) { console.error(e); }
   });
 
-  // New Chat/Clear Chat button
-document.getElementById('clearChatBtn').onclick = async function(ev) {
+  bindOnceByCloning("clearChatBtn", async (ev) => {
     const btn = ev.currentTarget;
     if (btn.disabled) return;
     btn.disabled = true;
     try {
-        const ok = confirm("Start a new chat? All previous messages will be cleared.");
-        if (!ok) return;
-        const data = await app.apiCall("clearchat", "POST");
-        if (data.status === "success") {
-            document.getElementById("chatMessages").innerHTML = "";
-            const history = await app.apiCall("getchathistory", "GET");
-            if (history.status === "success") {
-                history.history.forEach(item => {
-                    if (item.bot) app.addMessage(item.bot, "bot");
-                });
-            }
+      const ok = confirm("Start a new chat? All previous messages will be cleared.");
+      if (!ok) return;
+      const data = await app.apiCall("/clear_chat", "POST");
+      if (data.status === "success") {
+        if (chatMessages) chatMessages.innerHTML = "";
+        const history = await app.apiCall("/get_chat_history", "GET");
+        if (history.status === "success") {
+          history.history.forEach(item => { if (item.bot) app.addMessage(item.bot, "bot"); });
         }
-    } catch (e) {
-        console.error(e);
-    } finally {
-        btn.disabled = false;
-    }
-};
-
+      }
+    } catch (e) { console.error(e); }
+    finally { btn.disabled = false; }
+  });
 });
 </script>
 </body>
