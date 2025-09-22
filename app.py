@@ -5,6 +5,7 @@ from google_trans_new import google_translator
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
+import uuid
 
 USER_DATA_FILE = "user_data.json" # Use a single, consistent filename
 
@@ -486,28 +487,26 @@ def delete_emergency_contact(index):
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
 
-@app.route("/saveappointment", methods=["POST"])
-def saveappointment():
+# Helper to find appointment by its UUID
+def find_appointment_index_by_id(appointments, appt_id):
+    for idx, appt in enumerate(appointments):
+        if appt.get("id") == appt_id:
+            return idx
+    return None
+
+@app.route("/save_appointment", methods=["POST"])
+def save_appointment():
     data = load_user_data()
     appointment = request.json
     if "appointments" not in data:
         data["appointments"] = []
-    # ADD THIS: Generate unique id
-    import uuid
     appointment["id"] = str(uuid.uuid4())
     data["appointments"].append(appointment)
     save_user_data(data)
-    return jsonify({"status": "success", "message": "Appointment added!"})
+    return jsonify({"status": "success", "message": "Appointment added!", "appointment": appointment})
 
-def find_appointment_index_by_id(appointments, appt_id):
-    for idx, appt in enumerate(appointments):
-        if "id" in appt and appt["id"] == appt_id:
-            return idx
-    return None
-
-
-@app.route("/updateappointment/<appt_id>", methods=["PUT"])
-def updateappointment(appt_id):
+@app.route("/update_appointment/<appt_id>", methods=["PUT"])
+def update_appointment(appt_id):
     data = load_user_data()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
@@ -519,8 +518,8 @@ def updateappointment(appt_id):
         return jsonify({"status": "success", "message": "Appointment updated."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
-@app.route("/deleteappointment/<appt_id>", methods=["DELETE"])
-def deleteappointment(appt_id):
+@app.route("/delete_appointment/<appt_id>", methods=["DELETE"])
+def delete_appointment(appt_id):
     data = load_user_data()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)

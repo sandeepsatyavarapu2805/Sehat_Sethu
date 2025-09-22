@@ -1429,193 +1429,398 @@ async deleteAppointment(id) {
 // Base URL for API calls
 const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real Render URL
 
-class ChatPage {
+        // --- Chat Page ---
+        class ChatPage {
             render() {
                 return `
                     <div class="chat-container" id="chatContainer">
-                        <div id="mainChatInterface">
-                            <div class="flex justify-between items-center mb-2 px-2 gap-2">
-                                <h2 class="text-lg font-semibold">Chat</h2>
-                                <div class="flex gap-2">
-                                    <button id="historyBtn" class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
-                                        📜 Chat History
-                                    </button>
-                                    <button id="clearChatBtn" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg shadow transition" title="Start a new chat">
-                                        🆕 New Chat
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="chat-messages" id="chatMessages"></div>
-                            <div class="chat-input-container">
-                                <form class="chat-input-form" id="chatForm">
-                                    <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
-                                    <button type="submit" class="chat-send-btn" id="chatSendBtn">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
 
-                        <div id="chatHistoryPage" class="hidden p-4">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-semibold">Chat History</h2>
-                                <button id="clearHistoryBtn" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm rounded shadow">
-                                    🗑 Clear All History
+<!-- Chat History Page (hidden by default) -->
+<div id="chatHistoryPage" class="hidden">
+    <div class="history-container p-4 max-w-3xl mx-auto">
+        <!-- Header with title and Clear History button -->
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Chat History</h2>
+            <button id="clearHistoryBtn"
+                    class="px-4 py-2 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white text-sm rounded shadow transition duration-200">
+                🗑 Clear History
+            </button>
+        </div>
+
+        <!-- Chat messages container -->
+        <div id="chatHistory" class="space-y-2 overflow-y-auto max-h-[70vh] border p-2 rounded bg-gray-50 dark:bg-gray-800">
+            <!-- Messages will be inserted here dynamically -->
+        </div>
+
+        <button id="backToChatBtn"
+                class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow">
+            ← Back to Chat
+        </button>
+    </div>
+</div>
+
+<!-- Main Chat Header -->
+<div class="flex justify-between items-center mb-2 px-2 gap-2">
+  <h2 class="text-lg font-semibold">Chat</h2>
+  <div class="flex gap-2">
+    <button id="historyBtn" 
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition">
+        📜 Chat History
+    </button>
+    <button id="clearChatBtn" 
+            class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg shadow transition"
+            title="Start a new chat">
+        🆕 New Chat
+    </button>
+  </div>
+</div>
+
+                        <div class="chat-messages" id="chatMessages"></div>
+
+                        <div class="chat-input-container">
+                            <form class="chat-input-form" id="chatForm">
+                                <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
+                                <button type="button" class="chat-send-btn" id="voiceBtn" title="Start voice input">
+                                    <i class="fas fa-microphone"></i>
                                 </button>
-                            </div>
-                            <div id="chatHistory" class="space-y-2 overflow-y-auto max-h-[70vh] border p-2 rounded bg-gray-50 dark:bg-gray-800"></div>
-                            <button id="backToChatBtn" class="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded shadow">
-                                ← Back to Chat
-                            </button>
+                                <button type="button" class="chat-send-btn" id="imageBtn" title="Upload image for text extraction">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <button type="submit" class="chat-send-btn" id="chatSendBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 `;
             }
 
-            addMessage(text, sender, timestamp = null) {
-                const chatMessages = document.getElementById('chatMessages');
-                if (!chatMessages) return;
-                const messageDiv = document.createElement('div');
-                const parsedText = sender === 'bot' ? marked.parse(text) : text;
-                const timeString = timestamp ? new Date(timestamp).toLocaleTimeString() : new Date().toLocaleTimeString();
-                messageDiv.className = `message ${sender}`;
-                messageDiv.innerHTML = `
-                    <div class="message-avatar">
-                        <i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i>
-                    </div>
-                    <div class="message-content">
-                        <div class="message-text">${parsedText}</div>
-                        <div class="message-time">${timeString}</div>
-                    </div>
-                `;
-                chatMessages.appendChild(messageDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
+addMessage(text, sender, timestamp = null) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    const id = Date.now(); // unique ID
 
-            addThinkingIndicator() {
-                const chatMessages = document.getElementById('chatMessages');
-                const thinkingDiv = document.createElement('div');
-                thinkingDiv.className = 'message bot';
-                thinkingDiv.innerHTML = `
-                    <div class="message-avatar"><i class="fas fa-robot"></i></div>
-                    <div class="message-content">
-                        <div class="thinking-indicator">
-                            <span>HealthBot is thinking</span>
-                            <div class="thinking-dots"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div>
-                        </div>
-                    </div>
-                `;
-                chatMessages.appendChild(thinkingDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                return thinkingDiv;
-            }
+    messageDiv.className = `message ${sender}`;
+    messageDiv.dataset.id = id;
 
-            async init() {
-                const chatMessages = document.getElementById('chatMessages');
-                chatMessages.innerHTML = ''; // Clear previous messages to prevent duplication
-                
-                try {
-                    const data = await app.apiCall("/get_chat_history");
-                    if (data && data.history) {
-                        data.history.forEach(item => {
-                            if (item.user) this.addMessage(item.user, "user", item.timestamp);
-                            if (item.bot) this.addMessage(item.bot, "bot", item.timestamp);
-                        });
+    // ✅ If bot → render Markdown
+    const parsedText = sender === 'bot' ? marked.parse(text) : text;
+
+    // ✅ Use backend timestamp if provided, otherwise fallback to now
+    const timeString = timestamp
+        ? new Date(timestamp).toLocaleString()
+        : new Date().toLocaleTimeString();
+
+    messageDiv.innerHTML = `
+        <div class="message-avatar">
+            <i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'}"></i>
+        </div>
+        <div class="message-content">
+            <div class="message-text">${parsedText}</div>
+            <div class="message-time">${timeString}</div>
+            ${sender === 'user' ? `<button class="edit-btn">✎ Edit</button>` : ''}
+        </div>
+    `;
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+async init() {
+    // Guard: prevent double-initialization when the page is re-rendered
+    if (this.bound) return;
+    this.bound = true;
+
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const imageBtn = document.getElementById('imageBtn');
+
+    // Hidden file input for image selection (create if missing)
+    let imageInput = document.getElementById('imageInput');
+    if (!imageInput) {
+        imageInput = document.createElement('input');
+        imageInput.type = 'file';
+        imageInput.accept = 'image/*';
+        imageInput.id = 'imageInput';
+        imageInput.style.display = 'none';
+        document.body.appendChild(imageInput);
+    }
+
+    // Voice input binding (guarded)
+    try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            if (voiceBtn) {
+                voiceBtn.disabled = true;
+                voiceBtn.title = 'Voice input not supported in this browser';
+            }
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = true;
+            recognition.continuous = false;
+
+            let isListening = false;
+            let interim = '';
+            let finalTranscript = '';
+
+            const setListeningUi = (listening) => {
+                if (!voiceBtn) return;
+                const icon = voiceBtn.querySelector('i');
+                if (listening) {
+                    voiceBtn.style.background = 'linear-gradient(135deg, #ef4444, #f59e0b)';
+                    voiceBtn.title = 'Listening... click to stop';
+                    if (icon) icon.className = 'fas fa-microphone-slash';
+                } else {
+                    voiceBtn.style.background = '';
+                    voiceBtn.title = 'Start voice input';
+                    if (icon) icon.className = 'fas fa-microphone';
+                }
+            };
+
+            if (voiceBtn && !voiceBtn.dataset.bound) {
+                voiceBtn.addEventListener('click', () => {
+                    if (!isListening) {
+                        finalTranscript = '';
+                        interim = '';
+                        try { recognition.start(); } catch (_) {}
+                    } else {
+                        try { recognition.stop(); } catch (_) {}
                     }
-                } catch (error) {
-                    app.showNotification("Failed to load chat history.", "error");
-                }
-
-                // --- Bind Events Only Once ---
-                const chatForm = document.getElementById('chatForm');
-                if (!chatForm.dataset.bound) {
-                    chatForm.dataset.bound = 'true';
-                    chatForm.addEventListener('submit', async (e) => {
-                        e.preventDefault();
-                        const chatInput = document.getElementById('chatInput');
-                        const message = chatInput.value.trim();
-                        if (!message) return;
-
-                        this.addMessage(message, 'user');
-                        chatInput.value = '';
-                        chatInput.style.height = 'auto';
-
-                        const thinkingDiv = this.addThinkingIndicator();
-                        try {
-                            const response = await app.apiCall('/ask', 'POST', { message });
-                            thinkingDiv.remove();
-                            this.addMessage(response.reply, 'bot');
-                        } catch {
-                            thinkingDiv.remove();
-                            this.addMessage('Sorry, an error occurred.', 'bot');
-                        }
-                    });
-                }
-                
-                const clearChatBtn = document.getElementById('clearChatBtn');
-                if (!clearChatBtn.dataset.bound) {
-                    clearChatBtn.dataset.bound = 'true';
-                    clearChatBtn.addEventListener('click', async () => {
-                        app.showModal('New Chat', 'Are you sure you want to clear the current conversation and start a new one?', async (confirmed) => {
-                            if (confirmed) {
-                                await app.apiCall('/clear_chat', 'POST');
-                                chatMessages.innerHTML = ''; // Clear UI
-                                const data = await app.apiCall("/get_chat_history"); // Get initial greeting
-                                if (data && data.history) {
-                                     data.history.forEach(item => {
-                                        if (item.bot) this.addMessage(item.bot, "bot", item.timestamp);
-                                     });
-                                }
-                                app.showNotification('New chat started!', 'success');
-                            }
-                        });
-                    });
-                }
-                
-                // --- History Page Logic ---
-                const historyBtn = document.getElementById('historyBtn');
-                const chatHistoryPage = document.getElementById('chatHistoryPage');
-                const mainChatInterface = document.getElementById('mainChatInterface');
-
-                const showHistoryPage = async () => {
-                    mainChatInterface.classList.add('hidden');
-                    chatHistoryPage.classList.remove('hidden');
-                    const chatHistoryDiv = document.getElementById("chatHistory");
-                    chatHistoryDiv.innerHTML = 'Loading history...';
-                    try {
-                        const response = await app.apiCall("/get_chat_history");
-                        chatHistoryDiv.innerHTML = ''; // Clear loading message
-                        if (response.history && response.history.length > 0) {
-                            response.history.forEach(item => {
-                                if (item.user) chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2"><strong>User:</strong> ${item.user}</div>`;
-                                if (item.bot) chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2"><strong>Bot:</strong> ${marked.parse(item.bot)}</div>`;
-                            });
-                        } else {
-                            chatHistoryDiv.innerHTML = '<p>No history found.</p>';
-                        }
-                    } catch (e) {
-                        chatHistoryDiv.innerHTML = '<p class="text-red-500">Failed to load history.</p>';
-                    }
-                };
-
-                const showMainChat = () => {
-                    mainChatInterface.classList.remove('hidden');
-                    chatHistoryPage.classList.add('hidden');
-                };
-
-                if (!historyBtn.dataset.bound) {
-                    historyBtn.dataset.bound = 'true';
-                    historyBtn.addEventListener('click', showHistoryPage);
-                }
-                
-                const backToChatBtn = document.getElementById('backToChatBtn');
-                if (!backToChatBtn.dataset.bound) {
-                    backToChatBtn.dataset.bound = 'true';
-                    backToChatBtn.addEventListener('click', showMainChat);
-                }
+                });
+                voiceBtn.dataset.bound = 'true';
             }
+
+            recognition.onstart = () => {
+                isListening = true;
+                setListeningUi(true);
+            };
+
+            recognition.onerror = (e) => {
+                isListening = false;
+                setListeningUi(false);
+                app.showNotification('Voice input error: ' + (e.error || 'unknown'), 'error');
+            };
+
+            recognition.onresult = (event) => {
+                interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const res = event.results[i];
+                    if (res.isFinal) {
+                        finalTranscript += res[0].transcript;
+                    } else {
+                        interim += res[0].transcript;
+                    }
+                }
+                const combined = (finalTranscript + ' ' + interim).trim();
+                if (chatInput) {
+                    chatInput.value = combined;
+                    chatInput.dispatchEvent(new Event('input'));
+                }
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                setListeningUi(false);
+                if (chatInput && chatInput.value.trim()) chatInput.focus();
+            };
         }
+    } catch (_) {
+        if (voiceBtn) {
+            voiceBtn.disabled = true;
+            voiceBtn.title = 'Voice input unavailable';
+        }
+    }
 
+    // Image upload binding (guarded)
+    if (imageBtn && !imageBtn.dataset.bound) {
+        imageBtn.addEventListener('click', () => imageInput.click());
+        imageBtn.dataset.bound = 'true';
+    }
+    if (!imageInput.dataset.bound) {
+        imageInput.addEventListener('change', async () => {
+            const file = imageInput.files && imageInput.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                app.showNotification('Please select an image file.', 'error');
+                imageInput.value = '';
+                return;
+            }
+            const thinkingDiv = this.addThinkingIndicator();
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                thinkingDiv.remove();
+                const text = data.text || 'No text detected.';
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
+                    this.addMessage(preview, 'bot');
+                };
+                reader.readAsDataURL(file);
+            } catch (e) {
+                thinkingDiv.remove();
+                this.addMessage('Sorry, I could not extract text from that image.', 'bot');
+            } finally {
+                imageInput.value = '';
+            }
+        });
+        imageInput.dataset.bound = 'true';
+    }
+
+    // Load chat history once (clear DOM first to avoid duplicates)
+    try {
+        if (chatMessages) chatMessages.innerHTML = '';
+        const data = await app.apiCall("/get_chat_history", "GET");
+        if (data && data.status === "success" && Array.isArray(data.history)) {
+            data.history.forEach(item => {
+                if (item.user) this.addMessage(item.user, "user", item.time || item.timestamp || null);
+                if (item.bot) this.addMessage(item.bot, "bot", item.time || item.timestamp || null);
+            });
+        }
+    } catch {
+        app.showNotification("Failed to load history", "error");
+    }
+
+    // Auto-resize (guarded)
+    if (chatInput && !chatInput.dataset.boundInput) {
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        chatInput.dataset.boundInput = 'true';
+    }
+
+    // Submit handler (guarded)
+    if (chatForm && !chatForm.dataset.bound) {
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = (chatInput && chatInput.value || '').trim();
+            if (!message) return;
+
+            this.addMessage(message, 'user');
+            if (chatInput) {
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+            }
+
+            const thinkingDiv = this.addThinkingIndicator();
+            try {
+                const response = await app.apiCall(`/ask`, 'POST', { message });
+                thinkingDiv.remove();
+                this.addMessage(response.reply, 'bot');
+            } catch {
+                thinkingDiv.remove();
+                this.addMessage('Sorry, an error occurred. Please try again.', 'bot');
+            }
+        });
+        chatForm.dataset.bound = 'true';
+    }
+
+    // Edit button delegation (guarded)
+    if (chatMessages && !chatMessages.dataset.editBound) {
+        chatMessages.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                const messageDiv = e.target.closest('.message');
+                if (!messageDiv) return;
+                const messageTextEl = messageDiv.querySelector('.message-text');
+                const oldText = messageTextEl ? messageTextEl.innerText : '';
+                const editId = messageDiv.dataset.id;
+
+                const newText = prompt('Edit your message:', oldText);
+                if (newText == null) return;
+                if (messageTextEl) messageTextEl.innerText = newText;
+
+                app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
+                    .then(data => {
+                        let next = messageDiv.nextElementSibling;
+                        while (next) {
+                            const toRemove = next;
+                            next = next.nextElementSibling;
+                            toRemove.remove();
+                        }
+                        if (data && data.reply) this.addMessage(data.reply, 'bot');
+                    })
+                    .catch(() => {
+                        app.showNotification("Edit failed. Please try again.", "error");
+                    });
+            }
+        });
+        chatMessages.dataset.editBound = 'true';
+    }
+
+    // Back and history buttons (guarded)
+    const backBtn = document.getElementById("backToChatBtn");
+    if (backBtn && !backBtn.dataset.bound) {
+        backBtn.addEventListener("click", () => {
+            const historyPage = document.getElementById("chatHistoryPage");
+            const chatContainer = document.getElementById("chatContainer");
+            if (historyPage) historyPage.classList.add("hidden");
+            if (chatContainer) chatContainer.classList.remove("hidden");
+        });
+        backBtn.dataset.bound = 'true';
+    }
+
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+    if (clearHistoryBtn && !clearHistoryBtn.dataset.bound) {
+        clearHistoryBtn.addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to clear all chat history?")) return;
+            try {
+                const response = await app.apiCall("/clear_chat_history", "POST");
+                if (response && response.status === "success") {
+                    const chatHistoryDiv = document.getElementById("chatHistory");
+                    if (chatHistoryDiv) chatHistoryDiv.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
+                    if (chatMessages) chatMessages.innerHTML = '';
+                } else {
+                    app.showNotification("Failed to clear chat history.", "error");
+                }
+            } catch {
+                app.showNotification("Failed to clear chat history.", "error");
+            }
+        });
+        clearHistoryBtn.dataset.bound = 'true';
+    }
+
+    const historyBtn = document.getElementById('historyBtn');
+    if (historyBtn && !historyBtn.dataset.bound) {
+        historyBtn.addEventListener('click', async () => {
+            const historyPage = document.getElementById("chatHistoryPage");
+            const chatContainer = document.getElementById("chatContainer");
+            if (historyPage) historyPage.classList.remove("hidden");
+            if (chatContainer) chatContainer.classList.add("hidden");
+            await loadChatHistory();
+        });
+        historyBtn.dataset.bound = 'true';
+    }
+
+    // local helper to load history (kept inside init for access)
+    async function loadChatHistory() {
+        const chatHistoryDiv = document.getElementById("chatHistory");
+        if (!chatHistoryDiv) return;
+        chatHistoryDiv.innerHTML = "";
+        try {
+            const response = await app.apiCall("/get_chat_history", "GET");
+            if (response && response.status === "success" && Array.isArray(response.history)) {
+                response.history.forEach(item => {
+                    if (item.user) {
+                        chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2"><div class="font-semibold text-blue-800 dark:text-blue-200">User:</div><div>${item.user}</div><div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div></div>`;
+                    }
+                    if (item.bot) {
+                        chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2"><div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div><div>${item.bot}</div><div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div></div>`;
+                    }
+                });
+            }
+        } catch {
+            chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
+        }
+    }
+}
+}
         // --- Profile Page ---
         class ProfilePage {
             render() {
