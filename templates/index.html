@@ -2570,37 +2570,38 @@ class AppointmentsPage {
     });
 
     // Helper: render booked appointments
+// Appointments render function (in AppointmentsPage)
 function renderAppointments() {
+    const list = document.getElementById('appointmentsList');
     list.innerHTML = '';
     if (app.data.appointments.length === 0) {
         list.innerHTML = '<p class="text-center text-gray-500">No appointments yet.</p>';
         return;
     }
-
-    app.data.appointments.forEach((a, i) => {
+    app.data.appointments.forEach(a => {
         const item = document.createElement('div');
         item.className = "data-item";
+        item.dataset.id = a.id; // Store UUID
         item.innerHTML = `
-            <div class="data-item-content">
-                <h4 class="data-item-title">${a.doctor_name} (${a.specialty})</h4>
-                <p class="data-item-subtitle">Time: ${a.time}</p>
-            </div>
-            <div class="data-item-actions">
-                <button class="btn btn-danger btn-sm" data-index="${i}">Delete</button>
-            </div>
+          <div class="data-item-content">
+            <h4 class="data-item-title">${a.doctorname} (${a.specialty})</h4>
+            <p class="data-item-subtitle">Time: ${a.time}</p>
+          </div>
+          <div class="data-item-actions">
+            <button class="btn btn-danger btn-sm delete-btn" data-id="${a.id}">Delete</button>
+          </div>
         `;
         list.appendChild(item);
     });
-
-    list.querySelectorAll('.btn-danger').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-            const index = e.target.dataset.index;
-            await app.deleteAppointment(index);
+    list.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.onclick = async e => {
+            const id = btn.dataset.id;
+            await app.deleteAppointment(id); // send UUID, not index
             renderAppointments();
-        });
+        };
     });
-}}
-}
+}}}
+
 // --- Wellness Page ---
 class WellnessPage {
     render() {
