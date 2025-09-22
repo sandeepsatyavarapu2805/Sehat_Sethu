@@ -1224,16 +1224,19 @@
                 }
             }
 
-            // Save emergency contact
-            async saveEmergencyContact(contactData) {
-                try {
-                    await this.apiCall('/save_emergency_contact', 'POST', contactData);
-                    this.data.emergency_contacts.push(contactData);
-                    this.showNotification('Emergency contact added successfully!', 'success');
-                } catch (error) {
-                    console.error('Error saving emergency contact:', error);
-                }
-            }
+// Save emergency contact — send to backend, then reload authoritative list
+async saveEmergencyContact(contactData) {
+    try {
+        const res = await this.apiCall('/save_emergency_contact', 'POST', contactData);
+        // Refresh full data from server so UI is authoritative and no duplicates occur
+        await this.loadData();
+        this.showNotification('Emergency contact added successfully!', 'success');
+        return res;
+    } catch (error) {
+        console.error('Error saving emergency contact:', error);
+        throw error;
+    }
+}
 
             // Update emergency contact
             async updateEmergencyContact(index, contactData) {
@@ -1260,45 +1263,38 @@
 // Save appointment
 async saveAppointment(appointmentData) {
     try {
-        // Save to backend, receive full appointment details including generated ID from server
-        const response = await this.apiCall('/saveappointment', 'POST', appointmentData);
-        // Push server-returned appointment with correct ID
-        this.data.appointments.push({
-            ...appointmentData,
-            id: response.id  // Save the UUID from the backend
-        });
+        const res = await this.apiCall('/save_appointment', 'POST', appointmentData);
+        // reload authoritative data (backend returns canonical list or id)
+        await this.loadData();
         this.showNotification('Appointment added successfully!', 'success');
+        return res;
     } catch (error) {
         console.error('Error saving appointment:', error);
+        throw error;
     }
 }
 
 // Update appointment
 async updateAppointment(id, appointmentData) {
     try {
-        // Pass correct UUID, not index!
-        await this.apiCall(`/updateappointment/${id}`, 'PUT', appointmentData);
-        // Update by id locally
-        const idx = this.data.appointments.findIndex(a => a.id === id);
-        if (idx > -1) {
-            this.data.appointments[idx] = { ...appointmentData, id };
-        }
+        await this.apiCall(`/update_appointment/${id}`, 'PUT', appointmentData);
+        await this.loadData();
         this.showNotification('Appointment updated successfully!', 'success');
     } catch (error) {
         console.error('Error updating appointment:', error);
+        throw error;
     }
 }
 
 // Delete appointment
 async deleteAppointment(id) {
     try {
-        // Pass correct UUID, not index!
-        await this.apiCall(`/deleteappointment/${id}`, 'DELETE');
-        // Remove by id locally
-        this.data.appointments = this.data.appointments.filter(a => a.id !== id);
+        await this.apiCall(`/delete_appointment/${id}`, 'DELETE');
+        await this.loadData();
         this.showNotification('Appointment deleted successfully!', 'success');
     } catch (error) {
         console.error('Error deleting appointment:', error);
+        throw error;
     }
 }
 
@@ -1531,12 +1527,17 @@ addMessage(text, sender, timestamp = null) {
 }
 
 async init() {
+    // Guard: prevent double-initialization when the page is re-rendered
+    if (this.bound) return;
+    this.bound = true;
+
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
     const voiceBtn = document.getElementById('voiceBtn');
     const imageBtn = document.getElementById('imageBtn');
-    // Hidden file input for image selection
+
+    // Hidden file input for image selection (create if missing)
     let imageInput = document.getElementById('imageInput');
     if (!imageInput) {
         imageInput = document.createElement('input');
@@ -1547,7 +1548,7 @@ async init() {
         document.body.appendChild(imageInput);
     }
 
-    // --- Voice input (Web Speech API) ---
+    // Voice input binding (guarded)
     try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
@@ -1614,18 +1615,16 @@ async init() {
                     }
                 }
                 const combined = (finalTranscript + ' ' + interim).trim();
-                chatInput.value = combined;
-                // Trigger auto-resize behavior
-                chatInput.dispatchEvent(new Event('input'));
+                if (chatInput) {
+                    chatInput.value = combined;
+                    chatInput.dispatchEvent(new Event('input'));
+                }
             };
 
             recognition.onend = () => {
                 isListening = false;
                 setListeningUi(false);
-                // Keep text in box for user to edit/send
-                if (chatInput && chatInput.value.trim()) {
-                    chatInput.focus();
-                }
+                if (chatInput && chatInput.value.trim()) chatInput.focus();
             };
         }
     } catch (_) {
@@ -1635,72 +1634,80 @@ async init() {
         }
     }
 
-    // --- Image to Text (OCR via backend) ---
+    // Image upload binding (guarded)
     if (imageBtn && !imageBtn.dataset.bound) {
         imageBtn.addEventListener('click', () => imageInput.click());
         imageBtn.dataset.bound = 'true';
     }
+    if (!imageInput.dataset.bound) {
+        imageInput.addEventListener('change', async () => {
+            const file = imageInput.files && imageInput.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                app.showNotification('Please select an image file.', 'error');
+                imageInput.value = '';
+                return;
+            }
+            const thinkingDiv = this.addThinkingIndicator();
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                thinkingDiv.remove();
+                const text = data.text || 'No text detected.';
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
+                    this.addMessage(preview, 'bot');
+                };
+                reader.readAsDataURL(file);
+            } catch (e) {
+                thinkingDiv.remove();
+                this.addMessage('Sorry, I could not extract text from that image.', 'bot');
+            } finally {
+                imageInput.value = '';
+            }
+        });
+        imageInput.dataset.bound = 'true';
+    }
 
-    if (!imageInput.dataset.bound) imageInput.addEventListener('change', async () => {
-        const file = imageInput.files && imageInput.files[0];
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            app.showNotification('Please select an image file.', 'error');
-            return;
-        }
-        const thinkingDiv = this.addThinkingIndicator();
-        try {
-            const formData = new FormData();
-            formData.append('image', file);
-            const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            thinkingDiv.remove();
-            const text = data.text || 'No text detected.';
-            // Show a small preview and the extracted text
-            const reader = new FileReader();
-            reader.onload = () => {
-                const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
-                this.addMessage(preview, 'bot');
-            };
-            reader.readAsDataURL(file);
-        } catch (e) {
-            thinkingDiv.remove();
-            this.addMessage('Sorry, I could not extract text from that image.', 'bot');
-        } finally {
-            imageInput.value = '';
-        }
-    }); imageInput.dataset.bound = 'true';
-
-    // --- Load chat history on page load ---
+    // Load chat history once (clear DOM first to avoid duplicates)
     try {
+        if (chatMessages) chatMessages.innerHTML = '';
         const data = await app.apiCall("/get_chat_history", "GET");
-        if (data.status === "success") {
+        if (data && data.status === "success" && Array.isArray(data.history)) {
             data.history.forEach(item => {
-                if(item.user) this.addMessage(item.user, "user");
-                if(item.bot) this.addMessage(item.bot, "bot");
+                if (item.user) this.addMessage(item.user, "user", item.time || item.timestamp || null);
+                if (item.bot) this.addMessage(item.bot, "bot", item.time || item.timestamp || null);
             });
         }
     } catch {
         app.showNotification("Failed to load history", "error");
     }
 
-    // --- Auto-resize textarea ---
-    chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-    });
+    // Auto-resize (guarded)
+    if (chatInput && !chatInput.dataset.boundInput) {
+        chatInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+        chatInput.dataset.boundInput = 'true';
+    }
 
-    // --- Send message (guard against double-binding) ---
+    // Submit handler (guarded)
     if (chatForm && !chatForm.dataset.bound) {
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const message = chatInput.value.trim();
+            const message = (chatInput && chatInput.value || '').trim();
             if (!message) return;
 
             this.addMessage(message, 'user');
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
+            if (chatInput) {
+                chatInput.value = '';
+                chatInput.style.height = 'auto';
+            }
 
             const thinkingDiv = this.addThinkingIndicator();
             try {
@@ -1715,92 +1722,103 @@ async init() {
         chatForm.dataset.bound = 'true';
     }
 
-    // --- Edit user messages ---
-    chatMessages.addEventListener('click', (e) => {
-        if (e.target.classList.contains('edit-btn')) {
-            const messageDiv = e.target.closest('.message');
-            const messageText = messageDiv.querySelector('.message-text');
-            const oldText = messageText.innerText;
-            const editId = messageDiv.dataset.id;
+    // Edit button delegation (guarded)
+    if (chatMessages && !chatMessages.dataset.editBound) {
+        chatMessages.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                const messageDiv = e.target.closest('.message');
+                if (!messageDiv) return;
+                const messageTextEl = messageDiv.querySelector('.message-text');
+                const oldText = messageTextEl ? messageTextEl.innerText : '';
+                const editId = messageDiv.dataset.id;
 
-            const newText = prompt('Edit your message:', oldText);
-            if (!newText) return;
+                const newText = prompt('Edit your message:', oldText);
+                if (newText == null) return;
+                if (messageTextEl) messageTextEl.innerText = newText;
 
-            messageText.innerText = newText;
+                app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
+                    .then(data => {
+                        let next = messageDiv.nextElementSibling;
+                        while (next) {
+                            const toRemove = next;
+                            next = next.nextElementSibling;
+                            toRemove.remove();
+                        }
+                        if (data && data.reply) this.addMessage(data.reply, 'bot');
+                    })
+                    .catch(() => {
+                        app.showNotification("Edit failed. Please try again.", "error");
+                    });
+            }
+        });
+        chatMessages.dataset.editBound = 'true';
+    }
 
-            app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
-                .then(data => {
-                    // Remove all messages after this one
-                    let next = messageDiv.nextElementSibling;
-                    while (next) {
-                        const toRemove = next;
-                        next = next.nextElementSibling;
-                        toRemove.remove();
+    // Back and history buttons (guarded)
+    const backBtn = document.getElementById("backToChatBtn");
+    if (backBtn && !backBtn.dataset.bound) {
+        backBtn.addEventListener("click", () => {
+            const historyPage = document.getElementById("chatHistoryPage");
+            const chatContainer = document.getElementById("chatContainer");
+            if (historyPage) historyPage.classList.add("hidden");
+            if (chatContainer) chatContainer.classList.remove("hidden");
+        });
+        backBtn.dataset.bound = 'true';
+    }
+
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+    if (clearHistoryBtn && !clearHistoryBtn.dataset.bound) {
+        clearHistoryBtn.addEventListener("click", async () => {
+            if (!confirm("Are you sure you want to clear all chat history?")) return;
+            try {
+                const response = await app.apiCall("/clear_chat_history", "POST");
+                if (response && response.status === "success") {
+                    const chatHistoryDiv = document.getElementById("chatHistory");
+                    if (chatHistoryDiv) chatHistoryDiv.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
+                    if (chatMessages) chatMessages.innerHTML = '';
+                } else {
+                    app.showNotification("Failed to clear chat history.", "error");
+                }
+            } catch {
+                app.showNotification("Failed to clear chat history.", "error");
+            }
+        });
+        clearHistoryBtn.dataset.bound = 'true';
+    }
+
+    const historyBtn = document.getElementById('historyBtn');
+    if (historyBtn && !historyBtn.dataset.bound) {
+        historyBtn.addEventListener('click', async () => {
+            const historyPage = document.getElementById("chatHistoryPage");
+            const chatContainer = document.getElementById("chatContainer");
+            if (historyPage) historyPage.classList.remove("hidden");
+            if (chatContainer) chatContainer.classList.add("hidden");
+            await loadChatHistory();
+        });
+        historyBtn.dataset.bound = 'true';
+    }
+
+    // local helper to load history (kept inside init for access)
+    async function loadChatHistory() {
+        const chatHistoryDiv = document.getElementById("chatHistory");
+        if (!chatHistoryDiv) return;
+        chatHistoryDiv.innerHTML = "";
+        try {
+            const response = await app.apiCall("/get_chat_history", "GET");
+            if (response && response.status === "success" && Array.isArray(response.history)) {
+                response.history.forEach(item => {
+                    if (item.user) {
+                        chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2"><div class="font-semibold text-blue-800 dark:text-blue-200">User:</div><div>${item.user}</div><div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div></div>`;
                     }
-                    // Add fresh bot reply
-                    this.addMessage(data.reply, 'bot');
-                })
-                .catch(() => {
-                    app.showNotification("Edit failed. Please try again.", "error");
+                    if (item.bot) {
+                        chatHistoryDiv.innerHTML += `<div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2"><div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div><div>${item.bot}</div><div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div></div>`;
+                    }
                 });
+            }
+        } catch {
+            chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
         }
-    });
-
-
-    // --- Back to Chat page ---
-    document.getElementById("backToChatBtn").addEventListener("click", () => {
-        document.getElementById("chatHistoryPage").classList.add("hidden"); // hide history
-        document.getElementById("chatContainer").classList.remove("hidden"); // show main chat
-    });
-    // --- Load chat history dynamically ---
-async function loadChatHistory() {
-    const chatHistoryDiv = document.getElementById("chatHistory");
-    chatHistoryDiv.innerHTML = ""; // clear old messages
-
-    try {
-        const response = await app.apiCall("/get_chat_history", "GET");
-        if (response.status === "success") {
-            response.history.forEach(item => {
-                if (item.user) {
-                    chatHistoryDiv.innerHTML += `
-                        <div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2">
-                            <div class="font-semibold text-blue-800 dark:text-blue-200">User:</div>
-                            <div>${item.user}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
-                        </div>
-                    `;
-                }
-                if (item.bot) {
-                    chatHistoryDiv.innerHTML += `
-                        <div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2">
-                            <div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div>
-                            <div>${item.bot}</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
-                        </div>
-                    `;
-                }
-            });
-        }
-    } catch {
-        chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
     }
-}
-
-document.getElementById("clearHistoryBtn").addEventListener("click", async () => {
-    if (!confirm("Are you sure you want to clear all chat history?")) return;
-
-    try {
-        const response = await app.apiCall("/clear_chat_history", "POST");
-        if (response.status === "success") {
-            document.getElementById("chatHistory").innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
-        } else {
-            app.showNotification("Failed to clear chat history.", "error");
-        }
-    } catch {
-        app.showNotification("Failed to clear chat history.", "error");
-    }
-});
-
 }
 
             addThinkingIndicator() {
@@ -2245,48 +2263,47 @@ class EmergencyPage {
         `;
     }
 
-    async init() {
-        await app.loadData();
-        this.renderContacts();
+async init() {
+    await app.loadData();
+    this.renderContacts();
 
-        // In EmergencyPage init()
-    document.getElementById('emergencyForm').addEventListener("submit", async e => {
-        e.preventDefault();
-        await this.saveContact();
-    });
+    // Guard: bind the emergency form submit once
+    const form = document.getElementById('emergencyForm');
+    if (form && !form.dataset.bound) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.saveContact();
+        });
+        form.dataset.bound = "true";
+    }
 
-        // ✅ Prevent double binding
-        const form = document.getElementById('emergencyForm');
-        if (!form.dataset.bound) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                await this.saveContact();
-            });
-            form.dataset.bound = "true";
-        }
-
-        document.getElementById('addEmergencyField').addEventListener('click', () => {
+    // Bind Add Field button once
+    const addFieldBtn = document.getElementById('addEmergencyField');
+    if (addFieldBtn && !addFieldBtn.dataset.bound) {
+        addFieldBtn.addEventListener('click', () => {
             this.addCustomField();
         });
-
-        // ✅ Event delegation for edit/delete
-        const container = document.getElementById('emergencyList');
-        if (!container.dataset.bound) {
-            container.addEventListener('click', (e) => {
-                const item = e.target.closest('.data-item');
-                if (!item) return;
-                const index = parseInt(item.dataset.index);
-
-                if (e.target.closest('.edit-btn')) {
-                    this.editContact(index);
-                }
-                if (e.target.closest('.delete-btn')) {
-                    this.deleteContact(index);
-                }
-            });
-            container.dataset.bound = "true";
-        }
+        addFieldBtn.dataset.bound = 'true';
     }
+
+    // Event delegation for edit/delete — bind once
+    const container = document.getElementById('emergencyList');
+    if (container && !container.dataset.bound) {
+        container.addEventListener('click', (e) => {
+            const item = e.target.closest('.data-item');
+            if (!item) return;
+            const index = parseInt(item.dataset.index, 10);
+
+            if (e.target.closest('.edit-btn')) {
+                this.editContact(index);
+            }
+            if (e.target.closest('.delete-btn')) {
+                this.deleteContact(index);
+            }
+        });
+        container.dataset.bound = "true";
+    }
+}
 
     renderContacts() {
         const container = document.getElementById('emergencyList');
