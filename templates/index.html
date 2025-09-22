@@ -1224,16 +1224,17 @@
                 }
             }
 
-// Save emergency contact
-async saveEmergencyContact(contactData) {
-    try {
-        await this.apiCall('/save_emergency_contact', 'POST', contactData);
-        await this.loadData(); // ✅ reload fresh list from backend
-        this.showNotification('Emergency contact added successfully!', 'success');
-    } catch (error) {
-        console.error('Error saving emergency contact:', error);
-    }
-}
+            // Save emergency contact
+            async saveEmergencyContact(contactData) {
+                try {
+                    await this.apiCall('/save_emergency_contact', 'POST', contactData);
+                    this.data.emergency_contacts.push(contactData);
+                    this.showNotification('Emergency contact added successfully!', 'success');
+                } catch (error) {
+                    console.error('Error saving emergency contact:', error);
+                }
+            }
+
             // Update emergency contact
             async updateEmergencyContact(index, contactData) {
                 try {
@@ -1259,8 +1260,13 @@ async saveEmergencyContact(contactData) {
 // Save appointment
 async saveAppointment(appointmentData) {
     try {
-        const response = await this.apiCall('/save_appointment', 'POST', appointmentData);
-        await this.loadData(); // ✅ reload from backend to get generated UUID
+        // Save to backend, receive full appointment details including generated ID from server
+        const response = await this.apiCall('/saveappointment', 'POST', appointmentData);
+        // Push server-returned appointment with correct ID
+        this.data.appointments.push({
+            ...appointmentData,
+            id: response.id  // Save the UUID from the backend
+        });
         this.showNotification('Appointment added successfully!', 'success');
     } catch (error) {
         console.error('Error saving appointment:', error);
@@ -1270,8 +1276,13 @@ async saveAppointment(appointmentData) {
 // Update appointment
 async updateAppointment(id, appointmentData) {
     try {
-        await this.apiCall(`/update_appointment/${id}`, 'PUT', appointmentData);
-        await this.loadData(); // ✅ ensures UI is in sync
+        // Pass correct UUID, not index!
+        await this.apiCall(`/updateappointment/${id}`, 'PUT', appointmentData);
+        // Update by id locally
+        const idx = this.data.appointments.findIndex(a => a.id === id);
+        if (idx > -1) {
+            this.data.appointments[idx] = { ...appointmentData, id };
+        }
         this.showNotification('Appointment updated successfully!', 'success');
     } catch (error) {
         console.error('Error updating appointment:', error);
@@ -1281,8 +1292,10 @@ async updateAppointment(id, appointmentData) {
 // Delete appointment
 async deleteAppointment(id) {
     try {
-        await this.apiCall(`/delete_appointment/${id}`, 'DELETE');
-        await this.loadData(); // ✅ ensures list refreshes correctly
+        // Pass correct UUID, not index!
+        await this.apiCall(`/deleteappointment/${id}`, 'DELETE');
+        // Remove by id locally
+        this.data.appointments = this.data.appointments.filter(a => a.id !== id);
         this.showNotification('Appointment deleted successfully!', 'success');
     } catch (error) {
         console.error('Error deleting appointment:', error);
@@ -1455,11 +1468,11 @@ const BASE_URL = "https://sehat-sethu-2.onrender.com"; // replace with your real
   <h2 class="text-lg font-semibold">Chat</h2>
   <div class="flex gap-2">
     <button id="historyBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition">
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition">
         📜 Chat History
     </button>
     <button id="clearChatBtn" 
-            class="flex items-center gap-2 px-4 py-2 bg-gray-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition"
+            class="flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-blue-600 text-white text-sm font-medium rounded-lg shadow transition"
             title="Start a new chat">
         🆕 New Chat
     </button>

@@ -476,38 +476,41 @@ def delete_emergency_contact(index):
         return jsonify({"status": "success", "message": "Emergency contact deleted."})
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
+
+@app.route("/saveappointment", methods=["POST"])
+def saveappointment():
+    data = load_user_data()
+    appointment = request.json
+    if "appointments" not in data:
+        data["appointments"] = []
+    # ADD THIS: Generate unique id
+    import uuid
+    appointment["id"] = str(uuid.uuid4())
+    data["appointments"].append(appointment)
+    save_user_data(data)
+    return jsonify({"status": "success", "message": "Appointment added!"})
+
 def find_appointment_index_by_id(appointments, appt_id):
     for idx, appt in enumerate(appointments):
         if "id" in appt and appt["id"] == appt_id:
             return idx
     return None
 
-@app.route("/save_appointment", methods=["POST"])
-def save_appointment():
-    data = load_user_data()
-    appointment = request.json or {}
-    if "appointments" not in data:
-        data["appointments"] = []
-    appointment["id"] = str(uuid.uuid4())
-    data["appointments"].append(appointment)
-    save_user_data(data)
-    return jsonify({"status": "success", "message": "Appointment added!"})
-
-@app.route("/update_appointment/<appt_id>", methods=["PUT"])
-def update_appointment(appt_id):
+@app.route("/updateappointment/<appt_id>", methods=["PUT"])
+def updateappointment(appt_id):
     data = load_user_data()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
     if idx is not None:
-        updated_appointment = request.json or {}
+        updated_appointment = request.json
         updated_appointment["id"] = appt_id  # Preserve id
         appointments[idx] = updated_appointment
         save_user_data(data)
         return jsonify({"status": "success", "message": "Appointment updated."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
-@app.route("/delete_appointment/<appt_id>", methods=["DELETE"])
-def delete_appointment(appt_id):
+@app.route("/deleteappointment/<appt_id>", methods=["DELETE"])
+def deleteappointment(appt_id):
     data = load_user_data()
     appointments = data.get("appointments", [])
     idx = find_appointment_index_by_id(appointments, appt_id)
@@ -604,6 +607,8 @@ def get_weather_tip():
         print(f"Error fetching weather data: {e}")
         return jsonify({"tip": tips['default']}), 500
 
+
+
 @app.route("/find_doctors", methods=["GET"])
 def find_doctors():
     """Find doctors by specialty and optional location query params.
@@ -688,11 +693,6 @@ def image_to_text():
     except Exception as e:
         print(f"/image_to_text error: {e}")
         return jsonify({"error": "Failed to process image"}), 500
-    
-@app.route("/clear_chat_history", methods=["POST"])
-def clear_chat_history():
-    # reuse the same behavior as /clear_chat
-    return clear_chat()
 
 # ---------------------------
 # Run
