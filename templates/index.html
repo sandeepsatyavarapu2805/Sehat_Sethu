@@ -1518,17 +1518,12 @@ addMessage(text, sender, timestamp = null) {
 }
 
 async init() {
-    // Guard: prevent double-initialization when the page is re-rendered
-    if (this.bound) return;
-    this.bound = true;
-
     const chatForm = document.getElementById('chatForm');
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
     const voiceBtn = document.getElementById('voiceBtn');
     const imageBtn = document.getElementById('imageBtn');
-
-    // Hidden file input for image selection (create if missing)
+    // Hidden file input for image selection
     let imageInput = document.getElementById('imageInput');
     if (!imageInput) {
         imageInput = document.createElement('input');
@@ -1571,7 +1566,6 @@ async init() {
                 }
             };
 
-            // Bind voice button once
             if (voiceBtn && !voiceBtn.dataset.bound) {
                 voiceBtn.addEventListener('click', () => {
                     if (!isListening) {
@@ -1607,16 +1601,15 @@ async init() {
                     }
                 }
                 const combined = (finalTranscript + ' ' + interim).trim();
-                if (chatInput) {
-                    chatInput.value = combined;
-                    // Trigger auto-resize behavior
-                    chatInput.dispatchEvent(new Event('input'));
-                }
+                chatInput.value = combined;
+                // Trigger auto-resize behavior
+                chatInput.dispatchEvent(new Event('input'));
             };
 
             recognition.onend = () => {
                 isListening = false;
                 setListeningUi(false);
+                // Keep text in box for user to edit/send
                 if (chatInput && chatInput.value.trim()) {
                     chatInput.focus();
                 }
@@ -1635,50 +1628,44 @@ async init() {
         imageBtn.dataset.bound = 'true';
     }
 
-    if (!imageInput.dataset.bound) {
-        imageInput.addEventListener('change', async () => {
-            const file = imageInput.files && imageInput.files[0];
-            if (!file) return;
-            if (!file.type.startsWith('image/')) {
-                app.showNotification('Please select an image file.', 'error');
-                imageInput.value = '';
-                return;
-            }
-            const thinkingDiv = this.addThinkingIndicator();
-            try {
-                const formData = new FormData();
-                formData.append('image', file);
-                const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const data = await res.json();
-                thinkingDiv.remove();
-                const text = data.text || 'No text detected.';
-                const reader = new FileReader();
-                reader.onload = () => {
-                    const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
-                    this.addMessage(preview, 'bot');
-                };
-                reader.readAsDataURL(file);
-            } catch (e) {
-                thinkingDiv.remove();
-                this.addMessage('Sorry, I could not extract text from that image.', 'bot');
-            } finally {
-                imageInput.value = '';
-            }
-        });
-        imageInput.dataset.bound = 'true';
-    }
+    if (!imageInput.dataset.bound) imageInput.addEventListener('change', async () => {
+        const file = imageInput.files && imageInput.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            app.showNotification('Please select an image file.', 'error');
+            return;
+        }
+        const thinkingDiv = this.addThinkingIndicator();
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const res = await fetch(`${BASE_URL}/image_to_text`, { method: 'POST', body: formData });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            thinkingDiv.remove();
+            const text = data.text || 'No text detected.';
+            // Show a small preview and the extracted text
+            const reader = new FileReader();
+            reader.onload = () => {
+                const preview = `<div><img src="${reader.result}" alt="uploaded" style="max-width:160px;border-radius:8px;margin-bottom:8px;border:1px solid var(--border-light);"/></div>${text}`;
+                this.addMessage(preview, 'bot');
+            };
+            reader.readAsDataURL(file);
+        } catch (e) {
+            thinkingDiv.remove();
+            this.addMessage('Sorry, I could not extract text from that image.', 'bot');
+        } finally {
+            imageInput.value = '';
+        }
+    }); imageInput.dataset.bound = 'true';
 
-    // --- Load chat history on page load (clear first to avoid duplicates) ---
+    // --- Load chat history on page load ---
     try {
-        // Clear current DOM messages to avoid duplicates
-        if (chatMessages) chatMessages.innerHTML = '';
-
         const data = await app.apiCall("/get_chat_history", "GET");
-        if (data && data.status === "success" && Array.isArray(data.history)) {
+        if (data.status === "success") {
             data.history.forEach(item => {
-                if (item.user) this.addMessage(item.user, "user", item.timestamp || null);
-                if (item.bot) this.addMessage(item.bot, "bot", item.timestamp || null);
+                if(item.user) this.addMessage(item.user, "user");
+                if(item.bot) this.addMessage(item.bot, "bot");
             });
         }
     } catch {
@@ -1686,26 +1673,21 @@ async init() {
     }
 
     // --- Auto-resize textarea ---
-    if (chatInput && !chatInput.dataset.boundInput) {
-        chatInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        });
-        chatInput.dataset.boundInput = 'true';
-    }
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
 
     // --- Send message (guard against double-binding) ---
     if (chatForm && !chatForm.dataset.bound) {
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const message = (chatInput && chatInput.value || '').trim();
+            const message = chatInput.value.trim();
             if (!message) return;
 
             this.addMessage(message, 'user');
-            if (chatInput) {
-                chatInput.value = '';
-                chatInput.style.height = 'auto';
-            }
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
 
             const thinkingDiv = this.addThinkingIndicator();
             try {
@@ -1720,122 +1702,92 @@ async init() {
         chatForm.dataset.bound = 'true';
     }
 
-    // --- Edit user messages (delegated, safe to bind once) ---
-    if (chatMessages && !chatMessages.dataset.editBound) {
-        chatMessages.addEventListener('click', (e) => {
-            if (e.target.classList.contains('edit-btn')) {
-                const messageDiv = e.target.closest('.message');
-                if (!messageDiv) return;
-                const messageTextEl = messageDiv.querySelector('.message-text');
-                const oldText = messageTextEl ? messageTextEl.innerText : '';
-                const editId = messageDiv.dataset.id;
+    // --- Edit user messages ---
+    chatMessages.addEventListener('click', (e) => {
+        if (e.target.classList.contains('edit-btn')) {
+            const messageDiv = e.target.closest('.message');
+            const messageText = messageDiv.querySelector('.message-text');
+            const oldText = messageText.innerText;
+            const editId = messageDiv.dataset.id;
 
-                const newText = prompt('Edit your message:', oldText);
-                if (newText == null) return; // user cancelled
-                if (messageTextEl) messageTextEl.innerText = newText;
+            const newText = prompt('Edit your message:', oldText);
+            if (!newText) return;
 
-                app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
-                    .then(data => {
-                        // Remove all messages after this one
-                        let next = messageDiv.nextElementSibling;
-                        while (next) {
-                            const toRemove = next;
-                            next = next.nextElementSibling;
-                            toRemove.remove();
-                        }
-                        // Add fresh bot reply
-                        if (data && data.reply) this.addMessage(data.reply, 'bot');
-                    })
-                    .catch(() => {
-                        app.showNotification("Edit failed. Please try again.", "error");
-                    });
-            }
-        });
-        chatMessages.dataset.editBound = 'true';
-    }
+            messageText.innerText = newText;
 
-    // --- Back to Chat page (history view) ---
-    const backBtn = document.getElementById("backToChatBtn");
-    if (backBtn && !backBtn.dataset.bound) {
-        backBtn.addEventListener("click", () => {
-            const historyPage = document.getElementById("chatHistoryPage");
-            const chatContainer = document.getElementById("chatContainer");
-            if (historyPage) historyPage.classList.add("hidden");
-            if (chatContainer) chatContainer.classList.remove("hidden");
-        });
-        backBtn.dataset.bound = 'true';
-    }
-
-    // --- Load chat history dynamically (function is safe to re-run) ---
-    async function loadChatHistory() {
-        const chatHistoryDiv = document.getElementById("chatHistory");
-        if (!chatHistoryDiv) return;
-        chatHistoryDiv.innerHTML = ""; // clear old messages
-
-        try {
-            const response = await app.apiCall("/get_chat_history", "GET");
-            if (response && response.status === "success" && Array.isArray(response.history)) {
-                response.history.forEach(item => {
-                    if (item.user) {
-                        chatHistoryDiv.innerHTML += `
-                            <div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2">
-                                <div class="font-semibold text-blue-800 dark:text-blue-200">User:</div>
-                                <div>${item.user}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
-                            </div>
-                        `;
+            app.apiCall(`/ask`, "POST", { message: newText, edit_id: editId })
+                .then(data => {
+                    // Remove all messages after this one
+                    let next = messageDiv.nextElementSibling;
+                    while (next) {
+                        const toRemove = next;
+                        next = next.nextElementSibling;
+                        toRemove.remove();
                     }
-                    if (item.bot) {
-                        chatHistoryDiv.innerHTML += `
-                            <div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2">
-                                <div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div>
-                                <div>${item.bot}</div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
-                            </div>
-                        `;
-                    }
+                    // Add fresh bot reply
+                    this.addMessage(data.reply, 'bot');
+                })
+                .catch(() => {
+                    app.showNotification("Edit failed. Please try again.", "error");
                 });
-            }
-        } catch {
-            chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
         }
-    }
+    });
 
-    // Bind clear history button once
-    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
-    if (clearHistoryBtn && !clearHistoryBtn.dataset.bound) {
-        clearHistoryBtn.addEventListener("click", async () => {
-            if (!confirm("Are you sure you want to clear all chat history?")) return;
-            try {
-                const response = await app.apiCall("/clear_chat_history", "POST");
-                if (response && response.status === "success") {
-                    const chatHistoryDiv = document.getElementById("chatHistory");
-                    if (chatHistoryDiv) chatHistoryDiv.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
-                    // Clear the on-screen chat messages too
-                    if (chatMessages) chatMessages.innerHTML = '';
-                } else {
-                    app.showNotification("Failed to clear chat history.", "error");
+
+    // --- Back to Chat page ---
+    document.getElementById("backToChatBtn").addEventListener("click", () => {
+        document.getElementById("chatHistoryPage").classList.add("hidden"); // hide history
+        document.getElementById("chatContainer").classList.remove("hidden"); // show main chat
+    });
+    // --- Load chat history dynamically ---
+async function loadChatHistory() {
+    const chatHistoryDiv = document.getElementById("chatHistory");
+    chatHistoryDiv.innerHTML = ""; // clear old messages
+
+    try {
+        const response = await app.apiCall("/get_chat_history", "GET");
+        if (response.status === "success") {
+            response.history.forEach(item => {
+                if (item.user) {
+                    chatHistoryDiv.innerHTML += `
+                        <div class="p-2 rounded border bg-blue-100 dark:bg-blue-900 mb-2">
+                            <div class="font-semibold text-blue-800 dark:text-blue-200">User:</div>
+                            <div>${item.user}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
+                        </div>
+                    `;
                 }
-            } catch {
-                app.showNotification("Failed to clear chat history.", "error");
-            }
-        });
-        clearHistoryBtn.dataset.bound = 'true';
+                if (item.bot) {
+                    chatHistoryDiv.innerHTML += `
+                        <div class="p-2 rounded border bg-gray-100 dark:bg-gray-700 mb-2">
+                            <div class="font-semibold text-gray-800 dark:text-gray-200">Bot:</div>
+                            <div>${item.bot}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">${item.time || ''}</div>
+                        </div>
+                    `;
+                }
+            });
+        }
+    } catch {
+        chatHistoryDiv.innerHTML = `<p class="text-red-500">Failed to load chat history.</p>`;
     }
+}
 
-    // If you want the loadChatHistory button to refresh dynamically, bind the historyBtn here once
-    const historyBtn = document.getElementById('historyBtn');
-    if (historyBtn && !historyBtn.dataset.bound) {
-        historyBtn.addEventListener('click', async () => {
-            // show history view
-            const historyPage = document.getElementById("chatHistoryPage");
-            const chatContainer = document.getElementById("chatContainer");
-            if (historyPage) historyPage.classList.remove("hidden");
-            if (chatContainer) chatContainer.classList.add("hidden");
-            await loadChatHistory();
-        });
-        historyBtn.dataset.bound = 'true';
+document.getElementById("clearHistoryBtn").addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to clear all chat history?")) return;
+
+    try {
+        const response = await app.apiCall("/clear_chat_history", "POST");
+        if (response.status === "success") {
+            document.getElementById("chatHistory").innerHTML = `<p class="text-gray-500 dark:text-gray-400">No chat history.</p>`;
+        } else {
+            app.showNotification("Failed to clear chat history.", "error");
+        }
+    } catch {
+        app.showNotification("Failed to clear chat history.", "error");
     }
+});
+
 }
 
             addThinkingIndicator() {
@@ -2280,38 +2232,47 @@ class EmergencyPage {
         `;
     }
 
-
     async init() {
-        if (this.bound) return; // ✅ prevent multiple bindings
+        await app.loadData();
+        this.renderContacts();
 
-        const addBtn = document.getElementById("addContactBtn");
-        if (addBtn) {
-            addBtn.addEventListener("click", async () => {
-                const form = document.getElementById("emergencyForm");
-                const data = Object.fromEntries(new FormData(form).entries());
-                await app.saveEmergencyContact(data);
-                await this.renderContacts(); // refresh list
+        // In EmergencyPage init()
+        document.getElementById('emergencyForm').addEventListener("submit", async e => {
+            e.preventDefault();
+            await this.saveContact();
+        });
+        
+        // ✅ Prevent double binding
+        const form = document.getElementById('emergencyForm');
+        if (!form.dataset.bound) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await this.saveContact();
             });
+            form.dataset.bound = "true";
         }
 
-        this.bound = true;
-    }
-
-    async renderContacts() {
-        // ✅ reload and display emergency contacts
-        await app.loadData();
-        const list = document.getElementById("emergencyContactsList");
-        if (!list) return;
-        list.innerHTML = "";
-        app.data.emergency_contacts.forEach((c, i) => {
-            const item = document.createElement("div");
-            item.className = "data-item";
-            item.innerHTML = `<div class="data-item-content">
-                                <p class="data-item-title">${c.name || "Unnamed"}</p>
-                                <p class="data-item-subtitle">${c.phone || ""}</p>
-                              </div>`;
-            list.appendChild(item);
+        document.getElementById('addEmergencyField').addEventListener('click', () => {
+            this.addCustomField();
         });
+
+        // ✅ Event delegation for edit/delete
+        const container = document.getElementById('emergencyList');
+        if (!container.dataset.bound) {
+            container.addEventListener('click', (e) => {
+                const item = e.target.closest('.data-item');
+                if (!item) return;
+                const index = parseInt(item.dataset.index);
+
+                if (e.target.closest('.edit-btn')) {
+                    this.editContact(index);
+                }
+                if (e.target.closest('.delete-btn')) {
+                    this.deleteContact(index);
+                }
+            });
+            container.dataset.bound = "true";
+        }
     }
 
     renderContacts() {
