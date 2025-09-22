@@ -476,26 +476,11 @@ def delete_emergency_contact(index):
         return jsonify({"status": "success", "message": "Emergency contact deleted."})
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
-
-@app.route("/saveappointment", methods=["POST"])
-def saveappointment():
-    data = load_user_data()
-    appointment = request.json
-    if "appointments" not in data:
-        data["appointments"] = []
-    # ADD THIS: Generate unique id
-    import uuid
-    appointment["id"] = str(uuid.uuid4())
-    data["appointments"].append(appointment)
-    save_user_data(data)
-    return jsonify({"status": "success", "message": "Appointment added!"})
-
 def find_appointment_index_by_id(appointments, appt_id):
     for idx, appt in enumerate(appointments):
         if "id" in appt and appt["id"] == appt_id:
             return idx
     return None
-
 
 @app.route("/save_appointment", methods=["POST"])
 def save_appointment():
