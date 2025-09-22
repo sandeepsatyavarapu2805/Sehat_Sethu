@@ -6,6 +6,22 @@ from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
 
+import uuid
+USERDATAFILE = "userdata.json"
+
+def load_userdata():
+    if os.path.exists(USERDATAFILE):
+        try:
+            with open(USERDATAFILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            pass
+    return {"profile": {}, "appointments": [], "emergencycontacts": [], "medications": []}
+
+def save_userdata(data):
+    with open(USERDATAFILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+
 # Initialize translator
 translator = google_translator()
 
@@ -468,37 +484,47 @@ def delete_emergency_contact(index):
     return jsonify({"status": "error", "message": "Emergency contact not found."}), 404
 
 
-@app.route("/save_appointment", methods=["POST"])
-def save_appointment():
-    """Adds a new appointment."""
-    data = load_user_data()
+@app.route("/saveappointment", methods=["POST"])
+def saveappointment():
+    data = load_userdata()
     appointment = request.json
     if "appointments" not in data:
         data["appointments"] = []
+    # ADD THIS: Generate unique id
+    import uuid
+    appointment["id"] = str(uuid.uuid4())
     data["appointments"].append(appointment)
-    save_user_data(data)
+    save_userdata(data)
     return jsonify({"status": "success", "message": "Appointment added!"})
 
+def find_appointment_index_by_id(appointments, appt_id):
+    for idx, appt in enumerate(appointments):
+        if "id" in appt and appt["id"] == appt_id:
+            return idx
+    return None
 
-@app.route("/update_appointment/<int:index>", methods=["PUT"])
-def update_appointment(index):
-    """Updates an existing appointment by its index."""
-    data = load_user_data()
-    updated_appointment = request.json
-    if 0 <= index < len(data.get("appointments", [])):
-        data["appointments"][index] = updated_appointment
-        save_user_data(data)
+
+@app.route("/updateappointment/<appt_id>", methods=["PUT"])
+def updateappointment(appt_id):
+    data = load_userdata()
+    appointments = data.get("appointments", [])
+    idx = find_appointment_index_by_id(appointments, appt_id)
+    if idx is not None:
+        updated_appointment = request.json
+        updated_appointment["id"] = appt_id  # Preserve id
+        appointments[idx] = updated_appointment
+        save_userdata(data)
         return jsonify({"status": "success", "message": "Appointment updated."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
-
-@app.route("/delete_appointment/<int:index>", methods=["DELETE"])
-def delete_appointment(index):
-    """Deletes an appointment by its index."""
-    data = load_user_data()
-    if 0 <= index < len(data.get("appointments", [])):
-        data["appointments"].pop(index)
-        save_user_data(data)
+@app.route("/deleteappointment/<appt_id>", methods=["DELETE"])
+def deleteappointment(appt_id):
+    data = load_userdata()
+    appointments = data.get("appointments", [])
+    idx = find_appointment_index_by_id(appointments, appt_id)
+    if idx is not None:
+        appointments.pop(idx)
+        save_userdata(data)
         return jsonify({"status": "success", "message": "Appointment deleted."})
     return jsonify({"status": "error", "message": "Appointment not found."}), 404
 
