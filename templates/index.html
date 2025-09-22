@@ -2249,6 +2249,12 @@ class EmergencyPage {
         await app.loadData();
         this.renderContacts();
 
+        // In EmergencyPage init()
+        document.getElementById('emergencyForm').addEventListener("submit", async e => {
+            e.preventDefault();
+            await this.saveContact();
+        });
+        
         // ✅ Prevent double binding
         const form = document.getElementById('emergencyForm');
         if (!form.dataset.bound) {
@@ -2344,32 +2350,30 @@ class EmergencyPage {
         container.appendChild(fieldDiv);
     }
 
-    async saveContact() {
-        const contactData = {
-            name: document.getElementById('contactName').value,
-            phone: document.getElementById('contactPhone').value
-        };
-
-        if (!contactData.name || !contactData.phone) {
-            app.showNotification('Please fill in name and phone number.', 'error');
-            return;
-        }
-
-        // Add custom fields
-        const customFields = document.querySelectorAll('#emergencyCustomFields .form-grid');
-        customFields.forEach(field => {
-            const keyInput = field.querySelector('input:nth-of-type(1)');
-            const valueInput = field.querySelector('input:nth-of-type(2)');
-            if (keyInput.value && valueInput.value) {
-                contactData[keyInput.value] = valueInput.value;
-            }
-        });
-
-        await app.saveEmergencyContact(contactData);
-        document.getElementById('emergencyForm').reset();
-        document.getElementById('emergencyCustomFields').innerHTML = '';
-        this.renderContacts();
+// Emergency Contact add function (in EmergencyPage)
+async saveContact() {
+    const contactData = {
+        name: document.getElementById('contactName').value,
+        phone: document.getElementById('contactPhone').value
+    };
+    if (!contactData.name || !contactData.phone) {
+        app.showNotification("Please fill in name and phone number.", "error");
+        return;
     }
+    // Add custom fields
+    const customFields = document.querySelectorAll("#emergencyCustomFields .form-grid");
+    customFields.forEach(field => {
+        const keyInput = field.querySelector("input:nth-of-type(1)");
+        const valueInput = field.querySelector("input:nth-of-type(2)");
+        if (keyInput.value && valueInput.value) {
+            contactData[keyInput.value] = valueInput.value;
+        }
+    });
+    await app.saveEmergencyContact(contactData);
+    document.getElementById('emergencyForm').reset();
+    document.getElementById('emergencyCustomFields').innerHTML = '';
+    this.renderContacts();
+}
 
     async editContact(index) {
         const contact = app.data.emergency_contacts[index];
@@ -2811,24 +2815,31 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (e) { console.error(e); }
   });
 
-  bindOnceByCloning("clearChatBtn", async (ev) => {
+  // New Chat/Clear Chat button
+document.getElementById('clearChatBtn').onclick = async function(ev) {
     const btn = ev.currentTarget;
     if (btn.disabled) return;
     btn.disabled = true;
     try {
-      const ok = confirm("Start a new chat? All previous messages will be cleared.");
-      if (!ok) return;
-      const data = await app.apiCall("/clear_chat", "POST");
-      if (data.status === "success") {
-        if (chatMessages) chatMessages.innerHTML = "";
-        const history = await app.apiCall("/get_chat_history", "GET");
-        if (history.status === "success") {
-          history.history.forEach(item => { if (item.bot) app.addMessage(item.bot, "bot"); });
+        const ok = confirm("Start a new chat? All previous messages will be cleared.");
+        if (!ok) return;
+        const data = await app.apiCall("clearchat", "POST");
+        if (data.status === "success") {
+            document.getElementById("chatMessages").innerHTML = "";
+            const history = await app.apiCall("getchathistory", "GET");
+            if (history.status === "success") {
+                history.history.forEach(item => {
+                    if (item.bot) app.addMessage(item.bot, "bot");
+                });
+            }
         }
-      }
-    } catch (e) { console.error(e); }
-    finally { btn.disabled = false; }
-  });
+    } catch (e) {
+        console.error(e);
+    } finally {
+        btn.disabled = false;
+    }
+};
+
 });
 </script>
 </body>
