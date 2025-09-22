@@ -1282,7 +1282,7 @@
             // Delete appointment
             async deleteAppointment(index) {
                 try {
-                    await this.apiCall(`/delete_appointment/${index}`, 'DELETE');
+                    await this.apiCall(`/delete_appointment/${appointment.id}`, "DELETE");
                     this.data.appointments.splice(index, 1);
                     this.showNotification('Appointment deleted successfully!', 'success');
                 } catch (error) {
