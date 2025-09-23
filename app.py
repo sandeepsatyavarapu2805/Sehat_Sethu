@@ -571,7 +571,6 @@ def clear_chat():
         history = [{
             "id": str(datetime.datetime.now().timestamp()),
             "user": "",
-            "bot": greeting,
             "timestamp": datetime.datetime.now().isoformat()
         }]
 
