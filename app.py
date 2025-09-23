@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory
 import google.generativeai as genai
 import os, json, datetime
-from google.cloud import translate_v2 as translate
+from google.cloud import translate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
@@ -37,7 +37,7 @@ if not os.path.exists(LOG_FILE):
         json.dump([], f)
 
 # Initialize translator
-translate_client = translate()
+translate_client = translate.Client()
 
 # Initialize Flask
 app = Flask(__name__, static_folder='static')
