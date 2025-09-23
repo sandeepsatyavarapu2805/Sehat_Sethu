@@ -1046,7 +1046,7 @@
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <img src="assets/logo.jpeg" alt="Chatbot Logo" class="sidebar-header .logo img">
+                <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Sehat Sethu Logo" class="h-8 w-auto">
                 <h1>Sehat Sethu</h1>
             </div>
         </div>
@@ -1381,48 +1381,56 @@
         const app = new AppState();
 
         // --- Page Management ---
-        class PageManager {
-            constructor() {
-                this.pages = {
-                    chat: new ChatPage(),
-                    profile: new ProfilePage(),
-                    medications: new MedicationsPage(),
-                    emergency: new EmergencyPage(),
-                    appointments: new AppointmentsPage(),
-                    wellness: new WellnessPage(),
-                    wellspring: new WellspringPage()
-                };
-            }
+class PageManager {
+    constructor() {
+        this.pages = {
+            chat: new ChatPage(),
+            profile: new ProfilePage(),
+            medications: new MedicationsPage(),
+            emergency: new EmergencyPage(),
+            appointments: new AppointmentsPage(),
+            wellness: new WellnessPage(),
+            wellspring: new WellspringPage()
+        };
+    }
 
-            async loadPage(pageId) {
-                // Update active sidebar item
-                document.querySelectorAll('.sidebar-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
+    async loadPage(pageId) {
+        // Update active sidebar item
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-page="${pageId}"]`).classList.add('active');
 
-                // Update page title
-                const titles = {
-                    chat: 'Chat Assistant',
-                    profile: 'Profile Management',
-                    medications: 'Medication Tracker',
-                    emergency: 'Emergency Contacts',
-                    appointments: 'Appointments',
-                    wellness: 'Wellness Tips',
-                    wellspring: 'Wellspring'
-                };
-                document.getElementById('pageTitle').textContent = titles[pageId] || 'Sehat Sethu';
+        // Update page title
+        const titles = {
+            chat: 'Chat Assistant',
+            profile: 'Profile Management',
+            medications: 'Medication Tracker',
+            emergency: 'Emergency Contacts',
+            appointments: 'Appointments',
+            wellness: 'Wellness Tips',
+            wellspring: 'Wellspring'
+        };
+        document.getElementById('pageTitle').textContent = titles[pageId] || 'Sehat Sethu';
 
-                // Load page content
-                const contentBody = document.getElementById('contentBody');
-                contentBody.innerHTML = this.pages[pageId].render();
-                
-                // Initialize page
-                await this.pages[pageId].init();
-                
-                app.currentPage = pageId;
-            }
+        // Load page content
+        const contentBody = document.getElementById('contentBody');
+        contentBody.innerHTML = this.pages[pageId].render();
+
+        // Initialize page
+        await this.pages[pageId].init();
+        
+        // This is the new part to clear the chat history on the server.
+        // It prevents old messages from appearing when switching pages.
+        try {
+            await fetch('/clear_chat_history', { method: 'POST' });
+        } catch (error) {
+            console.error('Failed to clear chat history:', error);
         }
+
+        app.currentPage = pageId;
+    }
+}
 
 // Base URL for API calls (same-origin by default)
 const BASE_URL = "";

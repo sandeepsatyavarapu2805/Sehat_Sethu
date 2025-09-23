@@ -40,7 +40,7 @@ if not os.path.exists(LOG_FILE):
 translator = google_translator()
 
 # Initialize Flask
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "supersecret")  # Needed for session
 CORS(app)  # Allow all origins
 
