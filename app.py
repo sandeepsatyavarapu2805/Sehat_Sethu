@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory
 import google.generativeai as genai
 import os, json, datetime
-from google_trans_new import google_translator
+from google.cloud import translate_v2 as translate
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
@@ -37,7 +37,7 @@ if not os.path.exists(LOG_FILE):
         json.dump([], f)
 
 # Initialize translator
-translator = google_translator()
+translate_client = translate()
 
 # Initialize Flask
 app = Flask(__name__, static_folder='static')
@@ -206,19 +206,26 @@ def ask():
         incoming_edit_id = request.json.get("edit_id")
         edit_id = str(incoming_edit_id) if incoming_edit_id else None
 
-        # Load latest user data and system instruction
         current_user_data = load_user_data()
         system_instruction = create_system_instruction(current_user_data)
-
         lang = session.get("lang", "en")
 
-        # Translate input to English if session language is Telugu
-        try:
-            user_input_en = translator.translate(user_input, lang_tgt='en') if (lang == "te" and user_input) else user_input
-        except Exception as e:
-            print(f"Translation error (to en): {e}")
-            traceback.print_exc()
-            user_input_en = user_input  # fallback
+        # Translate input to English if session language is not English
+        if lang != "en" and user_input:
+            try:
+                result = translate_client.translate(
+                    user_input, target_language="en"
+                )
+                user_input_en = result["translatedText"]
+            except Exception as e:
+                print(f"Translation error (to en): {e}")
+                traceback.print_exc()
+                user_input_en = user_input  # Fallback
+        else:
+            user_input_en = user_input
+
+        # ... (rest of your logic for emergency, mental health, etc.) ...
+        # (This section remains unchanged, as it correctly uses user_input_en)
 
         # Emergency check (immediate return)
         emergency_keywords = ["chest pain", "shortness of breath", "accident", "bleeding", "heart attack"]
@@ -235,12 +242,17 @@ def ask():
             )
             if lang == "te":
                 try:
-                    emergency_message = translator.translate(emergency_message, lang_tgt='te')
+                    result = translate_client.translate(
+                        emergency_message, target_language='te'
+                    )
+                    emergency_message = result["translatedText"]
                 except Exception as e:
                     print(f"Emergency translation error: {e}")
                     traceback.print_exc()
             return jsonify({"reply": emergency_message})
 
+
+        # ... (rest of your existing code for other prompts) ...
         bot_text = ""
         # Priority-ordered checks (mutually exclusive via elif)
         # 1) Mental health
@@ -262,8 +274,6 @@ def ask():
                 print(f"AI response error (mental): {e}")
                 traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 2) Nutrition & lifestyle
         elif any(word in user_input_en.lower() for word in ["diet", "food", "nutrition", "exercise", "diabetic"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
@@ -280,8 +290,6 @@ def ask():
                 print(f"AI response error (nutrition): {e}")
                 traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 3) Quiz or tips request
         elif "quiz" in user_input_en.lower() or "tip" in user_input_en.lower():
             prompt = (
                 "You are HealthBot. Provide a **new health quiz question or tip** for the user. "
@@ -297,8 +305,6 @@ def ask():
                 print(f"AI response error (quiz/tip): {e}")
                 traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 4) Medicine info
         elif any(word in user_input_en.lower() for word in ["medicine", "drug", "tablet", "capsule", "paracetamol", "ibuprofen"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
@@ -314,8 +320,6 @@ def ask():
                 print(f"AI response error (medicine): {e}")
                 traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 5) Symptom checker
         elif "symptom" in user_input_en.lower() or any(symptom_word in user_input_en.lower() for symptom_word in ["fever", "headache", "cough", "nausea", "fatigue"]):
             prompt = (
                 "You are HealthBot, a friendly AI assistant. "
@@ -331,8 +335,6 @@ def ask():
                 print(f"AI response error (symptoms): {e}")
                 traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
-
-        # 6) Default fallback chat — use system instruction
         else:
             formatted_input = f"User: {user_input_en}\nHealthBot instructions: {system_instruction}"
             try:
@@ -342,17 +344,19 @@ def ask():
                 print(f"AI response error (default): {e}")
                 traceback.print_exc()
                 bot_text = "I'm sorry, I'm having trouble processing your request right now. Please try again later."
+        
 
         # Translate bot_text to Telugu if needed (done once at end)
         if lang == "te":
             try:
-                bot_text = translator.translate(bot_text, lang_tgt='te')
+                result = translate_client.translate(
+                    bot_text, target_language='te'
+                )
+                bot_text = result["translatedText"]
             except Exception as e:
                 print(f"Translation error (to te): {e}")
                 traceback.print_exc()
-                # keep English if translation fails
 
-        # Log the conversation (edit or new message)
         if edit_id:
             update_log(edit_id, user_input, bot_text)
         else:
@@ -687,11 +691,33 @@ def image_to_text():
         print(f"/image_to_text error: {e}")
         return jsonify({"error": "Failed to process image"}), 500
     
+@app.route("/translate", methods=["POST"])
+def translate_text():
+    data = request.get_json()
+    text_to_translate = data.get("text")
+    target_language = data.get("target_language")
+
+    if not text_to_translate or not target_language:
+        return jsonify({"error": "Missing text or target language"}), 400
+
+    try:
+        # The API call to perform the translation
+        result = translate_client.translate(
+            text_to_translate,
+            target_language=target_language,
+        )
+        return jsonify({"translated_text": result["translatedText"]})
+    except Exception as e:
+        print(f"Translation API error: {e}")
+        return jsonify({"error": "Failed to translate text"}), 500
+    
 @app.route("/clear_chat_history", methods=["POST"])
 def clear_chat_history():
-    # reuse the same behavior as /clear_chat
-    return clear_chat()
-
+    # This function clears the chat history from the session.
+    # It checks if 'chat_history' is in the session and removes it.
+    if 'chat_history' in session:
+        session.pop('chat_history', None)
+    return '', 204  # Return a No Content response to indicate success
 # ---------------------------
 # Run
 # ---------------------------
