@@ -1,7 +1,7 @@
 flask
 flask-cors
 google-generativeai
-google-trans-new
+google-cloud-translate
 speechrecognition
 pydub
 werkzeug
