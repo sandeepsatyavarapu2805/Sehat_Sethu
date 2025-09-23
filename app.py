@@ -692,6 +692,7 @@ def image_to_text():
         print(f"/image_to_text error: {e}")
         return jsonify({"error": "Failed to process image"}), 500
     
+# In your app.py file
 @app.route("/translate", methods=["POST"])
 def translate_text():
     data = request.get_json()
@@ -705,7 +706,7 @@ def translate_text():
         # The API call to perform the translation
         result = translate_client.translate(
             text_to_translate,
-            lang_tgt=target_language, # Correct parameter name is 'lang_tgt'
+            lang_tgt=target_language,
         )
         return jsonify({"translated_text": result}) # Return the string directly
     except Exception as e:

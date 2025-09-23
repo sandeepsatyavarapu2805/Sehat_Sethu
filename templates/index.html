@@ -1250,6 +1250,27 @@
                 }
             }
 
+async addNewEmergencyContact() {
+        // Get values from all form fields
+        const name = document.getElementById('addName').value;
+        const number = document.getElementById('addNumber').value;
+        const customField1 = document.getElementById('YOUR_CUSTOM_FIELD_ID_1').value;
+        const customField2 = document.getElementById('YOUR_CUSTOM_FIELD_ID_2').value;
+
+        if (name && number) {
+            const contactData = {
+                name: name,
+                number: number,
+                custom_field_1: customField1,
+                custom_field_2: customField2,
+            };
+            await this.saveEmergencyContact(contactData);
+            this.closeModal('addContactModal');
+            this.loadPage('emergency');
+        } else {
+            this.showNotification('Please fill in all required fields.', 'error');
+        }
+    }
             // Delete emergency contact
             async deleteEmergencyContact(index) {
                 try {
@@ -1283,16 +1304,23 @@
                 }
             }
 
-            // Delete appointment
-            async deleteAppointment(index) {
-                try {
-                    await this.apiCall(`/delete_appointment/${appointment.id}`, "DELETE");
-                    this.data.appointments.splice(index, 1);
-                    this.showNotification('Appointment deleted successfully!', 'success');
-                } catch (error) {
-                    console.error('Error deleting appointment:', error);
-                }
-            }
+// Delete appointment
+async deleteAppointment(index) {
+    try {
+        // Find the appointment to get its ID
+        const appointmentToDelete = this.data.appointments[index];
+        if (!appointmentToDelete || !appointmentToDelete.id) {
+            throw new Error("Appointment or ID not found.");
+        }
+
+        await this.apiCall(`/delete_appointment/${appointmentToDelete.id}`, "DELETE");
+        this.data.appointments.splice(index, 1);
+        this.showNotification('Appointment deleted successfully!', 'success');
+    } catch (error) {
+        console.error('Error deleting appointment:', error);
+        this.showNotification('Failed to delete appointment.', 'error');
+    }
+}
 
             // Get weather tip
             async getWeatherTip() {
@@ -2957,6 +2985,39 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   const chatMessages = document.getElementById("chatMessages");
+
+// Add event listener for the emergency form submission
+    const emergencyForm = document.getElementById('emergencyForm');
+    if (emergencyForm) {
+        emergencyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('contactName').value;
+            const number = document.getElementById('contactPhone').value;
+
+            // Collect data from dynamically added custom fields
+            const customFields = {};
+            const customFieldElements = document.querySelectorAll('#emergencyCustomFields .form-input');
+            customFieldElements.forEach(field => {
+                customFields[field.id] = field.value;
+            });
+            
+            if (name && number) {
+                const contactData = {
+                    name: name,
+                    number: number,
+                    ...customFields
+                };
+                
+                await app.saveEmergencyContact(contactData);
+                app.closeModal('addContactModal');
+                // You can clear the form fields here if needed
+                document.getElementById('emergencyForm').reset();
+            } else {
+                app.showNotification('Please fill in all required fields.', 'error');
+            }
+        });
+    }
 
 });
 </script>
