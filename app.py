@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session, send_from_directory
 import google.generativeai as genai
 import os, json, datetime
-from google.cloud.translate_v2 import Client
+from google_trans_new import google_translator
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import traceback
@@ -37,7 +37,7 @@ if not os.path.exists(LOG_FILE):
         json.dump([], f)
 
 # Initialize translator
-translate_client = Client()
+translate_client = google_translator()
 
 # Initialize Flask
 app = Flask(__name__, static_folder='static')
@@ -213,10 +213,11 @@ def ask():
         # Translate input to English if session language is not English
         if lang != "en" and user_input:
             try:
+                # The google_translator library returns a string directly
                 result = translate_client.translate(
-                    user_input, target_language="en"
+                    user_input, lang_tgt="en"
                 )
-                user_input_en = result["translatedText"]
+                user_input_en = result
             except Exception as e:
                 print(f"Translation error (to en): {e}")
                 traceback.print_exc()
@@ -704,9 +705,9 @@ def translate_text():
         # The API call to perform the translation
         result = translate_client.translate(
             text_to_translate,
-            target_language=target_language,
+            lang_tgt=target_language, # Correct parameter name is 'lang_tgt'
         )
-        return jsonify({"translated_text": result["translatedText"]})
+        return jsonify({"translated_text": result}) # Return the string directly
     except Exception as e:
         print(f"Translation API error: {e}")
         return jsonify({"error": "Failed to translate text"}), 500
